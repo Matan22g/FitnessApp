@@ -1,0 +1,41 @@
+<LoginScreen>:
+    FloatLayout:
+
+        MDLabel:
+            id: sub_title
+            pos_hint: {"center_x": 0.5, "top": .85}
+            size_hint: (.5, .2)
+            theme_text_color: "Primary"
+            font_style: "H5"
+            halign: "center"
+            text: root.sub_title
+
+        MDTextField:
+            id: username
+            pos_hint: {"x": .35, "top": .6}
+            size_hint: (.3, .1)
+            halign: "center"
+            hint_text: root.hint_username
+
+
+        MDTextField:
+            id: password
+            password: "True"
+            pos_hint: {"x": .35, "top": .5}
+            size_hint: (.3, .1)
+            halign: "center"
+            hint_text: root.hint_password
+
+
+        MDRaisedButton:
+            pos_hint: {"x": .35, "y": .22}
+            size_hint: (.3, .1)
+            text: "Log in"
+            on_release: app.change_screen("main_app_screen")
+#            on_release: root.is_binary(binary_number.text)
+
+        MDLabel:
+            id: solution
+            pos_hint: {"center_x": .5, "top": .4}
+            size_hint: (.5, .1)
+            halign: "center"

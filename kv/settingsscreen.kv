@@ -1,0 +1,15 @@
+<SettingsScreen>:
+    FloatLayout:
+
+        MDLabel:
+            pos_hint: {"x": .3, "top": .9}
+            size_hint: (.2, .1)
+            text: "Dark Mode: "
+            halign: "center"
+            theme_text_color: "Primary"
+
+        MDSwitch:
+            id: mode
+            pos_hint: {"x": .6, "top": .9}
+            size_hint: (.05, .1)
+            on_active: root.change_mode(*args)

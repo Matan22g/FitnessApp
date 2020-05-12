@@ -1,0 +1,82 @@
+#: include kv/homescreen.kv
+#: include kv/loginscreen.kv
+#: include kv/settingsscreen.kv
+
+NavigationLayout:
+    id: nav_layout
+
+    ScreenManager:
+
+        id: screen_manager
+        LoginScreen:
+            id: loginscreen
+            name: "loginscreen"
+
+        Screen:
+            name: "main_app_screen"
+            BoxLayout:
+                orientation: 'vertical'
+
+                MDToolbar:
+                    title: "Hello Matan"
+                    elevation: 10
+                    left_action_items: [['menu', lambda x: nav_drawer.set_state()]]
+                ScreenManager:
+                    id: screen_manager1
+
+                    HomeScreen:
+                        id: homescreen
+                        name: "homescreen"
+
+                    SettingsScreen:
+                        id: settingsscreen
+                        name: "settingsscreen"
+
+
+
+
+    MDNavigationDrawer:
+        id: nav_drawer
+        width: "190dp"
+        BoxLayout:
+            orientation: "vertical"
+            padding: "4dp"
+            spacing: "10dp"
+
+            Image:
+                source: "resources/logo.png"
+                size_hint_y: None
+                size: "95dp", "95dp"
+
+
+            ScrollView:
+
+                MDList:
+
+                    OneLineIconListItem:
+                        text: "Home"
+                        on_release:
+                            screen_manager1.current = "homescreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "home"
+
+                    OneLineIconListItem:
+                        text: "Login"
+                        on_release:
+                            screen_manager.current = "loginscreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "login"
+
+                    OneLineIconListItem:
+                        text: "Settings"
+                        on_release:
+                            screen_manager1.current = "settingsscreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "settings"
+
+
+
+
