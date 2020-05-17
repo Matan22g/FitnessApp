@@ -1,6 +1,10 @@
 #: include kv/homescreen.kv
 #: include kv/loginscreen.kv
 #: include kv/settingsscreen.kv
+#: include kv/friends.kv
+#: include kv/workouts.kv
+#: include FirebaseLoginScreen/firebaseloginscreen.kv
+#: import Snackbar kivymd.uix.snackbar.Snackbar
 
 NavigationLayout:
     id: nav_layout
@@ -8,9 +12,18 @@ NavigationLayout:
     ScreenManager:
 
         id: screen_manager
-        LoginScreen:
-            id: loginscreen
+
+        FirebaseLoginScreen:
+            id: firebase_login_screen
             name: "loginscreen"
+            web_api_key: "AIzaSyB2OZaUuFaqCWDd9GX_Gt1lRdHF8H6ueHo"
+            on_login_success:
+                app.change_screen("main_app_screen")
+                Snackbar(text="Logged in!").show()
+                app.localId = self.localId
+                app.idToken = self.idToken
+
+
 
         Screen:
             name: "main_app_screen"
@@ -28,6 +41,14 @@ NavigationLayout:
                         id: homescreen
                         name: "homescreen"
 
+                    WorkoutsScreen:
+                        id: workoutsscreen
+                        name: "workoutsscreen"
+
+                    FriendsScreen:
+                        id: friendsscreen
+                        name: "friendsscreen"
+
                     SettingsScreen:
                         id: settingsscreen
                         name: "settingsscreen"
@@ -37,7 +58,7 @@ NavigationLayout:
 
     MDNavigationDrawer:
         id: nav_drawer
-        width: "190dp"
+        width: "175dp"
         BoxLayout:
             orientation: "vertical"
             padding: "4dp"
@@ -62,8 +83,27 @@ NavigationLayout:
                             icon: "home"
 
                     OneLineIconListItem:
-                        text: "Login"
+                        text: "Friends"
                         on_release:
+                            screen_manager1.current = "friendsscreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "account-group"
+
+                    OneLineIconListItem:
+                        text: "Workouts"
+                        on_release:
+                            screen_manager1.current = "workoutsscreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "weight-lifter"
+
+                    OneLineIconListItem:
+                        text: "Log Out"
+                        on_release:
+                            screen_manager.transition.direction = 'right'
+                            firebase_login_screen.save_refresh_token("")
+                            Snackbar(text="Logged out!").show()
                             screen_manager.current = "loginscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:

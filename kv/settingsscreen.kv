@@ -1,4 +1,5 @@
 <SettingsScreen>:
+
     FloatLayout:
 
         MDLabel:
@@ -12,4 +13,6 @@
             id: mode
             pos_hint: {"x": .6, "top": .9}
             size_hint: (.05, .1)
-            on_active: root.change_mode(*args)
+            on_active:
+                root.change_mode(*args)
+                root.addStuff()
