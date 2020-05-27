@@ -165,6 +165,7 @@ class MainApp(MDApp):
     friends_list = ""
     id_token = ""
     local_id = ""
+    test=0
 
     def __init__(self, **kwargs):
         self.title = "KivyMD Example - Backdrop"
