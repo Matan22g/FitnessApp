@@ -1,16 +1,14 @@
 #: include kv/homescreen.kv
-#: include kv/loginscreen.kv
+##: include kv/loginscreen.kv
 #: include kv/settingsscreen.kv
 #: include kv/friends.kv
 #: include kv/workouts.kv
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
-#: import Snackbar kivymd.uix.snackbar.Snackbar
+#:import Snackbar kivymd.uix.snackbar.Snackbar
 
 NavigationLayout:
     id: nav_layout
-
     ScreenManager:
-
         id: screen_manager
 
         FirebaseLoginScreen:
@@ -18,7 +16,10 @@ NavigationLayout:
             name: "loginscreen"
             web_api_key: "AIzaSyB2OZaUuFaqCWDd9GX_Gt1lRdHF8H6ueHo"
             on_login_success:
+                app.root= nav_layout
                 app.change_screen("main_app_screen")
+                nav_drawer.swipe_edge_width=20
+                print("wereh here")
                 Snackbar(text="Logged in!").show()
                 app.localId = self.localId
                 app.idToken = self.idToken
@@ -101,11 +102,14 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Log Out"
                         on_release:
+                            nav_drawer.swipe_edge_width=-2
                             screen_manager.transition.direction = 'right'
+                            firebase_login_screen.login_success = "False"
                             firebase_login_screen.save_refresh_token("")
                             Snackbar(text="Logged out!").show()
                             screen_manager.current = "loginscreen"
                             nav_drawer.set_state()
+                            print(nav_drawer.swipe_edge_width)
                         IconLeftWidget:
                             icon: "login"
 

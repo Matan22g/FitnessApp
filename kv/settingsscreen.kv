@@ -15,4 +15,10 @@
             size_hint: (.05, .1)
             on_active:
                 root.change_mode(*args)
-                root.addStuff()
+
+        MDRoundFlatButton:
+            pos_hint: {"x": .35, "y": .7}
+            size_hint: (.3, .1)
+            text: "Change Theme"
+            on_release: root.show_theme_picker()
+#            on_release: root.is_binary(binary_number.text)

@@ -1,4 +1,9 @@
 <HomeScreen>:
+#    canvas.before:
+#        Rectangle:
+#            pos: self.pos
+#            size: self.size
+#            source: "resources/welcome4.png"
 
     FloatLayout:
 
@@ -6,7 +11,54 @@
             id: sub_title
             pos_hint: {"center_x": 0.5, "top": .98}
             size_hint: (.5, .2)
-            theme_text_color: "Primary"
-            font_style: "H5"
+            font_style: "H3"
             halign: "center"
-            text: root.sub_title
+            text: "Fitness App"
+            theme_text_color: "Primary"
+#            theme_text_color: "Custom"
+#            text_color: 0, 1, 1, 1
+
+        MDCard:
+            orientation: "vertical"
+            padding: "8dp"
+            size_hint: None, None
+            size: "280dp", "120dp"
+            pos_hint: {"center_x": .5, "center_y": .6}
+
+            MDLabel:
+                text: "Recent Workouts"
+                theme_text_color: "Secondary"
+                size_hint_y: None
+                height: self.texture_size[1]
+
+            MDSeparator:
+                height: "1dp"
+
+            MDLabel:
+                text: "Workout1\nWorkout2"
+
+            MDTextButton:
+                pos_hint: {"x": .60, "y": .6}
+                text: "Add Workout"
+                on_release: root.addworkout()
+
+
+        MDCard:
+            orientation: "vertical"
+            padding: "8dp"
+            size_hint: None, None
+            size: "280dp", "100dp"
+            pos_hint: {"center_x": .5, "center_y": .36}
+
+            MDLabel:
+                text: "Current Streak"
+                theme_text_color: "Secondary"
+                size_hint_y: None
+                height: self.texture_size[1]
+
+            MDSeparator:
+                height: "1dp"
+
+            MDLabel:
+                text: "Streak1\nLast Streak was number, Do your best to break it!"
+
