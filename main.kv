@@ -3,6 +3,8 @@
 #: include kv/settingsscreen.kv
 #: include kv/friends.kv
 #: include kv/workouts.kv
+#: include kv/splitscreen.kv
+#: include kv/splitscreen2.kv
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
 
@@ -45,6 +47,15 @@ NavigationLayout:
                     WorkoutsScreen:
                         id: workoutsscreen
                         name: "workoutsscreen"
+
+                    SplitScreen:
+                        id: splitscreen
+                        name: "splitscreen"
+
+                    SplitScreen2:
+                        id: splitscreen2
+                        name: "splitscreen2"
+
 
                     FriendsScreen:
                         id: friendsscreen

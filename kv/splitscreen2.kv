@@ -1,0 +1,143 @@
+<SplitScreen2>:
+    ScrollView:
+        FloatLayout:
+            MDLabel:
+                id: sub_title
+                pos_hint: {"center_x": 0.5, "top": .98}
+                size_hint: (.5, .2)
+                theme_text_color: "Primary"
+                font_style: "H5"
+                halign: "center"
+                text: "Split 2"
+
+            MDFloatingActionButton:
+                icon: "plus"
+                pos_hint: {"x": .75, "y": .70}
+                md_bg_color: app.theme_cls.primary_color
+                elevation_normal: 8
+                on_release: root.addexercise()
+
+            MDFloatingActionButton
+                icon: "minus"
+                pos_hint: {"x": .12, "y": .70}
+                md_bg_color: app.theme_cls.primary_color
+                elevation_normal: 8
+                on_release: root.deleteworkout()
+
+
+            MDRaisedButton:
+                id: savebutton
+                pos_hint: {"x": .75, "y": .02}
+                size_hint: (.2, .2/3)
+                text: "Save"
+                on_release:
+                    if root.saveworkout(): \
+                    Snackbar(text="workout saved!").show();
+
+            MDRaisedButton:
+                pos_hint: {"x": .1, "y": .02}
+                size_hint: (.2, .2/3)
+                text: "Back"
+                on_release:
+                    app.change_screen1("splitscreen","right")
+
+
+
+            MDTextField:
+                id: ex1
+                opacity:0
+                pos_hint: {"x": .1, "top": .7}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex2
+                opacity:0
+                pos_hint: {"x": .1, "top": .6}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex3
+                opacity:0
+                pos_hint: {"x": .1, "top": .5}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex4
+                opacity:0
+                pos_hint: {"x": .1, "top": .4}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex5
+                opacity:0
+                pos_hint: {"x": .1, "top": .3}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex6
+                opacity:0
+                pos_hint: {"x": .1, "top": .2}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex7
+                opacity:0
+                pos_hint: {"x": .55, "top": .7}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex8
+                opacity:0
+                pos_hint: {"x": .55, "top": .6}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex9
+                opacity:0
+                pos_hint: {"x": .55, "top": .5}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex10
+                opacity:0
+                pos_hint: {"x": .55, "top": .4}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex11
+                opacity:0
+                pos_hint: {"x": .55, "top": .3}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+            MDTextField:
+                id: ex12
+                opacity:0
+                pos_hint: {"x": .55, "top": .2}
+                size_hint: (.3, .1)
+                halign: "center"
+                hint_text: "name of Exercise"
+
+
+
