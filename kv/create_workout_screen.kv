@@ -1,0 +1,36 @@
+#:import toast kivymd.toast.toast
+
+<Create_Workout_Screen>:
+    FloatLayout:
+        MDLabel:
+            id: sub_title
+            pos_hint: {"center_x": 0.5, "top": .98}
+            size_hint: (.5, .2)
+            theme_text_color: "Primary"
+            font_style: "H5"
+            halign: "center"
+            text: "Create New Workout"
+
+        MDTextField:
+            id: ex0
+            opacity:1
+            pos_hint: {"x": .35, "y": .70}
+            size_hint: (.3, .1)
+            halign: "center"
+            hint_text: "Workout Name"
+
+        MDDropDownItem:
+            id: dropdown_item
+            text: "How many splits?"
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            dropdown_bg: [1, 1, 1, 1]
+            on_release: root.menu.open()
+
+
+
+        MDRaisedButton:
+            pos_hint: {"x": .75, "y": .02}
+            size_hint: (.2, .2/3)
+            text: "Next"
+            on_release:
+                root.isValid()

@@ -2,7 +2,8 @@
 ##: include kv/loginscreen.kv
 #: include kv/settingsscreen.kv
 #: include kv/friends.kv
-#: include kv/workouts.kv
+#: include kv/create_workout_screen.kv
+#: include kv/workoutsscreen.kv
 #: include kv/splitscreen.kv
 #: include kv/splitscreen2.kv
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
@@ -25,6 +26,7 @@ NavigationLayout:
                 Snackbar(text="Logged in!").show()
                 app.localId = self.localId
                 app.idToken = self.idToken
+                app.on_login()
 
 
 
@@ -47,6 +49,10 @@ NavigationLayout:
                     WorkoutsScreen:
                         id: workoutsscreen
                         name: "workoutsscreen"
+
+                    Create_Workout_Screen:
+                        id: create_workout_screen
+                        name: "create_workout_screen"
 
                     SplitScreen:
                         id: splitscreen

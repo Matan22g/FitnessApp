@@ -1,6 +1,11 @@
+import ast
+from kivy.uix.floatlayout import FloatLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen
 from kivy.core.window import Window
+from kivymd.uix.button import MDTextButton, MDFloatingActionButton
+from kivymd.uix.card import MDCard, MDSeparator
+from kivymd.uix.label import MDLabel
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
@@ -24,15 +29,6 @@ class HomeScreen(Screen):
 
     def addworkout(self, *args):
         self.app.change_screen1("workoutsscreen")
-
-    # def is_binary(self, binary_number):
-    #     try:
-    #         decimal = int(binary_number, 2)
-    #         self.ids["solution"].text = f'Your Number in Binary: {decimal}'
-    #         self.ids["solution"].theme_text_color = "Primary"
-    #     except ValueError:
-    #         self.ids["solution"].text = "This is not Binary"
-    #         self.ids["solution"].theme_text_color = "Error"
 
 
 # class LoginScreen(Screen):
@@ -74,7 +70,7 @@ class SettingsScreen(Screen):
         theme_dialog.open()
 
 
-class WorkoutsScreen(Screen):
+class Create_Workout_Screen(Screen):
     workoutName = []
     splits = 0
     newWorkout = 1
@@ -106,20 +102,51 @@ class WorkoutsScreen(Screen):
         self.ids.dropdown_item.set_item(instance.text)
         self.menu.dismiss()
         msg = instance.text.split(" ")[0]
-        WorkoutsScreen.splits = int(msg)
+        Create_Workout_Screen.splits = int(msg)
 
     def isValid(self):
         msg = ""
         if len(self.ids["ex0"].text) == 0:
             msg = "Choose name for the workout"
 
-        elif WorkoutsScreen.splits == 0:
+        elif Create_Workout_Screen.splits == 0:
             msg = "Choose how many splits"
 
         if len(msg) == 0:
             if not self.workoutName:  # First visit in this creating workout session
                 self.workoutName.append(self.ids["ex0"].text)
-                WorkoutsScreen.newWorkout = 1
+                Create_Workout_Screen.newWorkout = 1
+            print(self.workoutName)
+            self.app.change_screen1("splitscreen")
+        else:
+            self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
+            self.app.dialog.open()
+
+
+class WorkoutsScreen(Screen):
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.app = MDApp.get_running_app()
+
+    def on_pre_enter(self, *args):
+        pass
+
+    def on_enter(self, *args):
+        pass
+
+    def isValid(self):
+        msg = ""
+        if len(self.ids["ex0"].text) == 0:
+            msg = "Choose name for the workout"
+
+        elif Create_Workout_Screen.splits == 0:
+            msg = "Choose how many splits"
+
+        if len(msg) == 0:
+            if not self.workoutName:  # First visit in this creating workout session
+                self.workoutName.append(self.ids["ex0"].text)
+                Create_Workout_Screen.newWorkout = 1
             print(self.workoutName)
             self.app.change_screen1("splitscreen")
         else:
@@ -138,7 +165,7 @@ class SplitScreen(Screen):
 
     def on_pre_enter(self, *args):
         self.app.title = "Workouts"
-        if WorkoutsScreen.splits > 1:  # switching between next and save button.
+        if Create_Workout_Screen.splits > 1:  # switching between next and save button.
             self.ids.savebutton.opacity = 0
             self.ids.nextbutton.opacity = 1
             self.ids.savebutton.disabled = True
@@ -148,9 +175,9 @@ class SplitScreen(Screen):
             self.ids.nextbutton.opacity = 0
             self.ids.savebutton.disabled = False
             self.ids.nextbutton.disabled = True
-        if WorkoutsScreen.newWorkout:  # incase of save pressed on the next split, and this page in not clean
+        if Create_Workout_Screen.newWorkout:  # incase of save pressed on the next split, and this page in not clean
             self.cleanScreen()
-        WorkoutsScreen.newWorkout = 0  # know not to clean when switching between pages
+        Create_Workout_Screen.newWorkout = 0  # know not to clean when switching between pages
 
     def addexercise(self):
         # Add Another exercise
@@ -196,20 +223,21 @@ class SplitScreen(Screen):
         msg = self.workoutvalid()
         if len(msg) == 0:
             exercises = []
-            workout_name = WorkoutsScreen.workoutName
+            workout_name = Create_Workout_Screen.workoutName[0]
             for i in range(self.exercise):
                 exid = "ex" + str(i + 1)
                 exercises.append(self.ids[exid].text)
-            if WorkoutsScreen.splits > 1:
+            if Create_Workout_Screen.splits > 1:
                 self.exercises.extend(exercises)
                 return True
-            Workout = "{%s: %s}" % (workout_name, exercises)
+            Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(exercises) + '"')
             self.cleanScreen()
             self.uploadWorkout(Workout)
-            WorkoutsScreen.workoutName = []
-            WorkoutsScreen.splits = 0
-            WorkoutsScreen.newWorkout = 1
+            Create_Workout_Screen.workoutName = []
+            Create_Workout_Screen.splits = 0
+            Create_Workout_Screen.newWorkout = 1
             self.app.change_screen1("homescreen")
+            self.app.load_workout_data()
             return True
         else:
             self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
@@ -278,8 +306,8 @@ class SplitScreen2(Screen):
         msg = self.workoutvalid()
         if len(msg) == 0:
             exercises = []
-            workout_name = WorkoutsScreen.workoutName[0]
-            print(WorkoutsScreen.workoutName)
+            workout_name = Create_Workout_Screen.workoutName[0]
+            print(Create_Workout_Screen.workoutName)
             for i in range(self.exercise):
                 exid = "ex" + str(i + 1)
                 exercises.append(self.ids[exid].text)
@@ -287,12 +315,13 @@ class SplitScreen2(Screen):
             self.exercise = 0
             split1 = SplitScreen.exercises
             totalWorkout = [split1, exercises]
-            Workout = "{%s: %s}" % (workout_name, totalWorkout)
+            Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(totalWorkout) + '"')
             self.uploadWorkout(Workout)
-            WorkoutsScreen.workoutName = []
-            WorkoutsScreen.splits = 0
-            WorkoutsScreen.newWorkout = 1
+            Create_Workout_Screen.workoutName = []
+            Create_Workout_Screen.splits = 0
+            Create_Workout_Screen.newWorkout = 1
             self.app.change_screen1("homescreen")
+            self.app.load_workout_data()
             return True
         else:
             self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
@@ -319,6 +348,7 @@ class MainApp(MDApp):
     friends_list = ""
     id_token = ""
     local_id = ""
+    workouts = {}
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -351,25 +381,94 @@ class MainApp(MDApp):
     def on_start(self):
         self.root.ids['nav_drawer'].swipe_edge_width = -2
 
-        # try:
-        #     # Try to read the persisten signin credentials (refresh token)
-        #     with open("refresh_token.txt", 'r') as f:
-        #         refresh_token = f.read()
-        #     # Use refresh token to get a new idToken
-        #     id_token, local_id = self.my_firebase.exchange_refresh_token(refresh_token)
-        #     self.local_id = local_id
-        #     self.id_token = id_token
-        # except Exception as e:
-        #     print(e)
-        #     pass
-        # Get database data
-        # result = requests.get("https://gymbuddy2.firebaseio.com/" + str(self.my_friend_id) + ".json")
-        # print(json.loads(result.content.decode()))
-        # data = json.loads(result.content.decode())  # loads string into dic
-        # print(data['workouts'])
-        # workouts = data['workouts']
-        # for workout in workouts.split(", "):
-        #     print(workout)
+    def on_login(self):
+        # loads data
+        self.load_workout_data()
+
+    def load_workout_data(self):
+        try:
+            # print("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            # print(result.content.decode())
+            data = json.loads(result.content.decode())
+            # print("id token is", self.id_token)
+            # print(result.ok)
+            # print("DATA IS", data)
+            # print(data["workouts"])
+
+            # print(data["workouts"].keys())
+            workoutdic = data["workouts"]  # gets workout data
+            keysToAdd = []
+            self.workouts = {}  # soultion in case of deleted workout. reloads all database workouts
+            for workoutkey in workoutdic:
+                workout = workoutdic[workoutkey]
+                workout = json.loads(workout)  # turning str to dic
+                if workoutkey not in self.workouts:
+                    self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
+                    keysToAdd.append(workoutkey)
+            print(keysToAdd)
+            self.addWorkouts(keysToAdd)
+        except Exception:
+            print("no data")
+
+    def addWorkouts(self, keys):
+        workoutgrid = self.root.ids['workoutsscreen'].ids[
+            'banner_grid']  # getting the id of where the widgets are coming in
+        for workoutkey in keys:
+            workoutdic = self.workouts[workoutkey]  # argument 0 is the workout id, and 1 is the dict
+            print(workoutdic)
+            for workoutname in workoutdic:
+                exercises = workoutdic[workoutname]  # getting the the exercises of the workout
+                exercises = ast.literal_eval(exercises)  # turning the str to list
+                splits = ""
+                totalsplits = ""
+                Splitted = any(isinstance(i, list) for i in exercises)  # checks if theres nested lists for spilts.
+                for numofsplit, split in enumerate(exercises):
+                    splits = "Split " + str(numofsplit + 1) + ": "
+                    separator = ', '
+                    if not Splitted:
+                        exercisesstr = separator.join(exercises)
+                        splits = splits + exercisesstr
+                        totalsplits += splits + "\n"
+                        break
+                    exercisesstr = separator.join(split)
+                    splits = splits + exercisesstr
+                    totalsplits += splits + "\n"
+
+                newlayout = FloatLayout()  # for centering
+                workoutcard = MDCard(
+                    orientation="vertical",
+                    size_hint=(None, None),
+                    size=("400dp", "160dp"),
+                    padding="8dp",
+                    pos_hint={"top": 1, "center_x": 0.5}
+                )
+                workoutcard.add_widget(MDLabel(
+                    text="%s" % workoutname,
+                    size_hint=(None, 0.5),
+                    theme_text_color="Secondary",
+                    size=("280dp", "120dp")))
+                workoutcard.add_widget(MDSeparator(
+                    height="1dp"))
+                workoutcard.add_widget(MDLabel(
+                    text="%s" % totalsplits
+                ))
+                md = MDFloatingActionButton(
+                    icon="play",
+                    md_bg_color=[1, 0, 0, .3],
+                    elevation_normal=4,
+                    pos_hint={"top": 1, "center_x": 0.9}
+                )
+                workoutcard.add_widget(md)
+                newlayout.add_widget(workoutcard)
+                workoutgrid.add_widget(newlayout)
+
+    def deleteworkoutgrid(self):
+        workoutgrid = self.root.ids['workoutsscreen'].ids[
+            'banner_grid']  # getting the id of where the widgets are coming in
+        if workoutgrid.children:
+            for child in workoutgrid.children[:]:
+                workoutgrid.remove_widget(child)
 
 
 MainApp().run()
