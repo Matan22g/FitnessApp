@@ -1,4 +1,4 @@
-<SplitScreen2>:
+<SplitScreen3>:
     ScrollView:
         FloatLayout:
             MDLabel:
@@ -7,7 +7,7 @@
                 theme_text_color: "Primary"
                 font_style: "H5"
                 halign: "center"
-                text: "Split 2"
+                text: "Split 3"
 
             MDFloatingActionButton:
                 icon: "plus"
@@ -47,7 +47,8 @@
                 size_hint: (.2, .2/3)
                 text: "Back"
                 on_release:
-                    app.change_screen1("splitscreen","right")
+                    app.change_screen1("splitscreen2","right")
+
 
             MDTextField:
                 id: ex1

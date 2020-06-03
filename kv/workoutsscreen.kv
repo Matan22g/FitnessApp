@@ -3,57 +3,25 @@
 <WorkoutsScreen>:
     FloatLayout:
 
-        MDLabel:
-            id: sub_title
-            pos_hint: {"center_x": 0.5, "top": 1.}
-            size_hint: (.5, .2)
-            theme_text_color: "Primary"
-            font_style: "H5"
-            halign: "center"
-            text: "Workouts"
-
         MDRoundFlatIconButton:
             icon: "plus"
-            pos_hint: {"center_x": 0.5, "top": .82}
+            pos_hint: {"center_x": 0.5, "top": .95}
             text: "Create New Workout"
             width: dp(200)
             on_release:
                 app.change_screen1("create_workout_screen")
 
         ScrollView:
-            pos_hint: {"top": .70}
+            pos_hint: {"top": .87}
             size_hint_y: None
-            size_hint: 1, .7
+            size_hint: 1, .87
             GridLayout:
                 # Banner grid
                 id: banner_grid
                 cols: 1
-                spacing: 20,40
+                spacing: 20,10
                 size_hint_y: None
                 height: self.minimum_height
                 row_force_default: True
-                row_default_height: '150dp'
+                row_default_height: '240dp'
 
-#        MDCard:
-#            orientation: "vertical"
-#            padding: "8dp"
-#            size_hint: None, None
-#            size: "280dp", "120dp"
-#            pos_hint: {"center_x": .5, "center_y": .6}
-#
-#            MDLabel:
-#                text: "Recent Workouts"
-#                theme_text_color: "Secondary"
-#                size_hint_y: None
-#                height: self.texture_size[1]
-#
-#            MDSeparator:
-#                height: "1dp"
-#
-#            MDLabel:
-#                text: "Workout1\nWorkout2"
-#
-#            MDTextButton:
-#                pos_hint: {"x": .60, "y": .6}
-#                text: "Add Workout"
-#                on_release: root.addworkout()

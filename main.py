@@ -15,7 +15,7 @@ import requests
 import json
 from kivymd.uix.picker import MDTimePicker, MDThemePicker
 
-Window.size = (420, 630)
+Window.size = (360, 639)
 
 
 class HomeScreen(Screen):
@@ -70,59 +70,6 @@ class SettingsScreen(Screen):
         theme_dialog.open()
 
 
-class Create_Workout_Screen(Screen):
-    workoutName = []
-    splits = 0
-    newWorkout = 1
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.app = MDApp.get_running_app()
-        self.exercise = 0
-        self.MaxSplits = 2
-
-    def on_pre_enter(self, *args):
-        if not self.workoutName:
-            self.ids["ex0"].text = ""
-        if not self.splits:
-            self.ids.dropdown_item.set_item("How many splits?")
-
-    def on_enter(self, *args):
-        self.app.title = "Workouts"
-        menu_items = [{"icon": "arm-flex", "text": f"{i} split"} for i in range(1, self.MaxSplits + 1)]
-        self.menu = MDDropdownMenu(
-            caller=self.ids.dropdown_item,
-            items=menu_items,
-            position="bottom",
-            callback=self.set_item,
-            width_mult=3,
-        )
-
-    def set_item(self, instance):
-        self.ids.dropdown_item.set_item(instance.text)
-        self.menu.dismiss()
-        msg = instance.text.split(" ")[0]
-        Create_Workout_Screen.splits = int(msg)
-
-    def isValid(self):
-        msg = ""
-        if len(self.ids["ex0"].text) == 0:
-            msg = "Choose name for the workout"
-
-        elif Create_Workout_Screen.splits == 0:
-            msg = "Choose how many splits"
-
-        if len(msg) == 0:
-            if not self.workoutName:  # First visit in this creating workout session
-                self.workoutName.append(self.ids["ex0"].text)
-                Create_Workout_Screen.newWorkout = 1
-            print(self.workoutName)
-            self.app.change_screen1("splitscreen")
-        else:
-            self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
-            self.app.dialog.open()
-
-
 class WorkoutsScreen(Screen):
 
     def __init__(self, **kw):
@@ -130,42 +77,76 @@ class WorkoutsScreen(Screen):
         self.app = MDApp.get_running_app()
 
     def on_pre_enter(self, *args):
-        pass
+        self.app.title = "Workouts"
+
+
+class Create_Workout_Screen(Screen):
+    workoutName = []
+    splits = 0
+    newWorkout = 1
+    exercises = []
+
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.app = MDApp.get_running_app()
+        self.exercise = 0
+        self.MaxSplits = 3
+
+    def on_pre_enter(self, *args):
+        self.app.title = "Workouts"
+
+        if not self.workoutName:
+            self.ids["ex0"].text = ""
+        if not self.splits:
+            self.ids.dropdown_item.set_item("How many splits?")
 
     def on_enter(self, *args):
-        pass
+        self.app.title = "Workouts"
+        menu_items = [{"icon": "arm-flex", "text": f"{i}"} for i in range(1, self.MaxSplits + 1)]
+        self.menu = MDDropdownMenu(
+            caller=self.ids.dropdown_item,
+            items=menu_items,
+            position="bottom",
+            callback=self.set_item,
+            width_mult=3,
+            max_height=(Window.size[1]/3)
+        )
+
+    def set_item(self, instance):
+        self.ids.dropdown_item.set_item(instance.text)
+        self.menu.dismiss()
+        msg = instance.text.split(" ")[0]
+        if Create_Workout_Screen.splits > 0:  # if user change split, reseting the exercises
+            Create_Workout_Screen.exercises = []
+        else:
+            Create_Workout_Screen.newWorkout = int(msg)  # else its a new workout input, saving how many pages to clear.
+        Create_Workout_Screen.splits = int(msg)
 
     def isValid(self):
         msg = ""
         if len(self.ids["ex0"].text) == 0:
             msg = "Choose name for the workout"
 
-        elif Create_Workout_Screen.splits == 0:
+        elif self.splits == 0:
             msg = "Choose how many splits"
 
         if len(msg) == 0:
-            if not self.workoutName:  # First visit in this creating workout session
-                self.workoutName.append(self.ids["ex0"].text)
-                Create_Workout_Screen.newWorkout = 1
-            print(self.workoutName)
+            if not Create_Workout_Screen.workoutName:  # First visit in this creating workout session
+                Create_Workout_Screen.workoutName.append(self.ids["ex0"].text)
+                Create_Workout_Screen.newWorkout = Create_Workout_Screen.splits
             self.app.change_screen1("splitscreen")
         else:
             self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
             self.app.dialog.open()
 
 
-class SplitScreen(Screen):
-    exercises = []
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.app = MDApp.get_running_app()
-        self.limit = 12
-        self.exercise = 0
+class SplitScreensMain(Screen):
+    split = 0
+    nextPressed = False
 
     def on_pre_enter(self, *args):
         self.app.title = "Workouts"
-        if Create_Workout_Screen.splits > 1:  # switching between next and save button.
+        if Create_Workout_Screen.splits > self.split:  # switching between next and save button.
             self.ids.savebutton.opacity = 0
             self.ids.nextbutton.opacity = 1
             self.ids.savebutton.disabled = True
@@ -175,82 +156,12 @@ class SplitScreen(Screen):
             self.ids.nextbutton.opacity = 0
             self.ids.savebutton.disabled = False
             self.ids.nextbutton.disabled = True
-        if Create_Workout_Screen.newWorkout:  # incase of save pressed on the next split, and this page in not clean
+        if Create_Workout_Screen.newWorkout:  # in case of save pressed on the next split, and this page in not clean
+            self.nextPressed = False
             self.cleanScreen()
-        Create_Workout_Screen.newWorkout = 0  # know not to clean when switching between pages
-
-    def addexercise(self):
-        # Add Another exercise
-
-        limit = self.limit
-        if self.exercise < limit:
-            self.exercise += 1
-            exid = "ex" + str(self.exercise)
-            self.ids[exid].opacity = 1
-        else:
-            msg = "Cannot add more than\n" + str(limit) + " exercises at the moment."
-            self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
-            self.app.dialog.open()
-
-    def deleteworkout(self):
-        limit = self.limit
-        if self.exercise > 0:
-            exid = "ex" + str(self.exercise)
-            self.exercise -= 1
-            self.ids[exid].opacity = 0
-
-    def workoutvalid(self):
-        msg = ""
-        if self.exercise == 0:
-            msg = "Enter at least one exercise"
-        else:
-            for i in range(self.exercise):
-                exid = "ex" + str(i + 1)
-                if len(self.ids[exid].text) == 0:
-                    msg = "Name all the exercises"
-                    break
-        return msg
-
-    def cleanScreen(self):
-        for i in range(1, self.exercise + 1):
-            exid = "ex" + str(i)
-            self.ids[exid].text = ""
-            self.ids[exid].focus = False
-            self.ids[exid].opacity = 0
-        self.exercise = 0
-
-    def saveworkout(self):
-        msg = self.workoutvalid()
-        if len(msg) == 0:
-            exercises = []
-            workout_name = Create_Workout_Screen.workoutName[0]
-            for i in range(self.exercise):
-                exid = "ex" + str(i + 1)
-                exercises.append(self.ids[exid].text)
-            if Create_Workout_Screen.splits > 1:
-                self.exercises.extend(exercises)
-                return True
-            Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(exercises) + '"')
-            self.cleanScreen()
-            self.uploadWorkout(Workout)
-            Create_Workout_Screen.workoutName = []
-            Create_Workout_Screen.splits = 0
-            Create_Workout_Screen.newWorkout = 1
-            self.app.change_screen1("homescreen")
-            self.app.load_workout_data()
-            return True
-        else:
-            self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.5, None))
-            self.app.dialog.open()
-            return False
-
-    def uploadWorkout(self, workout):
-        workout_request = requests.post("https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s"
-                                        % (self.app.local_id, self.app.id_token), data=json.dumps(workout))
-
-
-# try ineheritence for not duplicate code
-class SplitScreen2(Screen):
+            Create_Workout_Screen.newWorkout -= 1  # for knowing when not to clean when switching between pages
+        if not Create_Workout_Screen.exercises:  # if the user changed splits exercises got reset
+            self.nextPressed = False  # on the next button click saving will save the new exercises
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -258,12 +169,8 @@ class SplitScreen2(Screen):
         self.limit = 12
         self.exercise = 0
 
-    def on_pre_enter(self, *args):
-        self.app.title = "Workouts"
-
     def addexercise(self):
         # Add Another exercise
-
         limit = self.limit
         if self.exercise < limit:
             self.exercise += 1
@@ -299,24 +206,27 @@ class SplitScreen2(Screen):
             self.ids[exid].text = ""
             self.ids[exid].focus = False
             self.ids[exid].opacity = 0
-        # after save, needs restart values
         self.exercise = 0
 
     def saveworkout(self):
+        if Create_Workout_Screen.splits > self.split:
+            if self.nextPressed:
+                return True
         msg = self.workoutvalid()
         if len(msg) == 0:
             exercises = []
             workout_name = Create_Workout_Screen.workoutName[0]
-            print(Create_Workout_Screen.workoutName)
             for i in range(self.exercise):
                 exid = "ex" + str(i + 1)
                 exercises.append(self.ids[exid].text)
+            Create_Workout_Screen.exercises.append(exercises)
+            if Create_Workout_Screen.splits > self.split:
+                self.nextPressed = True
+                return True
+            Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(Create_Workout_Screen.exercises) + '"')
             self.cleanScreen()
-            self.exercise = 0
-            split1 = SplitScreen.exercises
-            totalWorkout = [split1, exercises]
-            Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(totalWorkout) + '"')
             self.uploadWorkout(Workout)
+            Create_Workout_Screen.exercises = []
             Create_Workout_Screen.workoutName = []
             Create_Workout_Screen.splits = 0
             Create_Workout_Screen.newWorkout = 1
@@ -331,6 +241,21 @@ class SplitScreen2(Screen):
     def uploadWorkout(self, workout):
         workout_request = requests.post("https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s"
                                         % (self.app.local_id, self.app.id_token), data=json.dumps(workout))
+
+
+class SplitScreen(SplitScreensMain):
+    split = 1
+    nextPressed = False
+
+
+class SplitScreen2(SplitScreensMain):
+    split = 2
+    nextPressed = False
+
+
+class SplitScreen3(SplitScreensMain):
+    split = 3
+    nextPressed = False
 
 
 class FriendsScreen(Screen):
@@ -406,8 +331,9 @@ class MainApp(MDApp):
                 if workoutkey not in self.workouts:
                     self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
                     keysToAdd.append(workoutkey)
-            print(keysToAdd)
+            self.deleteworkoutgrid()
             self.addWorkouts(keysToAdd)
+
         except Exception:
             print("no data")
 
@@ -416,13 +342,13 @@ class MainApp(MDApp):
             'banner_grid']  # getting the id of where the widgets are coming in
         for workoutkey in keys:
             workoutdic = self.workouts[workoutkey]  # argument 0 is the workout id, and 1 is the dict
-            print(workoutdic)
             for workoutname in workoutdic:
                 exercises = workoutdic[workoutname]  # getting the the exercises of the workout
                 exercises = ast.literal_eval(exercises)  # turning the str to list
                 splits = ""
                 totalsplits = ""
-                Splitted = any(isinstance(i, list) for i in exercises)  # checks if theres nested lists for spilts.
+                Splitted = any(isinstance(i, list) for i in exercises)  # checks if there's nested lists for spilts.
+                lines = 0
                 for numofsplit, split in enumerate(exercises):
                     splits = "Split " + str(numofsplit + 1) + ": "
                     separator = ', '
@@ -430,28 +356,39 @@ class MainApp(MDApp):
                         exercisesstr = separator.join(exercises)
                         splits = splits + exercisesstr
                         totalsplits += splits + "\n"
+                        lines += 1
                         break
                     exercisesstr = separator.join(split)
-                    splits = splits + exercisesstr
+                    splits = splits + exercisesstr + "."
+                    splitsleng = len(splits)
+                    if splitsleng > 37:
+                        lines += int(splitsleng / 38)
                     totalsplits += splits + "\n"
+                    lines += 1
+
+                cardsizey = 170
+                if lines > 1:  # adjusting card size according to splitsnum
+                    cardsizey = str(cardsizey + (12.8 * lines))
+                cardsizex = str(Window.size[0] - 20) + "dp"
 
                 newlayout = FloatLayout()  # for centering
                 workoutcard = MDCard(
                     orientation="vertical",
                     size_hint=(None, None),
-                    size=("400dp", "160dp"),
-                    padding="8dp",
-                    pos_hint={"top": 1, "center_x": 0.5}
+                    size=(cardsizex, cardsizey),
+                    padding="7dp",
+                    pos_hint={"center_y": 0.5, "center_x": 0.5}
                 )
                 workoutcard.add_widget(MDLabel(
-                    text="%s" % workoutname,
+                    text=workoutname,
                     size_hint=(None, 0.5),
                     theme_text_color="Secondary",
                     size=("280dp", "120dp")))
                 workoutcard.add_widget(MDSeparator(
                     height="1dp"))
                 workoutcard.add_widget(MDLabel(
-                    text="%s" % totalsplits
+                    theme_text_color="Primary",
+                    text=totalsplits
                 ))
                 md = MDFloatingActionButton(
                     icon="play",
