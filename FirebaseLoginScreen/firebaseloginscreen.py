@@ -56,7 +56,6 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
 
     def on_login_success(self, *args):
         self.app.change_screen("main_app_screen")
-        print("Logged in successfully", args)
 
     def on_web_api_key(self, *args):
         """When the web api key is set, look for an existing account in local

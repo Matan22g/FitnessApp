@@ -23,7 +23,6 @@ NavigationLayout:
                 app.root= nav_layout
                 app.change_screen("main_app_screen")
                 nav_drawer.swipe_edge_width=20
-                print("wereh here")
                 Snackbar(text="Logged in!").show()
                 app.localId = self.localId
                 app.idToken = self.idToken
@@ -37,9 +36,12 @@ NavigationLayout:
                 orientation: 'vertical'
 
                 MDToolbar:
+                    id: toolbar
                     title: "Hello Matan"
                     elevation: 10
                     left_action_items: [['menu', lambda x: nav_drawer.set_state()]]
+                    right_action_items: [["settings", lambda x: app.change_screen1("settingsscreen")]]
+
                 ScreenManager:
                     id: screen_manager1
 

@@ -1,10 +1,17 @@
 import ast
+from time import sleep
+
+import certifi
+from kivy.network.urlrequest import UrlRequest
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, NoTransition
 from kivy.core.window import Window
-from kivymd.uix.button import MDTextButton, MDFloatingActionButton
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.button import MDTextButton, MDFloatingActionButton, MDRaisedButton, MDFlatButton
 from kivymd.uix.card import MDCard, MDSeparator
+from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.textfield import MDTextField
@@ -19,6 +26,7 @@ Window.size = (360, 639)
 
 
 class HomeScreen(Screen):
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
@@ -30,26 +38,23 @@ class HomeScreen(Screen):
     def addworkout(self, *args):
         self.app.change_screen1("workoutsscreen")
 
+    # data = {
+    #     'weight-lifter': 'Create Workout',
+    #     'weight': 'Workouts'
+    # }
+    # screendata = {
+    #     'weight-lifter': 'create_workout_screen',
+    #     'weight': 'workoutsscreen',
+    # }
+    #
+    # def callback(self, instance):
+    #     menu=self.ids["menu"]
+    #     menu.close_stack()
+    #     screenname=self.screendata[instance.icon]
+    #
+    #     self.app.change_screen1(screenname,"right")
+    #
 
-# class LoginScreen(Screen):
-#     def __init__(self, **kw):
-#         super().__init__(**kw)
-#         self.app = MDApp.get_running_app()
-#         self.sub_title = "Welcome! \nPlease Log in"
-#         self.hint_username = "User Name"
-#         self.hint_password = "Password"
-#
-#     def on_enter(self, *args):
-#         self.app.title = "Login"
-#
-#     def is_binary(self, binary_number):
-#         try:
-#             decimal = int(binary_number, 2)
-#             self.ids["solution"].text = f'Your Number in Binary: {decimal}'
-#             self.ids["solution"].theme_text_color = "Primary"
-#         except ValueError:
-#             self.ids["solution"].text = "This is not Binary"
-#             self.ids["solution"].theme_text_color = "Error"
 
 class SettingsScreen(Screen):
     def __init__(self, **kw):
@@ -109,7 +114,7 @@ class Create_Workout_Screen(Screen):
             position="bottom",
             callback=self.set_item,
             width_mult=3,
-            max_height=(Window.size[1]/3)
+            max_height=(Window.size[1] / 3)
         )
 
     def set_item(self, instance):
@@ -144,6 +149,12 @@ class SplitScreensMain(Screen):
     split = 0
     nextPressed = False
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.app = MDApp.get_running_app()
+        self.limit = 12
+        self.exercise = 0
+
     def on_pre_enter(self, *args):
         self.app.title = "Workouts"
         if Create_Workout_Screen.splits > self.split:  # switching between next and save button.
@@ -162,12 +173,6 @@ class SplitScreensMain(Screen):
             Create_Workout_Screen.newWorkout -= 1  # for knowing when not to clean when switching between pages
         if not Create_Workout_Screen.exercises:  # if the user changed splits exercises got reset
             self.nextPressed = False  # on the next button click saving will save the new exercises
-
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.app = MDApp.get_running_app()
-        self.limit = 12
-        self.exercise = 0
 
     def addexercise(self):
         # Add Another exercise
@@ -225,7 +230,7 @@ class SplitScreensMain(Screen):
                 return True
             Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(Create_Workout_Screen.exercises) + '"')
             self.cleanScreen()
-            self.uploadWorkout(Workout)
+            self.uploadWorkout(workout_name, Create_Workout_Screen.exercises)
             Create_Workout_Screen.exercises = []
             Create_Workout_Screen.workoutName = []
             Create_Workout_Screen.splits = 0
@@ -238,9 +243,10 @@ class SplitScreensMain(Screen):
             self.app.dialog.open()
             return False
 
-    def uploadWorkout(self, workout):
+    def uploadWorkout(self, workout_name, exercises):
+        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(Create_Workout_Screen.exercises) + '"')
         workout_request = requests.post("https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s"
-                                        % (self.app.local_id, self.app.id_token), data=json.dumps(workout))
+                                        % (self.app.local_id, self.app.id_token), data=json.dumps(Workout))
 
 
 class SplitScreen(SplitScreensMain):
@@ -269,95 +275,106 @@ class FriendsScreen(Screen):
 
 
 class MainApp(MDApp):
-    my_friend_id = ""
-    friends_list = ""
     id_token = ""
     local_id = ""
-    workouts = {}
+    user_data = []
+    workouts = {}  # straight from database
+    workoutsANLAYZE = {}  # analyze to list
+    friends_list = {}  # will have all usernames of the users friends.
+    dialog = ""  # for presenting dialog to user.
+    workout_to_delete = 0  # saving the workout obj between function.
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
         self.theme_cls.primary_palette = "Indigo"
         super().__init__(**kwargs)
 
-    def set_friend_id(self, my_friend_id):
-        self.my_friend_id = my_friend_id
-        # friend_id_label = self.root.ids['settings_screen'].ids['friend_id_label']
-        # friend_id_label.text = "Friend ID: " + str(self.my_friend_id)
+    def on_start(self):
+        self.root.ids['nav_drawer'].swipe_edge_width = -2  # before login, denies access to navigation drawer
 
-    def change_screen(self, screen_name):
+    def on_login(self):
+        # loads data
+        self.get_user_data()
+        self.load_workout_data()
+        # TEST OF USER NAME
+        user_name = "Matan22G"
+        self.root.ids['toolbar'].title = "Hello " + user_name
+        self.get_user_name_data("Matan22g")
+
+    # for login screens
+    def change_screen(self, screen_name, *args):
         # Get the screen manager from the kv file
         screen_manager = self.root.ids['screen_manager']
-        screen_manager.transition.direction = 'left'
+        if args:
+            if args[0]:  # optional transition direction
+                screen_manager.transition.direction = args[0]
+            else:
+                screen_manager.transition.direction = "left"
+            # if args[1]:  # optional no transition
+            #     screen_manager.transition = NoTransition()
         screen_manager.current = screen_name
         screen_manager = self.root.ids
 
+    # for app screens
     def change_screen1(self, screen_name, *args):
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
         screen_manager = self.root.ids['screen_manager1']
         if args:
-            screen_manager.transition.direction = args[0]
+            if args[0]:  # optional transition direction
+                screen_manager.transition.direction = args[0]
         else:
             screen_manager.transition.direction = "left"
+            # if args[1]:  # optional no transition
+            #     screen_manager.transition = NoTransition()
         screen_manager.current = screen_name
         screen_manager = self.root.ids
 
-    def on_start(self):
-        self.root.ids['nav_drawer'].swipe_edge_width = -2
-
-    def on_login(self):
-        # loads data
-        self.load_workout_data()
-
     def load_workout_data(self):
-        try:
-            # print("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
-            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
-            # print(result.content.decode())
-            data = json.loads(result.content.decode())
-            # print("id token is", self.id_token)
-            # print(result.ok)
-            # print("DATA IS", data)
-            # print(data["workouts"])
+        # try:
+        self.get_user_data()
+        workoutdic = self.user_data["workouts"]  # gets workout data
+        keysToAdd = []
+        self.workouts = {}  # solution in case of deleted workout. reloads all database workouts
+        for workoutkey in workoutdic:
+            workout = workoutdic[workoutkey]
+            workout = json.loads(workout)  # turning str to dic
+            self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
 
-            # print(data["workouts"].keys())
-            workoutdic = data["workouts"]  # gets workout data
-            keysToAdd = []
-            self.workouts = {}  # soultion in case of deleted workout. reloads all database workouts
-            for workoutkey in workoutdic:
-                workout = workoutdic[workoutkey]
-                workout = json.loads(workout)  # turning str to dic
-                if workoutkey not in self.workouts:
-                    self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
-                    keysToAdd.append(workoutkey)
-            self.deleteworkoutgrid()
-            self.addWorkouts(keysToAdd)
+        self.workoutsANLAYZE = self.parse_workout(
+            self.workouts)  # Need to reconsider this depending, on workout anylysis.
+        self.add_workouts(self.workoutsANLAYZE)
 
-        except Exception:
-            print("no data")
+        # except Exception:
+        # print("no workouts")
 
-    def addWorkouts(self, keys):
+    def parse_workout(self, workoutIdDic):
+        # turning json data into iterable list, retrun dic of workout dics {key: {workout name :[[split 1],[split2]]}}
+        workoutdicReadAble = {}
+        for workoutkey in workoutIdDic:
+            workoutTemp = {}
+            workoutdic = workoutIdDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
+            for workoutName in workoutdic:
+                exercises = workoutdic[workoutName]  # getting the the exercises of the workout
+                exercises = ast.literal_eval(exercises)  # turning the str to list
+                workoutTemp[workoutName] = exercises
+            workoutdicReadAble[workoutkey] = workoutTemp
+        return workoutdicReadAble
+
+    def add_workouts(self, workoutDic):
+        self.delete_workout_grid()
         workoutgrid = self.root.ids['workoutsscreen'].ids[
             'banner_grid']  # getting the id of where the widgets are coming in
-        for workoutkey in keys:
-            workoutdic = self.workouts[workoutkey]  # argument 0 is the workout id, and 1 is the dict
+        for workoutkey in workoutDic:
+            workoutdic = workoutDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
             for workoutname in workoutdic:
                 exercises = workoutdic[workoutname]  # getting the the exercises of the workout
-                exercises = ast.literal_eval(exercises)  # turning the str to list
                 splits = ""
                 totalsplits = ""
-                Splitted = any(isinstance(i, list) for i in exercises)  # checks if there's nested lists for spilts.
                 lines = 0
                 for numofsplit, split in enumerate(exercises):
                     splits = "Split " + str(numofsplit + 1) + ": "
                     separator = ', '
-                    if not Splitted:
-                        exercisesstr = separator.join(exercises)
-                        splits = splits + exercisesstr
-                        totalsplits += splits + "\n"
-                        lines += 1
-                        break
                     exercisesstr = separator.join(split)
                     splits = splits + exercisesstr + "."
                     splitsleng = len(splits)
@@ -371,8 +388,9 @@ class MainApp(MDApp):
                     cardsizey = str(cardsizey + (12.8 * lines))
                 cardsizex = str(Window.size[0] - 20) + "dp"
 
-                newlayout = FloatLayout()  # for centering
+                newlayout = MDFloatLayout()  # for centering
                 workoutcard = MDCard(
+                    radius=[14],
                     orientation="vertical",
                     size_hint=(None, None),
                     size=(cardsizex, cardsizey),
@@ -390,22 +408,152 @@ class MainApp(MDApp):
                     theme_text_color="Primary",
                     text=totalsplits
                 ))
-                md = MDFloatingActionButton(
+                startButton = MDFloatingActionButton(
                     icon="play",
-                    md_bg_color=[1, 0, 0, .3],
+                    md_bg_color=[1, 0, 0, 1],
+                    background_palette="Indigo",
                     elevation_normal=4,
-                    pos_hint={"top": 1, "center_x": 0.9}
+                    on_release=self.workoutbuttons
                 )
-                workoutcard.add_widget(md)
+                editButton = MDFloatingActionButton(
+                    icon="file-edit",
+                    background_palette="BlueGray",
+                    elevation_normal=4,
+                )
+                deleteButton = MDFloatingActionButton(
+                    icon="trash-can",
+                    background_palette="Indigo",
+                    elevation_normal=4,
+                    pos_hint={'right': 0},
+                    on_release=self.delete_workout_msg
+                )
+                buttonlayout = MDBoxLayout(
+                    adaptive_height=True,
+                    orientation='horizontal',
+                    spacing=20
+                )
+
+                keybutton = MDRaisedButton(
+                    opacity=0,
+                    size_hint=(.01, .2 / 3),
+                    text=workoutkey
+                )
+                buttonlayout.add_widget(keybutton)
+                buttonlayout.add_widget(startButton)
+                buttonlayout.add_widget(editButton)
+                buttonlayout.add_widget(deleteButton)
+                workoutcard.add_widget(buttonlayout)
                 newlayout.add_widget(workoutcard)
                 workoutgrid.add_widget(newlayout)
 
-    def deleteworkoutgrid(self):
+    def workoutbuttons(self, *args):
+        # parent-buttons layout, has a hidden button[the fourth one] with the workout key.
+        print(args[0].icon)
+        workoutkey = args[0].parent.children[3].text
+
+    def delete_workout_msg(self, *args):
+        self.workout_to_delete = args[0]  # saving the object we want to delete
+        workoutname = args[0].parent.parent.children[3].text
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                               text="Delete " + workoutname + "?",
+                               buttons=[
+                                   MDFlatButton(
+                                       text="DELETE", text_color=self.theme_cls.primary_color,
+                                       on_release=self.del_workout
+                                   ),
+                                   MDFlatButton(
+                                       text="CANCEL", text_color=self.theme_cls.primary_color,
+                                       on_release=self.cancel_del_workout
+                                   )
+                               ],
+                               )
+        self.dialog.open()
+
+    def cancel_del_workout(self, *args):
+        self.workout_to_delete = 0
+        self.dialog.dismiss()
+
+    def del_workout(self, caller):
+        if self.workout_to_delete:
+            workoutkey = self.workout_to_delete.parent.children[3].text
+            workoutlink = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
+                self.local_id, workoutkey, self.id_token)
+            del_req = UrlRequest(workoutlink, on_success=self.success_del_workout, on_error=self.error_del_workout,
+                                 on_failure=self.error_del_workout,
+                                 ca_file=certifi.where(), method='DELETE', verify=True)
+            self.workoutsANLAYZE.pop(workoutkey)
+        else:
+            print("error no workout to delete")
+            self.dialog.dismiss()
+
+    def success_del_workout(self, req, result):
+        # self.load_workout_data()
+        self.add_workouts(self.workoutsANLAYZE)
+        self.dialog.dismiss()
+        self.workout_to_delete = 0
+
+    def error_del_workout(self, *args):
+        # show proper msg
+        print('failed')
+
+    def delete_workout_grid(self):
         workoutgrid = self.root.ids['workoutsscreen'].ids[
             'banner_grid']  # getting the id of where the widgets are coming in
         if workoutgrid.children:
             for child in workoutgrid.children[:]:
                 workoutgrid.remove_widget(child)
+
+    # test username methods
+    #######################
+    def get_user_data(self):
+        try:
+            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            data = json.loads(result.content.decode())
+            self.user_data = data
+            # getting the user data upon login and
+            # print("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            # print(result.content.decode())
+            # print("id token is", self.id_token)
+            # print(result.ok)
+            # print("DATA IS", data)
+            # print(data["workouts"])
+            # print(data["workouts"].keys())
+
+        except Exception:
+            print("no data")
+
+    def openR(self, req, result):
+        pass
+        # print("FUQ YEA", result)
+
+    def on_error(self, *args):
+        print('failed')
+
+    def get_user_name_data(self, user_name):
+        # Query database and make sure friend_id exists
+        user_name = '"' + user_name + '"'
+        link = 'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name
+        check_req = requests.get(link)
+        req = UrlRequest(link, on_success=self.openR, on_error=self.on_error, on_failure=self.on_error,
+                         ca_file=certifi.where(), verify=True)
+        data = check_req.json()
+        # if data:
+        #     print(True)
+        # else:
+        #     print(False)
+        # print(user_name[1:-1] + " data is: ", data)
+
+    def is_user_exist(self, user_name):
+        user_name = '"' + user_name + '"'
+        check_req = requests.get(
+            'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
+        data = check_req.json()
+        if data:
+            return True
+        else:
+            return False
+
+    #######################
 
 
 MainApp().run()

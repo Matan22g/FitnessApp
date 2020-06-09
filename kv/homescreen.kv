@@ -22,8 +22,9 @@
             orientation: "vertical"
             padding: "8dp"
             size_hint: None, None
-            size: "280dp", "120dp"
-            pos_hint: {"center_x": .5, "center_y": .6}
+            size: "280dp", "140dp"
+            pos_hint: {"center_x": .5, "center_y": .64}
+
 
             MDLabel:
                 text: "Recent Workouts"
@@ -38,18 +39,28 @@
                 theme_text_color: "Primary"
                 text: "Workout1\nWorkout2"
 
-            MDTextButton:
-                pos_hint: {"x": .60, "y": .6}
-                text: "Add Workout"
-                on_release: root.addworkout()
+            BoxLayout:
+                orientation: "horizontal"
+                spacing: 90
+                MDTextButton:
+                    text: "Add Workout"
+                    on_release: root.addworkout()
+
+                MDTextButton:
+                    text: "Add Workout"
+                    on_release: root.addworkout()
+                    size_hint_x: None
+                    size: self.texture_size
+                    pos_hint: {'right': 1}
+
 
 
         MDCard:
             orientation: "vertical"
             padding: "8dp"
             size_hint: None, None
-            size: "280dp", "100dp"
-            pos_hint: {"center_x": .5, "center_y": .36}
+            size: "280dp", "140dp"
+            pos_hint: {"center_x": .5, "center_y": .34}
 
             MDLabel:
                 text: "Current Streak"
@@ -64,3 +75,8 @@
                 theme_text_color: "Primary"
                 text: "Streak1\nLast Streak was number, Do your best to break it!"
 
+#            MDFloatingActionButtonSpeedDial:
+#                id:menu
+#                data: root.data
+#                rotation_root_button: True
+#                callback: root.callback
