@@ -3,7 +3,7 @@ This package lets you very easily incorporate a login screen into your app.
 
 --------- USAGE ---------
 
-In your main.py file, include the following import statement:
+In your main.screens_py file, include the following import statement:
 import FirebaseLoginScreen
 
 Then, in the kv file where you want to use the login screen, include this statement:

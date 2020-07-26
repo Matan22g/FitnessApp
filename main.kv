@@ -1,5 +1,4 @@
 #: include kv/homescreen.kv
-##: include kv/loginscreen.kv
 #: include kv/settingsscreen.kv
 #: include kv/friends.kv
 #: include kv/create_workout_screen.kv
@@ -7,6 +6,9 @@
 #: include kv/splitscreen.kv
 #: include kv/splitscreen2.kv
 #: include kv/splitscreen3.kv
+#: include kv/sessionscreen.kv
+#: include kv/exercisescreen.kv
+
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
 
@@ -39,8 +41,8 @@ NavigationLayout:
                     id: toolbar
                     title: "Hello Matan"
                     elevation: 10
-                    left_action_items: [['menu', lambda x: nav_drawer.set_state()]]
-                    right_action_items: [["settings", lambda x: app.change_screen1("settingsscreen")]]
+                    right_action_items: [['menu', lambda x: nav_drawer.set_state()]]
+                    left_action_items: [["chevron-left", lambda x: app.back_to_last_screen()]]
 
                 ScreenManager:
                     id: screen_manager1
@@ -69,6 +71,14 @@ NavigationLayout:
                         id: splitscreen3
                         name: "splitscreen3"
 
+                    SessionScreen:
+                        id: sessionscreen
+                        name: "sessionscreen"
+
+                    ExerciseScreen:
+                        id: exercisescreen
+                        name: "exercisescreen"
+
                     FriendsScreen:
                         id: friendsscreen
                         name: "friendsscreen"
@@ -82,6 +92,7 @@ NavigationLayout:
 
     MDNavigationDrawer:
         id: nav_drawer
+        anchor: "right"
         width: "175dp"
         BoxLayout:
             orientation: "vertical"
@@ -101,7 +112,8 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Home"
                         on_release:
-                            screen_manager1.current = "homescreen"
+                            app.change_screen1("homescreen")
+#                            screen_manager1.current = "homescreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "home"
@@ -109,7 +121,8 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Friends"
                         on_release:
-                            screen_manager1.current = "friendsscreen"
+                            app.change_screen1("friendsscreen")
+#                            screen_manager1.current = "friendsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "account-group"
@@ -117,7 +130,8 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Workouts"
                         on_release:
-                            screen_manager1.current = "workoutsscreen"
+                            app.change_screen1("workoutsscreen")
+#                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "weight-lifter"
@@ -130,7 +144,8 @@ NavigationLayout:
                             firebase_login_screen.login_success = "False"
                             firebase_login_screen.save_refresh_token("")
                             Snackbar(text="Logged out!").show()
-                            screen_manager.current = "loginscreen"
+                            app.change_screen("loginscreen")
+#                            screen_manager.current = "loginscreen"
                             nav_drawer.set_state()
                             print(nav_drawer.swipe_edge_width)
                         IconLeftWidget:
@@ -139,7 +154,8 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Settings"
                         on_release:
-                            screen_manager1.current = "settingsscreen"
+                            app.change_screen1("settingsscreen")
+#                            screen_manager1.current = "settingsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "settings"
