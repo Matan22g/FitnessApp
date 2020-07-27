@@ -52,6 +52,8 @@ class MainApp(MDApp):
     workout_to_delete = 0  # saving the workout obj between function.
     toTrainWorkout = 0
     lastscreens = []
+    new_session= 0
+    debug = 0
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -66,16 +68,22 @@ class MainApp(MDApp):
         # loads data
         self.get_user_data()
         self.load_workout_data()
+        self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
         user_name = "Matan22G"
         self.root.ids['toolbar'].title = "Hello " + user_name
         self.get_user_name_data("Matan22g")
 
+        ### debug:
+        if self.debug == 1:
+            self.change_screen1("exercisescreen")
+
     # back button
     def back_to_last_screen(self, *args):
         if self.lastscreens:
             lastscreen = self.lastscreens.pop(-1)
-            self.change_screen1(lastscreen, -1 ,"right")
+            # -1 is 'back' indicator for change screen method
+            self.change_screen1(lastscreen, -1, "right")
         else:
             self.change_screen1("homescreen", "right")
 
@@ -98,24 +106,29 @@ class MainApp(MDApp):
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
         screen_manager = self.root.ids['screen_manager1']
-        currentscreen = screen_manager.current
+        current_screen = screen_manager.current
         if self.lastscreens:
-            if currentscreen != self.lastscreens[-1]:
-                self.lastscreens.append(currentscreen)
+            if current_screen != self.lastscreens[-1]:
+                self.lastscreens.append(current_screen)
         else:
-            self.lastscreens.append(currentscreen)
+            self.lastscreens.append(current_screen)
 
         if args:
             for item in args:
                 if item == -1:
-                    self.lastscreens.pop(0)
-
+                    self.lastscreens.pop(-1)
                 if isinstance(item, str):  # optional transition direction
                     screen_manager.transition.direction = item
         else:
             screen_manager.transition.direction = "left"
             # if args[1]:  # optional no transition
             #     screen_manager.transition = NoTransition()
+
+        if screen_name == "homescreen":
+            self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
+            self.lastscreens = []
+        else:
+            self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
         print(self.lastscreens)
         screen_manager.current = screen_name
         screen_manager = self.root.ids
@@ -241,7 +254,10 @@ class MainApp(MDApp):
         workoutkey = args[0].parent.children[3].text
         workoutlist = list(self.workoutsParsed[workoutkey].values())
         num_splits = len(workoutlist[0])
-        self.toTrainWorkout = workoutlist[0]
+
+        # saving the workout key to be use as identifier.
+        self.toTrainWorkout = workoutkey
+
         if num_splits == 1:
             self.chose_split(-1)
             return
@@ -282,21 +298,32 @@ class MainApp(MDApp):
         self.dialog.open()
 
     def chose_split(self, split_chosen):
-        sessiongrid = self.root.ids['sessionscreen'].ids[
-            'container']  # getting the id of where the widgets are coming in
-        sessiongrid.clear_widgets()
+
+        workout_list = list(self.workoutsParsed[self.toTrainWorkout].values())
+        chosen_workout = workout_list[0]
+        # getting the id of where the widgets are coming in
+        session_grid = self.root.ids['sessionscreen'].ids[
+            'container']
+        session_grid.clear_widgets()
+
         # in case of only one split program no need for popup screen
         if split_chosen != -1:
             self.dialog.dismiss()
+        else:
             split_chosen = 1
-        SessionScreen.workout = self.toTrainWorkout[split_chosen]
+
+        SessionScreen.workout = chosen_workout[split_chosen-1]
+        SessionScreen.workout_key = self.toTrainWorkout
+        SessionScreen.num_of_split = split_chosen
+        self.new_session = 1
+        print ("split_chosen", split_chosen)
         self.change_screen1("sessionscreen")
 
     def chose_one_split(self, *args):
-        self.chose_split(0)
+        self.chose_split(1)
 
     def chose_second_split(self, *args):
-        self.chose_split(1)
+        self.chose_split(2)
 
     def chose_third_split(self, *args):
         self.chose_split(2)

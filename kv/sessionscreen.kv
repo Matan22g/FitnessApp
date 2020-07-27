@@ -1,8 +1,18 @@
 
 <SessionScreen>:
-    ScrollView:
-        MDList:
-            id: container
+    FloatLayout:
+
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x": 0.5, "top": .10}
+            text: "Save"
+            on_release: root.save_session()
+
+        ScrollView:
+            pos_hint: {"top": .98}
+            size_hint_y: None
+            size_hint: 1., .80
+            MDList:
+                id: container
 #            ThreeLineListItem:
 #                text: "Three-line item"
 #                secondary_text: "This is a multi-line label where you can"

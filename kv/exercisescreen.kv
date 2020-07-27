@@ -1,12 +1,114 @@
+
+# defining our special list
+<SwipeToDeleteItem>:
+    size_hint_y: None
+    height: content.height
+
+    MDCardSwipeLayerBox:
+        padding: "8dp"
+
+        MDIconButton:
+            icon: "trash-can"
+            pos_hint: {"center_y": .5}
+            on_release: root.parent.parent.parent.parent.remove_set(root)
+            # root is the set. and the parents are: list, scrollview, floatlayout, ExerciseScreen
+
+
+    MDCardSwipeFrontBox:
+
+        OneLineListItem:
+            id: content
+            text: root.text
+            _no_ripple_effect: True
+
+
 <ExerciseScreen>:
     FloatLayout:
+
         MDLabel:
             id: ex_name
-            pos_hint: {"center_x": 0.28, "top": .98}
+            pos_hint: {"center_x": 0.28, "top": .99}
             size_hint: (.5, .15)
-            font_style: "H4"
+            font_size: "30sp"
             halign: "left"
             text: "Fitness App"
 #            theme_text_color: "Primary"
             theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x": 0.75, "top": .35}
+            icon: "plus"
+            text: "Add Set"
+            on_release: root.add_set()
+
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x": 0.75, "top": .25}
+            text: "Save"
+            on_release: root.save_exc()
+
+        MDTextField:
+            id: reps
+            mode: "rectangle"
+            input_filter: 'float'
+            helper_text: "Reps"
+            helper_text_mode: "persistent"
+            pos_hint: {"x": .2, "top": .6}
+            size_hint: (.2, .12)
+            halign: "center"
+            text: "0"
+            font_size: "30sp"
+
+        MDTextField:
+            id: weight
+            mode: "rectangle"
+            input_filter: 'float'
+            helper_text: "Weight"
+            helper_text_mode: "persistent"
+            font_size: "30sp"
+            pos_hint: {"x": .6, "top": .6}
+            size_hint: (.2, .12)
+            halign: "center"
+            text: "0"
+
+        MDIconButton:
+            icon: 'chevron-up'
+            on_release: root.changeInput("w" , 1)
+            pos_hint: {"center_x": 0.7, "top": .71}
+            user_font_size: "64sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            icon: 'chevron-up'
+            on_release: root.changeInput("r" , 1)
+            pos_hint: {"center_x": 0.3, "top": .71}
+            user_font_size: "64sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            icon: 'chevron-down'
+            on_release: root.changeInput("w" , 0)
+            pos_hint: {"center_x": 0.7, "top": .52}
+            user_font_size: "64sp"
             text_color: 0, 0, 1, 1
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            icon: 'chevron-down'
+            on_release: root.changeInput("r" , 0)
+            pos_hint: {"center_x": 0.3, "top": .52}
+            user_font_size: "64sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+
+        ScrollView:
+            pos_hint: {"top": .40}
+            size_hint_y: None
+            size_hint: .40, .40
+            MDList:
+                id: md_list
+                padding: 0
