@@ -52,8 +52,8 @@ class MainApp(MDApp):
     workout_to_delete = 0  # saving the workout obj between function.
     toTrainWorkout = 0
     lastscreens = []
-    new_session= 0
-    debug = 0
+    new_session = 0
+    debug = 1
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -75,8 +75,21 @@ class MainApp(MDApp):
         self.get_user_name_data("Matan22g")
 
         ### debug:
-        if self.debug == 1:
-            self.change_screen1("exercisescreen")
+        if self.debug == 0:
+            self.change_screen1("sessionscreen")
+
+
+        #
+        # date = "date"
+        # workout_key = "workout_key"
+        # num_of_split = 4
+        # session_rec = {"exc1": "4 X 8", "exc2": "5*9"}
+        # link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.local_id, self.id_token)
+        # Workout = "{%s: %s: %s}" % (
+        #     '"' + workout_key + '"', '"' + str(num_of_split) + '"', '"' + str(session_rec) + '"')
+        # data = json.dumps(Workout)
+        # req = UrlRequest(link, req_body=data,
+        #                  ca_file=certifi.where(), verify=True)
 
     # back button
     def back_to_last_screen(self, *args):
@@ -312,11 +325,11 @@ class MainApp(MDApp):
         else:
             split_chosen = 1
 
-        SessionScreen.workout = chosen_workout[split_chosen-1]
+        SessionScreen.workout = chosen_workout[split_chosen - 1]
         SessionScreen.workout_key = self.toTrainWorkout
         SessionScreen.num_of_split = split_chosen
         self.new_session = 1
-        print ("split_chosen", split_chosen)
+        print("split_chosen", split_chosen)
         self.change_screen1("sessionscreen")
 
     def chose_one_split(self, *args):

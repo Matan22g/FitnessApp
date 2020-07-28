@@ -1,11 +1,31 @@
-
 <SessionScreen>:
     FloatLayout:
+        MDRoundFlatIconButton:
+            width: dp(120)
+            pos_hint: {"center_x": .76, "top": .1}
+            text: "Save"
+            width: dp(140)
+            icon: "content-save"
+            on_release: root.save_session()
 
         MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.5, "top": .10}
-            text: "Save"
-            on_release: root.save_session()
+            width: dp(140)
+            text: "Change date"
+            pos_hint: {"center_x": .24, "top": .1}
+            opposite_colors: True
+            icon: "calendar"
+            on_release: root.show_example_date_picker()
+
+        MDLabel:
+            id: date_picker_label
+            pos_hint: {"center_x": 0.2975, "top": .22}
+            size_hint: (.5, .15)
+            font_size: "16sp"
+            halign: "left"
+            text: "Date: "
+#            theme_text_color: "Primary"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
 
         ScrollView:
             pos_hint: {"top": .98}

@@ -2,7 +2,7 @@ import json
 
 import certifi
 from kivy.network.urlrequest import UrlRequest
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ObjectProperty
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.button import MDFlatButton
@@ -10,6 +10,7 @@ from kivymd.uix.card import MDCardSwipe
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.list import OneLineListItem, ThreeLineListItem
 from kivymd.uix.snackbar import Snackbar
+from kivymd.uix.picker import MDDatePicker
 
 
 class SwipeToDeleteItem(MDCardSwipe):
@@ -20,9 +21,9 @@ class SessionScreen(Screen):
     workout = []
     ex_reference_by_id = {}
     ex_reference_by_exc = {}
-    session_rec = {}
+    session_rec = {}  # dic: key is exc, value, list of sets
     workout_key = 0
-    num_of_split = 0 # problem between sessions
+    num_of_split = 0  # problem between sessions
     dialog = 0  # for presenting dialog to user.
 
     def __init__(self, **kw):
@@ -32,8 +33,9 @@ class SessionScreen(Screen):
 
     def on_pre_enter(self, *args):
         self.app.title = "Home"
-        # First visit:
+        # First visit: setting date to todays date, and loading all exc to the list.
         if self.app.new_session == 1:
+            self.ids["date_picker_label"].text = "Date: " + str(MDDatePicker.today)
             for exc in self.workout:
                 self.ids["container"].add_widget(
                     ThreeLineListItem(
@@ -55,16 +57,20 @@ class SessionScreen(Screen):
 
     def save_session(self):
         date = 5
-        num_of_exc = 0
+        num_of_exc = len(self.workout)
         unfinished_exc = 0
         msg = "Save your workout?"
 
-        for session in self.session_rec:
-            num_of_exc += 1
-            if not self.session_rec[session]:
+        # loop to find if the user hasnt completed his workout
+        for exc in self.workout:
+
+            if exc not in self.session_rec:
                 unfinished_exc += 1
+            elif not self.session_rec[exc]:
+                unfinished_exc += 1
+
         if unfinished_exc:
-            msg = "only " + str(num_of_exc - unfinished_exc) + "/" + str(num_of_exc) + " Completed, " + msg
+            msg = str(unfinished_exc) + " Unfinished exercise, " + msg
 
         self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
                                text=msg,
@@ -82,21 +88,35 @@ class SessionScreen(Screen):
         self.dialog.open()
 
     def upload_session(self, *args):
-
+        date = self.ids["date_picker_label"].text
+        date=date[6:]
         link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.app.local_id, self.app.id_token)
-        Workout = "{%s: %s: %s}" % (
-            '"' + str(self.workout_key) + '"', '"' + str(self.num_of_split) + '"', '"' + str(self.session_rec) + '"')
+        Workout = "{%s: %s: %s: %s}" % (
+            '"' + date + '"', '"' + str(self.workout_key) + '"', '"' + str(self.num_of_split) + '"', '"' + str(self.session_rec) + '"')
         data = json.dumps(Workout)
-        req = UrlRequest(link, req_body=data,
-                         ca_file=certifi.where(), verify=True)
+        req = UrlRequest(link, req_body=data, on_success=self.on_save_success, on_error=self.on_save_error,
+                         on_failure=self.on_save_error, ca_file=certifi.where(), verify=True)
+
+    def on_save_success(self, *args):
         self.dialog.dismiss()
         self.app.change_screen1("homescreen")
-        Snackbar(text="workout saved!").show()
+        Snackbar(text="Session saved!").show()
+
+    def on_save_error(self, *args):
+        self.dialog.dismiss()
+        print("error session save")
 
     def cancel_save(self, *args):
         self.dialog.dismiss()
+
     ###### FIX NEW SESSION
 
+    def show_example_date_picker(self, *args):
+        MDDatePicker(self.set_previous_date).open()
+
+    def set_previous_date(self, date_obj):
+        self.ids["date_picker_label"].text = "Date: " +str(date_obj)
+        print(self.ids["date_picker_label"].text)
 
 class ExerciseScreen(Screen):
     exercise = "TEST EXC"
@@ -135,6 +155,7 @@ class ExerciseScreen(Screen):
         exc = self.exercise
         self.ids["ex_name"].text = exc
 
+        # if already completed a few sets in this session:
         if exc in SessionScreen.session_rec:
             sets = SessionScreen.session_rec[exc]
             for set in sets:
@@ -167,8 +188,7 @@ class ExerciseScreen(Screen):
             set = child.text
             sets_list.append(set)
         SessionScreen.session_rec[exc] = sets_list
-        print(SessionScreen.session_rec[exc])
-        print(SessionScreen.session_rec)
+
         self.app.change_screen1("sessionscreen", -1, "right")
         sets_list_str = ', '.join(sets_list)
         SessionScreen.ex_reference_by_exc[exc].tertiary_text = "Done: " + sets_list_str
