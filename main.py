@@ -42,6 +42,7 @@ class FriendsScreen(Screen):
 
 
 class MainApp(MDApp):
+    mainscreens = ["homescreen", "workoutscreen", "friendsscreen", "settingsscreen"]
     id_token = ""
     local_id = ""
     user_data = []
@@ -66,18 +67,17 @@ class MainApp(MDApp):
 
     def on_login(self):
         # loads data
-        self.get_user_data()
-        self.load_workout_data()
+        self.change_screen1("homescreen")
+        self.load_workout_data()  # ALSO LOADS USER DATA
         self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
-        user_name = "Matan22G"
+        user_name = self.user_data["real_user_name"]
         self.root.ids['toolbar'].title = "Hello " + user_name
-        self.get_user_name_data("Matan22g")
-
+        # self.get_user_name_data(user_name)
         ### debug:
-        if self.debug == 0:
-            self.change_screen1("sessionscreen")
-
+        if self.debug == 1:
+            self.toTrainWorkout = "-M9NjJ45dRBIxqEQ40LC"
+            self.chose_split(1)
 
         #
         # date = "date"
@@ -93,12 +93,29 @@ class MainApp(MDApp):
 
     # back button
     def back_to_last_screen(self, *args):
+        # if current screen is mainscreen and last screen is main screen. go back to homescreen
+        # if current screen is mainscreen and last screen isnt main screen. go back to lastpage
+        # if current screen isnt main screen go back to lastpage
+
+        # screen_manager = self.root.ids['screen_manager1']
+        # current_screen = screen_manager.current
+        # if self.lastscreens:
+        #     if current_screen in self.mainscreens:
+        #         if self.lastscreens[-1] in self.mainscreens:
+        #             self.change_screen1("homescreen", "right")
+        #         else:
+        #             lastscreen = self.lastscreens.pop(-1)
+        #             # -1 is 'back' indicator for change screen method
+        #             self.change_screen1(lastscreen, -1, "right")
+        # else:
+        #     self.change_screen1("homescreen", "right")
         if self.lastscreens:
             lastscreen = self.lastscreens.pop(-1)
             # -1 is 'back' indicator for change screen method
             self.change_screen1(lastscreen, -1, "right")
         else:
             self.change_screen1("homescreen", "right")
+
 
     # for login screens
     def change_screen(self, screen_name, *args):
@@ -142,7 +159,8 @@ class MainApp(MDApp):
             self.lastscreens = []
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
-        print(self.lastscreens)
+        if self.debug:
+            print(self.lastscreens)
         screen_manager.current = screen_name
         screen_manager = self.root.ids
 
@@ -276,7 +294,7 @@ class MainApp(MDApp):
             return
         if num_splits == 2:
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
-                                   text="Choose Split",
+                                   title="Choose Split",
                                    buttons=[
                                        MDFlatButton(
                                            text="Split 1", text_color=self.theme_cls.primary_color,
@@ -311,6 +329,7 @@ class MainApp(MDApp):
         self.dialog.open()
 
     def chose_split(self, split_chosen):
+        #loading workout from the workout dic using saved key
 
         workout_list = list(self.workoutsParsed[self.toTrainWorkout].values())
         chosen_workout = workout_list[0]
@@ -321,13 +340,18 @@ class MainApp(MDApp):
 
         # in case of only one split program no need for popup screen
         if split_chosen != -1:
-            self.dialog.dismiss()
+            if self.debug == 0:
+                self.dialog.dismiss()
         else:
             split_chosen = 1
 
         SessionScreen.workout = chosen_workout[split_chosen - 1]
         SessionScreen.workout_key = self.toTrainWorkout
         SessionScreen.num_of_split = split_chosen
+        SessionScreen.ex_reference_by_id = {}
+        SessionScreen.ex_reference_by_exc = {}
+        SessionScreen.session_rec = {}
+
         self.new_session = 1
         print("split_chosen", split_chosen)
         self.change_screen1("sessionscreen")
@@ -398,14 +422,13 @@ class MainApp(MDApp):
             for child in workoutgrid.children[:]:
                 workoutgrid.remove_widget(child)
 
-    # test username methods
-    #######################
     def get_user_data(self):
         try:
             result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
             data = json.loads(result.content.decode())
             self.user_data = data
-            print(data)
+            if self.debug:
+                print(data)
             # getting the user data upon login and
             # print("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
             # print(result.content.decode())
@@ -418,6 +441,8 @@ class MainApp(MDApp):
         except Exception:
             print("no data")
 
+    # test username methods
+    #######################
     def get_user_name_data_success(self, req, result):
         pass
         # print("FUQ YEA", result)

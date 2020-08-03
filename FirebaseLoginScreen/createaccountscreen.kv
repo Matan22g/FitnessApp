@@ -12,29 +12,35 @@
 
         MDTextField:
             id: email
-            pos_hint: {"x": .25, "top": .7}
+            pos_hint: {"center_x": 0.5, "top": .7}
             size_hint: (.5, .1)
             halign: "center"
             hint_text: "Email"
 
+        MDTextField:
+            id: user_name
+            pos_hint: {"center_x": 0.5, "top": .6}
+            size_hint: (.5, .1)
+            halign: "center"
+            hint_text: "User Name"
 
         MDTextField:
             id: password
             password: "True"
-            pos_hint: {"x": .25, "top": .6}
+            pos_hint: {"center_x": 0.5, "top": .5}
             size_hint: (.5, .1)
             halign: "center"
             hint_text: "Password"
 
 
         MDRaisedButton:
-            pos_hint: {"x": .35, "y": .3}
+            pos_hint: {"center_x": 0.5, "top": .3}
             size_hint: (.3, .1)
             text: "Create Account"
             on_release:
 #                app.change_screen("main_app_screen")
-                root.parent.parent.sign_up(email.text, password.text)
-                Animation(opacity=0, duration=0.5).start(message)
+                root.parent.parent.display_loading_screen()
+                root.parent.parent.sign_up(email.text, user_name.text, password.text)
                 sign_in_button.opacity = 0
                 sign_in_button.disabled = True
                 print("***************")
@@ -42,7 +48,6 @@
                 print(root.parent)
                 print(root.parent.parent)
                 print("***************")
-                root.parent.parent.display_loading_screen()
 
         MDRaisedButton:
             opacity: 0
@@ -65,11 +70,7 @@
                 root.parent.current = root.parent.current = "welcome_screen"
                 root.parent.transition = SlideTransition(direction="left")
 
-        MDLabel:
-            id: message
-            pos_hint: {"center_x": .5, "top": .02}
-            size_hint: (.5, .1)
-            halign: "center"
+
 #
 #    FloatLayout:
 #        ThemedButton:

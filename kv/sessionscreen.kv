@@ -1,5 +1,39 @@
+<AddExerciseContent>
+    orientation: "vertical"
+    spacing: "20dp"
+    size_hint_y: None
+    height: "33dp"
+
+    MDTextField:
+        hint_text: "Exercise name"
+        required: True
+        helper_text_mode: "on_error"
+        helper_text: "Enter text"
+
+
+<ListItemWithCheckbox>:
+
+    RightCheckbox:
+        on_release: root.choose_mode()
+
+
+
 <SessionScreen>:
     FloatLayout:
+        on_touch_down:
+        #backgroung press hides checkboxes
+            caller = args[0]
+            touch = args[1]
+            if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.switch_delete_can("show_checkbox")
+            if touch.spos[1]>0.875: root.switch_delete_can("show_checkbox")
+            if touch.spos[1]<0.2: root.switch_delete_can("show_checkbox")
+
+#            caller_touched = caller.collide_point(*touch.pos)
+#            spawn_touched = [x.collide_point(*touch.pos) for x in self.walk(restrict = True) if x is not self]
+#            print('caller -> {0}\ntouch -> {1}'.format(caller, touch))
+#            ## Do stuff if touched and none of the spawn have been touched
+#            if caller_touched and True not in spawn_touched: print('caller -> {0}\ntouch -> {1}'.format(caller, touch))
+
         MDRoundFlatIconButton:
             width: dp(120)
             pos_hint: {"center_x": .76, "top": .1}
@@ -17,20 +51,67 @@
             on_release: root.show_example_date_picker()
 
         MDLabel:
+            id: timer
+            pos_hint: {"center_x": 0.4, "top": .21}
+            size_hint: (.5, .15)
+            font_size: "16sp"
+            halign: "left"
+            text: ""
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            id: show_checkbox
+            user_font_size: "32sp"
+            pos_hint: {"center_x": .87, "top": .965}
+            icon: "trash-can-outline"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.show_checkbox(True)
+
+        MDIconButton:
+            id: delete_selected
+            user_font_size: "32sp"
+            pos_hint: {"center_x": .87, "top": .965}
+            icon: "trash-can"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.delete_selected()
+
+        MDLabel:
+            id: num_to_delete
+            pos_hint: {"center_x": 0.99, "top": .99}
+            size_hint: (.5, .15)
+            font_size: "16sp"
+            halign: "left"
+            text: ""
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            user_font_size: "32sp"
+            pos_hint: {"center_x": .5, "top": .18}
+            icon: "plus"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.show_add_exercise_dialog()
+
+
+        MDLabel:
             id: date_picker_label
-            pos_hint: {"center_x": 0.2975, "top": .22}
+            pos_hint: {"center_x": 0.2975, "top": .99}
             size_hint: (.5, .15)
             font_size: "16sp"
             halign: "left"
             text: "Date: "
-#            theme_text_color: "Primary"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
         ScrollView:
-            pos_hint: {"top": .98}
+
+            pos_hint: {"top": .87}
             size_hint_y: None
-            size_hint: 1., .80
+            size_hint: 1., .70
             MDList:
                 id: container
 #            ThreeLineListItem:

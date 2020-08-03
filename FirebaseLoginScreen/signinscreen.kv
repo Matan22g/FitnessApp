@@ -17,7 +17,7 @@
             pos_hint: {"x": .25, "top": .7}
             size_hint: (.5, .1)
             halign: "center"
-            hint_text: "Email"
+            hint_text: "Email/User Name"
 
         MDTextField:
             id: password
@@ -34,11 +34,11 @@
             text: "Log in"
             on_release:
 #                app.change_screen("main_app_screen")
+                root.parent.parent.display_loading_screen()
                 root.parent.parent.sign_in(email.text, password.text)
                 Animation(opacity=0, duration=0.5).start(message)
                 sign_in_button.opacity = 0
                 sign_in_button.disabled = True
-                root.parent.parent.display_loading_screen()
 
         MDRaisedButton:
             pos_hint: {"x": .17, "y": .3}
@@ -46,11 +46,11 @@
             text: "Reset Password"
             on_release:
 #                app.change_screen("main_app_screen")
+                root.parent.parent.display_loading_screen()
                 root.parent.parent.reset_password(email.text)
                 Animation(opacity=0, duration=0.5).start(message)
                 sign_in_button.opacity = 0
                 sign_in_button.disabled = True
-                root.parent.parent.display_loading_screen()
 
         MDRaisedButton:
             pos_hint: {"x": .75, "y": .02}
