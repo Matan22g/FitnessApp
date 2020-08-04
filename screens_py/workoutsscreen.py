@@ -9,4 +9,11 @@ class WorkoutsScreen(Screen):
         self.app = MDApp.get_running_app()
 
     def on_pre_enter(self, *args):
+        if self.app.running_session == 0:
+            self.app.root.ids['workoutsscreen'].ids["running_session"].text = ""
+            self.app.root.ids['workoutsscreen'].ids["running_session"].opacity = 0
+            self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = True
+        else:
+            self.app.root.ids['workoutsscreen'].ids["running_session"].opacity = 1
+            self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
         self.app.title = "Workouts"

@@ -166,12 +166,14 @@ class SessionScreen(Screen):
             if not self.session_rec[exc]:  # if exc is empty (after deletion)
                 self.session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.app.local_id, self.app.id_token)
-        Workout = "{%s: %s: %s: %s}" % (
-            '"' + date + '"', '"' + str(self.workout_key) + '"', '"' + str(self.num_of_split) + '"',
+        Workout = "{%s, %s, %s, %s, %s}" % (
+            '"' + date + '"', '"' + self.app.timer_format + '"', '"' + str(self.workout_key) + '"', '"' + str(self.num_of_split) + '"',
             '"' + str(self.session_rec) + '"')
         data = json.dumps(Workout)
         req = UrlRequest(link, req_body=data, on_success=self.on_save_success, on_error=self.on_save_error,
                          on_failure=self.on_save_error, ca_file=certifi.where(), verify=True)
+        self.app.running_session = 0
+
 
     def on_save_success(self, *args):
         self.dialog.dismiss()
@@ -288,8 +290,16 @@ class ExerciseScreen(Screen):
         self.sub_title = "Welcome to Home Screen"
 
     def changeInput(self, toScale, increase):
-        currWeight = int(self.ids["weight"].text)
-        currReps = int(self.ids["reps"].text)
+
+        if self.ids["weight"].text:
+            currWeight = int(self.ids["weight"].text)
+        else:
+            currWeight = 0
+
+        if self.ids["reps"].text:
+            currReps = int(self.ids["reps"].text)
+        else:
+            currReps = 0
 
         if toScale == 'w':
             if increase == 1:

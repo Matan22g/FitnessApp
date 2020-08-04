@@ -1,6 +1,7 @@
 import ast
 import certifi
 from kivy.network.urlrequest import UrlRequest
+from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivymd.app import MDApp
@@ -18,6 +19,8 @@ from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 import kivy.utils as utils
 import requests
 import json
+from kivy.clock import Clock
+import time
 
 Window.size = (360, 639)
 
@@ -45,16 +48,19 @@ class MainApp(MDApp):
     mainscreens = ["homescreen", "workoutscreen", "friendsscreen", "settingsscreen"]
     id_token = ""
     local_id = ""
-    user_data = []
+    user_data = []  # on login loads all user data
     workouts = {}  # straight from database
     workoutsParsed = {}  # analyze to list
-    friends_list = {}  # will have all usernames of the users friends.
+    friends_list = {}  # will have all user names of the users friends.
     dialog = ""  # for presenting dialog to user.
     workout_to_delete = 0  # saving the workout obj between function.
-    toTrainWorkout = 0
-    lastscreens = []
-    new_session = 0
-    debug = 1
+    toTrainWorkout = 0  # saving workout key to train.
+    lastscreens = []  # saving pages for back button.
+    new_session = 0  # indicator for starting a new session.
+    debug = 0
+    running_session = 0  # indicator for running session - shows a button that helps the user return to the session
+    timer = NumericProperty()  # timer that increment in seconds
+    timer_format = ""  # for storing seconds in %H:%M:%S format
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -76,8 +82,10 @@ class MainApp(MDApp):
         # self.get_user_name_data(user_name)
         ### debug:
         if self.debug == 1:
-            self.toTrainWorkout = "-M9NjJ45dRBIxqEQ40LC"
-            self.chose_split(1)
+            self.change_screen1("workoutsscreen")
+            #
+            # self.toTrainWorkout = "-M9NjJ45dRBIxqEQ40LC"
+            # self.chose_split(1)
 
         #
         # date = "date"
@@ -90,6 +98,21 @@ class MainApp(MDApp):
         # data = json.dumps(Workout)
         # req = UrlRequest(link, req_body=data,
         #                  ca_file=certifi.where(), verify=True)
+
+    # Timer methods.
+    def increment_time(self, interval):
+        self.timer += .1
+        self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(self.timer))))
+        self.root.ids['sessionscreen'].ids["timer"].text = self.timer_format
+
+    def start_timer(self):
+        Clock.unschedule(self.increment_time)
+        Clock.schedule_interval(self.increment_time, .1)
+
+        # To stop the count / time
+
+    def stop_timer(self):
+        Clock.unschedule(self.increment_time)
 
     # back button
     def back_to_last_screen(self, *args):
@@ -115,7 +138,6 @@ class MainApp(MDApp):
             self.change_screen1(lastscreen, -1, "right")
         else:
             self.change_screen1("homescreen", "right")
-
 
     # for login screens
     def change_screen(self, screen_name, *args):
@@ -329,11 +351,14 @@ class MainApp(MDApp):
         self.dialog.open()
 
     def chose_split(self, split_chosen):
-        #loading workout from the workout dic using saved key
+
+        # loading workout from the workout dic using saved key
 
         workout_list = list(self.workoutsParsed[self.toTrainWorkout].values())
-        chosen_workout = workout_list[0]
-        # getting the id of where the widgets are coming in
+        workout_name = list(self.workoutsParsed[self.toTrainWorkout].keys())[0]
+        chosen_workout = workout_list[0]  # List of exercise to train
+
+        # getting the id of where the widgets are coming in, and clear exercise list
         session_grid = self.root.ids['sessionscreen'].ids[
             'container']
         session_grid.clear_widgets()
@@ -345,15 +370,25 @@ class MainApp(MDApp):
         else:
             split_chosen = 1
 
-        SessionScreen.workout = chosen_workout[split_chosen - 1]
-        SessionScreen.workout_key = self.toTrainWorkout
-        SessionScreen.num_of_split = split_chosen
+        SessionScreen.workout = chosen_workout[split_chosen - 1]  # Sets the exercise list
+        SessionScreen.workout_key = self.toTrainWorkout  # Sets the workout key list
+        SessionScreen.num_of_split = split_chosen  # Sets which split was chosen
+
+        # Reset all dicts from previous workouts
         SessionScreen.ex_reference_by_id = {}
         SessionScreen.ex_reference_by_exc = {}
         SessionScreen.session_rec = {}
 
         self.new_session = 1
-        print("split_chosen", split_chosen)
+        self.running_session = 1
+        self.root.ids['workoutsscreen'].ids["running_session"].text = workout_name
+
+        # Start workout timer.
+        self.timer = 0
+        Clock.schedule_interval(self.increment_time, .1)
+        self.increment_time(0)
+        self.start_timer()
+
         self.change_screen1("sessionscreen")
 
     def chose_one_split(self, *args):

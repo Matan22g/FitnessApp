@@ -5,11 +5,21 @@
 
         MDRoundFlatIconButton:
             icon: "plus"
-            pos_hint: {"center_x": 0.5, "top": .95}
+            pos_hint: {"center_x": 0.3, "top": .95}
             text: "Create New Workout"
             width: dp(200)
             on_release:
                 app.change_screen1("create_workout_screen")
+
+        MDRoundFlatIconButton:
+            icon: "run"
+            id: running_session
+            pos_hint: {"center_x": 0.8, "top": .95}
+            text: "Create"
+            width: dp(50)
+            opacity: 1
+            on_release:
+                app.change_screen1("sessionscreen")
 
         ScrollView:
             pos_hint: {"top": .87}
