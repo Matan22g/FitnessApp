@@ -1,5 +1,10 @@
 #:import toast kivymd.toast.toast
 
+<Tab>:
+    ScrollView:
+        MDList:
+            id: container
+
 <WorkoutsScreen>:
     FloatLayout:
 
@@ -24,14 +29,14 @@
         ScrollView:
             pos_hint: {"top": .87}
             size_hint_y: None
-            size_hint: 1, .84
+            size_hint: 1, 0.85
             GridLayout:
                 # Banner grid
                 id: banner_grid
                 cols: 1
-                spacing: 20,10
+                spacing: 20,20
                 size_hint_y: None
                 height: self.minimum_height
                 row_force_default: True
-                row_default_height: '240dp'
+                row_default_height: '400dp'
 

@@ -161,6 +161,7 @@ class SplitScreensMain(Screen):
             Create_Workout_Screen.splits = 0
             Create_Workout_Screen.newWorkout = 1
             self.app.change_screen1("homescreen")
+            self.app.get_user_data()
             self.app.load_workout_data()
             return True
         else:
