@@ -1,4 +1,5 @@
 import ast
+import os
 from datetime import datetime
 
 import certifi
@@ -18,6 +19,7 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.list import MDList, OneLineListItem
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
 from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
@@ -36,6 +38,8 @@ from screens_py.create_workout_screen import Create_Workout_Screen, SplitScreens
 from screens_py.homescreen import HomeScreen
 from screens_py.settingsscreen import SettingsScreen
 from screens_py.workoutsscreen import WorkoutsScreen
+from screens_py.workoutscreen import WorkoutScreen
+from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 from customKv.tab import MDTabs, MDTabsBase
 
@@ -82,11 +86,15 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 0
+    debug = 1
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
     split_Choice_dict = {}  # workout key with split choice
+    workout_key_to_view = '-MF5efE9OJk4fKyB9LpK'
+    folder = os.path.dirname(os.path.realpath(__file__))
+    popup = Factory.LoadingPopup()
+    popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -97,6 +105,9 @@ class MainApp(MDApp):
         self.theme_cls.primary_palette = "Indigo"
         self.theme_cls.accent_palette = "Indigo"
         self.root.ids['nav_drawer'].swipe_edge_width = -2
+
+    def change_title(self, text):
+        self.root.ids['toolbar'].title = text
 
     def on_login(self):
         # loads data
@@ -109,13 +120,12 @@ class MainApp(MDApp):
         self.root.ids['toolbar'].left_action_items = [["cog-outline", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
-        self.root.ids['toolbar'].title = "Hello " + user_name
+        self.change_title("Hello " + user_name)
         # self.get_user_name_data(user_name)
         ### debug:
         if self.debug == 1:
-            self.toTrainWorkout = "-M9NjJ45dRBIxqEQ40LC"
-            self.chose_split(1)
-            # self.change_screen1("sessionscreen")
+            self.workout_key_to_view = '-MF5efE9OJk4fKyB9LpK'
+            self.change_screen1("workoutscreen")
 
         #
         # date = "date"
@@ -129,7 +139,7 @@ class MainApp(MDApp):
         # req = UrlRequest(link, req_body=data,
         #                  ca_file=certifi.where(), verify=True)
 
-    # Handling user data
+    # Handling user data'
     def get_user_data(self):
         try:
             result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
@@ -170,6 +180,7 @@ class MainApp(MDApp):
         self.workouts = {}  # solve case of deleted workout. reloads all database workouts
         for workoutkey in workoutdic:
             workout = workoutdic[workoutkey]
+            print(workout)
             workout = json.loads(workout)  # turning str to dic
             self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
 
@@ -184,6 +195,7 @@ class MainApp(MDApp):
         # json data to iterable list, return dict of workout dicts {key: {workout name :[[split 1],[split2]]}}
         workoutdicReadAble = {}
         for workoutkey in workoutIdDic:
+            print(workoutkey)
             workoutTemp = {}
             workoutdic = workoutIdDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
             for workoutName in workoutdic:
@@ -192,6 +204,7 @@ class MainApp(MDApp):
                 workoutTemp[workoutName] = exercises
             workoutdicReadAble[workoutkey] = workoutTemp
         return workoutdicReadAble
+
 
     def add_workouts(self, workoutDic):
         self.delete_workout_grid()
@@ -218,13 +231,12 @@ class MainApp(MDApp):
                     theme_text_color="Custom",
                     text_color=self.theme_cls.primary_color
                 ))
-                splits_tabs = MDTabs(
-                    on_tab_switch=self.on_split_switch
-                )
-                splits_tabs.background_color=(1, 1, 1, 1)
-                splits_tabs.text_color_normal=(0, 0, 0, 1)
-                splits_tabs.text_color_active=(0, 0, 1, 1)
-                splits_tabs.color_indicator=(0, 0, 1, 1)
+                splits_tabs = MDTabs()
+                splits_tabs.background_color = (1, 1, 1, 1)
+                splits_tabs.text_color_normal = (0, 0, 0, 1)
+                splits_tabs.text_color_active = (0, 0, 1, 1)
+                splits_tabs.color_indicator = (0, 0, 1, 1)
+                splits_tabs.on_tab_switch = self.on_split_switch
 
                 for numofsplit, split in enumerate(exercises):
                     splits = "Split " + str(numofsplit + 1)
@@ -274,6 +286,8 @@ class MainApp(MDApp):
                     size_hint=(.01, .2 / 3),
                     text=workoutkey
                 )
+                self.split_Choice_dict[workoutkey] = 1
+
                 buttonlayout.add_widget(keybutton)
                 buttonlayout.add_widget(startButton)
                 buttonlayout.add_widget(editButton)
@@ -285,15 +299,17 @@ class MainApp(MDApp):
     def on_split_switch(self, *args):
         split_chosen = args[2]
         split_chosen = int(split_chosen[6])
-        tab = args[0]
+        tab = args[1]
         workout_key = tab.parent.parent.parent.parent.parent.children[0].children[3].text
         self.split_Choice_dict[workout_key] = split_chosen
+        print("here", self.split_Choice_dict)
 
     # Methods for when User want to start a new workout session:
     def start_workout(self, *args):
         # start new session of workout
 
         workoutkey = args[0].parent.children[3].text
+        print("div", self.split_Choice_dict)
         workout_split = self.split_Choice_dict[workoutkey]
 
         workout_list = list(self.workoutsParsed[workoutkey].values())
@@ -306,6 +322,8 @@ class MainApp(MDApp):
             'exc_cards']
         session_grid.clear_widgets()
 
+        SessionScreen.new_workout = 1  # Sets the enitre workout
+        SessionScreen.workout_splits = chosen_workout  # Sets the enitre workout
         SessionScreen.workout = chosen_workout[workout_split - 1]  # Sets the exercise list
         SessionScreen.workout_key = workoutkey  # Sets the workout key list
         SessionScreen.num_of_split = workout_split  # Sets which split was chosen
@@ -322,12 +340,15 @@ class MainApp(MDApp):
         self.root.ids['workoutsscreen'].ids["running_session"].text = workout_name
 
         # Start workout timer.
+        self.start_session_timer()
+
+        self.change_screen1("sessionscreen")
+
+    def start_session_timer(self):
         self.timer = 0
         Clock.schedule_interval(self.increment_time, .1)
         self.increment_time(0)
         self.start_timer()
-
-        self.change_screen1("sessionscreen")
 
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
@@ -401,28 +422,31 @@ class MainApp(MDApp):
 
     # Back button
     def back_to_last_screen(self, *args):
-        # if current screen is mainscreen and last screen is main screen. go back to homescreen
-        # if current screen is mainscreen and last screen isnt main screen. go back to lastpage
-        # if current screen isnt main screen go back to lastpage
-
-        # screen_manager = self.root.ids['screen_manager1']
-        # current_screen = screen_manager.current
-        # if self.lastscreens:
-        #     if current_screen in self.mainscreens:
-        #         if self.lastscreens[-1] in self.mainscreens:
-        #             self.change_screen1("homescreen", "right")
-        #         else:
-        #             lastscreen = self.lastscreens.pop(-1)
-        #             # -1 is 'back' indicator for change screen method
-        #             self.change_screen1(lastscreen, -1, "right")
-        # else:
-        #     self.change_screen1("homescreen", "right")
-        if self.lastscreens:
-            lastscreen = self.lastscreens.pop(-1)
-            # -1 is 'back' indicator for change screen method
-            self.change_screen1(lastscreen, -1, "right")
+        if self.root.ids['workoutscreen'].edit_mode:
+            self.root.ids['workoutscreen'].leave_in_middle_edit_workout()
         else:
-            self.change_screen1("homescreen", "right")
+            # if current screen is mainscreen and last screen is main screen. go back to homescreen
+            # if current screen is mainscreen and last screen isnt main screen. go back to lastpage
+            # if current screen isnt main screen go back to lastpage
+
+            # screen_manager = self.root.ids['screen_manager1']
+            # current_screen = screen_manager.current
+            # if self.lastscreens:
+            #     if current_screen in self.mainscreens:
+            #         if self.lastscreens[-1] in self.mainscreens:
+            #             self.change_screen1("homescreen", "right")
+            #         else:
+            #             lastscreen = self.lastscreens.pop(-1)
+            #             # -1 is 'back' indicator for change screen method
+            #             self.change_screen1(lastscreen, -1, "right")
+            # else:
+            #     self.change_screen1("homescreen", "right")
+            if self.lastscreens:
+                lastscreen = self.lastscreens.pop(-1)
+                # -1 is 'back' indicator for change screen method
+                self.change_screen1(lastscreen, -1, "right")
+            else:
+                self.change_screen1("homescreen", "right")
 
     # For login screens
     def change_screen(self, screen_name, *args):
@@ -440,6 +464,9 @@ class MainApp(MDApp):
 
     # For app screens
     def change_screen1(self, screen_name, *args):
+        if screen_name == "workoutscreen":
+            self.root.ids['workoutscreen'].workout = [['Side Raises', 'Squat', 'Bent Over Rows', 'Bent Over Rows'], ['Pull Ups', 'Bent Over Rows']]
+            self.root.ids['workoutscreen'].temp_workout = []
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
         screen_manager = self.root.ids['screen_manager1']
@@ -465,15 +492,19 @@ class MainApp(MDApp):
             #     screen_manager.transition = NoTransition()
 
         if screen_name == "homescreen":
-            self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
+            self.root.ids['toolbar'].left_action_items = [
+                ["cog-outline", lambda x: self.change_screen1("settingsscreen")]]
             self.lastscreens = []
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
 
-        screen_manager.current = screen_name
+        # screen_manager.current = screen_name
 
         if -3 in args:  # recovering transition
+            screen_manager.current = screen_name
             screen_manager.transition = SlideTransition()
+        else:
+            screen_manager.current = screen_name
 
         if self.debug:
             print(self.lastscreens)
@@ -513,7 +544,55 @@ class MainApp(MDApp):
         else:
             return False
 
-    #######################
+    def upload_new_workout(self, workout_name, workout_exc):
+        self.display_loading_screen()
+
+        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
+        workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s" % (self.local_id, self.id_token)
+        data = json.dumps(Workout)
+        post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
+                                      on_error=self.error_upload_workout,
+                                      on_failure=self.error_upload_workout,
+                                      ca_file=certifi.where(), method='POST', verify=True)
+
+    def success_upload_workout(self, *args):
+        self.hide_loading_screen()
+
+        self.change_screen1("homescreen")
+        self.get_user_data()
+        self.load_workout_data()
+        Snackbar(text="Workout saved!").show()
+        self.root.ids['toolbar'].right_action_items = [
+            ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
+
+    def error_upload_workout(self, *args):
+        self.hide_loading_screen()
+        print(args)
+        print("error uploading")
+
+    def update_existing_workout(self, workout_key, workout_name, workout_exc):
+        self.display_loading_screen()
+        print(workout_key)
+        for key in self.workoutsParsed:
+            print(key)
+            workout_key=key
+        print(workout_key==key)
+        print(workout_key)
+        workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
+            self.local_id, workout_key, self.id_token)
+        print(workout_link)
+        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
+        data = json.dumps(Workout)
+        post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
+                                      on_error=self.error_upload_workout,
+                                      on_failure=self.error_upload_workout,
+                                      ca_file=certifi.where(), method='PUT', verify=True)
+
+    def display_loading_screen(self, *args):
+        self.popup.open()
+
+    def hide_loading_screen(self, *args):
+        self.popup.dismiss()
 
 
 MainApp().run()

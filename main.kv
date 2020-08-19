@@ -8,6 +8,7 @@
 #: include kv/splitscreen3.kv
 #: include kv/sessionscreen.kv
 #: include kv/exercisescreen.kv
+#: include kv/workoutscreen.kv
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
@@ -86,6 +87,9 @@ NavigationLayout:
                         id: settingsscreen
                         name: "settingsscreen"
 
+                    WorkoutScreen:
+                        id: workoutscreen
+                        name: "workoutscreen"
 
 
 
@@ -120,7 +124,7 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Friends"
                         on_release:
-                            app.change_screen1("friendsscreen")
+                            app.change_screen1("workoutscreen")
 #                            screen_manager1.current = "friendsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:

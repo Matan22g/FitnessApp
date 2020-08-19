@@ -103,6 +103,7 @@ class SessionScreen(Screen):
     #         exc_id.children[0].children[0].opacity = 0
 
     def on_pre_enter(self, *args):
+        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: print(3)]]
         self.app.title = "Session"
         print(self.session_rec)
         # First visit: setting date to today's date, and loading all exc to the list.
@@ -112,6 +113,7 @@ class SessionScreen(Screen):
             now = datetime.now()
             now = now.strftime("%d/%m/%Y %H:%M:%S")
             self.ids["date_picker_label"].text = now[0:10]
+            self.ids["date_picker_label"].line_color =[0, 0, 0, 0]
             self.ids["workout_name"].text = self.workout_name
             self.session_date = now
         # for exc_id in self.ex_reference_by_id:
@@ -297,18 +299,6 @@ class SessionScreen(Screen):
     def test(self, *args):
         print(3)
 
-    def add_exc_to_list(self, exc):
-        self.ids["container"].add_widget(
-            ListItemWithCheckbox(
-                text=exc,
-                secondary_text="Personal Best: ",
-                tertiary_text="Done: ",
-                on_press=self.start_exc
-            ))
-        # saving dic with the widget id to be able to ref to them later
-        ex_widget_id = self.ids["container"].children[0]
-        self.ex_reference_by_id[ex_widget_id] = exc
-        self.ex_reference_by_exc[exc] = ex_widget_id
 
     def start_exc(self, *args):
         # print(args[0])
@@ -402,20 +392,21 @@ class SessionScreen(Screen):
 
     def show_del_exercise_dialog(self):
         num_to_del = self.app.root.ids['sessionscreen'].ids["num_to_delete"].text
-        if num_to_del and int(num_to_del):
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
-                                   title="Delete " + num_to_del + " Exercise?",
-                                   buttons=[
-                                       MDFlatButton(
-                                           text="DELETE", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.del_exc
-                                       ),
-                                       MDFlatButton(
-                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.cancel_del_exc
+        if num_to_del:
+            if int(num_to_del):
+                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                                       title="Delete " + num_to_del + " Exercise?",
+                                       buttons=[
+                                           MDFlatButton(
+                                               text="DELETE", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.del_exc
+                                           ),
+                                           MDFlatButton(
+                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.cancel_del_exc
+                                           )
+                                       ],
                                        )
-                                   ],
-                                   )
         else:
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
                                    text="Select exercise to delete",
@@ -543,7 +534,6 @@ class ExerciseScreen(Screen):
         self.app.title = "Home"
         exc = self.exercise
         self.ids["ex_name"].text = exc
-
         # if already completed a few sets in this session:
         if exc in SessionScreen.session_rec:
             sets = SessionScreen.session_rec[exc]
