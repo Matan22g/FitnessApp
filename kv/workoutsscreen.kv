@@ -17,6 +17,15 @@
                 app.change_screen1("create_workout_screen")
 
         MDRoundFlatIconButton:
+            icon: "plus"
+            pos_hint: {"center_x": 0.6, "top": .95}
+            text: "Create New Workout 2"
+            width: dp(200)
+            opacity: 0
+            on_release:
+                app.show_create_workout_dialog()
+
+        MDRoundFlatIconButton:
             icon: "run"
             id: running_session
             pos_hint: {"center_x": 0.8, "top": .95}

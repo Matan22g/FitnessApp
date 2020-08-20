@@ -103,7 +103,8 @@ class SessionScreen(Screen):
     #         exc_id.children[0].children[0].opacity = 0
 
     def on_pre_enter(self, *args):
-        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: print(3)]]
+        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+
         self.app.title = "Session"
         print(self.session_rec)
         # First visit: setting date to today's date, and loading all exc to the list.
@@ -113,7 +114,7 @@ class SessionScreen(Screen):
             now = datetime.now()
             now = now.strftime("%d/%m/%Y %H:%M:%S")
             self.ids["date_picker_label"].text = now[0:10]
-            self.ids["date_picker_label"].line_color =[0, 0, 0, 0]
+            self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
             self.ids["workout_name"].text = self.workout_name
             self.session_date = now
         # for exc_id in self.ex_reference_by_id:
@@ -299,7 +300,6 @@ class SessionScreen(Screen):
     def test(self, *args):
         print(3)
 
-
     def start_exc(self, *args):
         # print(args[0])
         # print(self.ex_reference_by_id)
@@ -309,7 +309,6 @@ class SessionScreen(Screen):
         self.app.change_screen1("exercisescreen")
 
     def save_session(self):
-
         unfinished_exc = 0
         msg = "Save your workout?"
 
@@ -320,26 +319,42 @@ class SessionScreen(Screen):
                 unfinished_exc += 1
             elif not self.session_rec[exc]:
                 unfinished_exc += 1
+        num_of_exc = len(self.workout)
 
-        if unfinished_exc:
-            msg = str(unfinished_exc) + " Unfinished exercise, " + msg
-
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
-                               text=msg,
-                               buttons=[
-                                   MDFlatButton(
-                                       text="Save", text_color=self.app.theme_cls.primary_color,
-                                       on_release=self.upload_session
-                                   ),
-                                   MDFlatButton(
-                                       text="Cancel", text_color=self.app.theme_cls.primary_color,
-                                       on_release=self.cancel_save
+        if unfinished_exc == num_of_exc:
+            msg = "Come on at least complete one exercise"
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
+                                   title=msg,
+                                   buttons=[
+                                       MDFlatButton(
+                                           text="OK", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.cancel_save
+                                       )
+                                   ],
                                    )
-                               ],
-                               )
+        else:
+            if unfinished_exc:
+                msg = str(unfinished_exc) + " Unfinished exercise, " + msg
+                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
+                                       title=msg,
+                                       buttons=[
+                                           MDFlatButton(
+                                               text="SAVE", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.upload_session
+                                           ),
+                                           MDFlatButton(
+                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.cancel_save
+                                           )
+                                       ],
+                                       )
         self.dialog.open()
 
     def upload_session(self, *args):
+        self.app.display_loading_screen()
+
+
+
         date = self.ids["date_picker_label"].text
         date = self.session_date
         for exc in list(self.session_rec):
@@ -358,11 +373,11 @@ class SessionScreen(Screen):
         self.dialog.dismiss()
         self.app.change_screen1("homescreen")
         Snackbar(text="Session saved!").show()
-
+        self.app.hide_loading_screen()
     def on_save_error(self, *args):
         self.dialog.dismiss()
         print("error session save")
-
+        self.app.hide_loading_screen()
     def cancel_save(self, *args):
         self.dialog.dismiss()
 
