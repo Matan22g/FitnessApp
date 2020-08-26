@@ -28,7 +28,7 @@
             if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.show_checkbox("False")
             if touch.spos[1]>0.875: root.show_checkbox("False")
             if touch.spos[1]<0.15: root.show_checkbox("False")
-#            if touch.spos[1]>0 and root.need_height_fix: root.fix_grid_heights()
+#            if touch.spos[1]>0.8: root.fix_grid_heights()
 
 #            caller_touched = caller.collide_point(*touch.pos)
 #            spawn_touched = [x.collide_point(*touch.pos) for x in self.walk(restrict = True) if x is not self]
@@ -83,7 +83,7 @@
             icon: "calendar"
             pos_hint: {"center_x": 0.8, "top": .958}
             text: "Date: "
-            line_width:0
+            line_color: 0, 0, 0, 0
 #            theme_text_color: "Custom"
 #            text_color: app.theme_cls.primary_color
             on_release: root.show_example_date_picker()
@@ -107,7 +107,7 @@
 
         MDIconButton:
             id: show_checkbox
-            pos_hint: {"center_x": .55, "top": .975}
+            pos_hint: {"center_x": .858, "top": .975}
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
@@ -125,8 +125,8 @@
 
         MDLabel:
             id: num_to_delete
-            pos_hint: {"center_x": 0.725, "top": .999}
-            size_hint: (.5, .15)
+            pos_hint: {"center_x": 0.9999, "top": .999}
+            size_hint: (.47, .15)
             font_size: "16sp"
             halign: "left"
             text: ""
@@ -135,8 +135,8 @@
 
         MDIconButton:
             id: add_exc
-            user_font_size: "32sp"
-            pos_hint: {"center_x": .525, "top": .975}
+            user_font_size: "38sp"
+            pos_hint: {"center_x": .5, "top": .985}
             icon: "plus"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color

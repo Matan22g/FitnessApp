@@ -1,0 +1,277 @@
+<ExerciseSessionsScreen>:
+    FloatLayout:
+
+        MDLabel:
+            id: exc_name
+            pos_hint: {"x": 0.001, "y": .845}
+            size_hint: (.7, .2)
+            font_style: "H4"
+            halign: "center"
+            text: root.exercise
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDLabel:
+            pos_hint: {"x": -0.105, "y": .805}
+            size_hint: (.7, .2)
+            halign: "center"
+            text: "Exercise history"
+            user_font_size: "30sp"
+            theme_text_color: "Secondary"
+
+        MDLabel:
+            pos_hint: {"x": -0.18, "y": .72}
+            size_hint: (.7, .2)
+            halign: "center"
+            text: "Records"
+            user_font_size: "30sp"
+            theme_text_color: "Secondary"
+
+#            theme_text_color: "Custom"
+#            text_color: 0, 1, 1, 1
+        ScrollView:
+            id: records_scroll
+            pos_hint: {"y": .57}
+            size_hint_y: None
+            size_hint_x: None
+            size_hint: 1, .24
+            do_scroll_y: False
+            do_scroll_x: True
+            GridLayout:
+                # sets_grid
+                id: records_grid
+                cols: 3
+                rows: 1
+                padding: 30,0
+                spacing: 20,20
+                size_hint_y: None
+                size_hint_x: None
+                height: self.minimum_height
+                width: self.minimum_width
+                row_force_default: True
+                row_default_height: '125dp'
+
+
+                MDCard:
+                    elevation: 1
+                    radius:[14]
+                    orientation: "vertical"
+                    padding: "8dp"
+                    size_hint: None, None
+                    size: "240dp", "110dp"
+                    pos_hint: {"center_x": .5, "center_y": .34}
+
+                    MDLabel:
+                        text: "Overall Best"
+                        theme_text_color: "Custom"
+                        text_color: app.theme_cls.primary_color
+                        font_style:"H6"
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                    MDSeparator:
+                        height: "1dp"
+                    GridLayout:
+                        cols:3
+                        rows:2
+                        MDLabel:
+                            id: best_reps
+                            theme_text_color: "Primary"
+                            text: "12"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "X"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            id: best_weight
+                            theme_text_color: "Primary"
+                            text: "120"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " reps"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: ""
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " kg"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                MDCard:
+                    elevation: 1
+                    radius:[14]
+                    orientation: "vertical"
+                    padding: "8dp"
+                    size_hint: None, None
+                    size: "240dp", "110dp"
+                    pos_hint: {"center_x": .5, "center_y": .34}
+
+                    MDLabel:
+                        text: "Overall Best"
+                        theme_text_color: "Custom"
+                        text_color: app.theme_cls.primary_color
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                    MDSeparator:
+                        height: "1dp"
+                    GridLayout:
+                        cols:3
+                        rows:2
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "12"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "X"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "120"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " reps"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: ""
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " kg"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                MDCard:
+                    elevation: 1
+                    radius:[14]
+                    orientation: "vertical"
+                    padding: "8dp"
+                    size_hint: None, None
+                    size: "240dp", "110dp"
+                    pos_hint: {"center_x": .5, "center_y": .34}
+
+                    MDLabel:
+                        text: "Overall Best"
+                        theme_text_color: "Custom"
+                        text_color: app.theme_cls.primary_color
+                        size_hint_y: None
+                        height: self.texture_size[1]
+
+                    MDSeparator:
+                        height: "1dp"
+                    GridLayout:
+                        cols:3
+                        rows:2
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "12"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "X"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "120"
+                            theme_text_color: "Custom"
+                            text_color: app.theme_cls.primary_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " reps"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: ""
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: " kg"
+                            theme_text_color: "Secondary"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+
+
+        MDLabel:
+            id:date_label
+            pos_hint: {"x": -0.04, "y": .43}
+            size_hint: (.7, .2)
+            halign: "center"
+            text: "Previous sessions, Dec"
+            user_font_size: "30sp"
+            theme_text_color: "Secondary"
+
+        MDIconButton:
+            pos_hint: {"center_x": .88, "top": .98}
+            icon: "chart-line"
+            user_font_size: "25sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            pos_hint: {"center_x": .88, "top": .57}
+            icon: "chart-box-outline"
+            user_font_size: "25sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.choose_date()
+
+        ScrollView:
+            id: sessions_scroll
+            pos_hint: {"top": 0.49}
+            size_hint_y: None
+            size_hint: 1, .49
+            GridLayout:
+                # sets_grid
+                id: sets_grid
+                cols: 1
+                spacing: 20,10
+                size_hint_y: None
+                height: self.minimum_height
+                row_force_default: True
+                row_default_height: '150dp'

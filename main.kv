@@ -1,6 +1,6 @@
 #: include kv/homescreen.kv
 #: include kv/settingsscreen.kv
-#: include kv/friends.kv
+#: include kv/blankscreen.kv
 #: include kv/create_workout_screen.kv
 #: include kv/workoutsscreen.kv
 #: include kv/splitscreen.kv
@@ -9,6 +9,7 @@
 #: include kv/sessionscreen.kv
 #: include kv/exercisescreen.kv
 #: include kv/workoutscreen.kv
+#: include kv/exercise_sessions_screen.kv
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
@@ -55,7 +56,8 @@ NavigationLayout:
                     elevation: 10
                     right_action_items: [['menu', lambda x: nav_drawer.set_state()]]
                     left_action_items: [["chevron-left", lambda x: app.back_to_last_screen()]]
-
+                    size_hint_y: 0.075
+                    round : "100dp"
                 ScreenManager:
                     id: screen_manager1
 
@@ -91,9 +93,13 @@ NavigationLayout:
                         id: exercisescreen
                         name: "exercisescreen"
 
-                    FriendsScreen:
-                        id: friendsscreen
-                        name: "friendsscreen"
+                    ExerciseSessionsScreen:
+                        id: exercise_sessions_screen
+                        name: "exercise_sessions_screen"
+
+                    BlankScreen:
+                        id: blankscreen
+                        name: "blankscreen"
 
                     SettingsScreen:
                         id: settingsscreen
@@ -109,6 +115,7 @@ NavigationLayout:
         id: nav_drawer
         anchor: "right"
         width: "175dp"
+
         BoxLayout:
             orientation: "vertical"
             padding: "4dp"
@@ -136,7 +143,7 @@ NavigationLayout:
                     OneLineIconListItem:
                         text: "Friends"
                         on_release:
-                            app.change_screen1("workoutscreen")
+                            app.change_screen1("blankscreen")
 #                            screen_manager1.current = "friendsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:

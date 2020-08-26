@@ -22,6 +22,7 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
+
 from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 import kivy.utils as utils
 import requests
@@ -29,7 +30,6 @@ import json
 from kivy.clock import Clock
 import time
 
-Window.size = (360, 639)
 
 ### screens classes import
 
@@ -39,12 +39,21 @@ from screens_py.homescreen import HomeScreen
 from screens_py.settingsscreen import SettingsScreen
 from screens_py.workoutsscreen import WorkoutsScreen
 from screens_py.workoutscreen import WorkoutScreen
+from screens_py.exercise_sessions_screen import ExerciseSessionsScreen
 from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 from customKv.tab import MDTabs, MDTabsBase
+import copy
+
+Window.size = (320, 650)
 
 
-class FriendsScreen(Screen):
+## msg for new workout name
+class AddWorkoutContent(BoxLayout):
+    pass
+
+
+class BlankScreen(Screen):
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -71,6 +80,7 @@ class Tab(FloatLayout, MDTabsBase):
     '''Class implementing content for a tab.'''
 
 
+
 class MainApp(MDApp):
     mainscreens = ["homescreen", "workoutscreen", "friendsscreen", "settingsscreen"]
     id_token = ""
@@ -95,6 +105,7 @@ class MainApp(MDApp):
     folder = os.path.dirname(os.path.realpath(__file__))
     popup = Factory.LoadingPopup()
     popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
+    exc_sessions = {}
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -121,11 +132,12 @@ class MainApp(MDApp):
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
+
         # self.get_user_name_data(user_name)
         ### debug:
-        if self.debug == 1:
-            self.workout_key_to_view = '-MF5efE9OJk4fKyB9LpK'
-            self.change_screen1("workoutscreen")
+        # if self.debug == 0:
+        #     self.workout_key_to_view = '-MF5efE9OJk4fKyB9LpK'
+        #     self.change_screen1("workoutscreen")
 
         #
         # date = "date"
@@ -140,6 +152,10 @@ class MainApp(MDApp):
         #                  ca_file=certifi.where(), verify=True)
 
     # Handling user data'
+    def show_exc_history(self , exc_name):
+        self.root.ids['exercise_sessions_screen'].exercise = exc_name
+        self.change_screen1("exercise_sessions_screen")
+
     def get_user_data(self):
         try:
             result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
@@ -147,6 +163,13 @@ class MainApp(MDApp):
             self.user_data = data
             if self.debug:
                 print(data)
+                print("user email:",self.user_data["email"])
+                print("user friends:",self.user_data["friends"])
+                print("user real_user_name:",self.user_data["real_user_name"])
+                print("user user_name:",self.user_data["user_name"])
+                print("user sessions:",self.user_data["sessions"])
+                print("user workouts:",self.user_data["workouts"])
+                print("user streak:",self.user_data["streak"])
 
         except Exception:
             print("no data")
@@ -166,11 +189,50 @@ class MainApp(MDApp):
             workout_name = session[3]
             workout_split = session[4]
             exercises = session[5]
+            self.add_session_to_excs_stats(exercises, date , workout_name)
             new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
                                           exercises)
             self.sessions.append(new_session)
 
         self.sessions.sort(key=lambda r: r.date, reverse=True)
+        if self.debug:
+            print("sessions: ", self.sessions)
+            print("exc_sessions: ", self.exc_sessions)
+
+    def add_session_to_excs_stats(self, exercises , date , workout_name):
+        # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
+
+        for exc in exercises:
+            exercises_list = list(exercises.values())[0]
+
+            if exc not in self.exc_sessions:
+                self.exc_sessions[exc] = {date: [workout_name, exercises_list]}
+                record = self.find_best_set(exercises_list)
+                self.exc_sessions[exc]["record"] = record
+            else:
+
+                record = self.exc_sessions[exc]["record"]
+                record_weight = record.split()
+                record_weight = float(record_weight[2])
+                maybe_record = self.find_best_set(exercises_list)
+                maybe_record_weight = maybe_record.split()
+                maybe_record_weight = float(maybe_record_weight[2])
+
+                if maybe_record_weight > record_weight:
+                    self.exc_sessions[exc]["record"] = maybe_record
+                self.exc_sessions[exc][date] = [workout_name, exercises_list]
+
+    def find_best_set(self, exc_session):
+        # by weight:
+        best_weight = 0
+        best_weight_ind = 0
+        for i , set in enumerate(exc_session):
+            set = set.split()
+            weight = float(set[2])
+            if weight > best_weight:
+                best_weight = weight
+                best_weight_ind = i
+        return exc_session[best_weight_ind]
 
     # Initial workouts dicts, and workouts screen
     def load_workout_data(self):
@@ -180,7 +242,8 @@ class MainApp(MDApp):
         self.workouts = {}  # solve case of deleted workout. reloads all database workouts
         for workoutkey in workoutdic:
             workout = workoutdic[workoutkey]
-            print(workout)
+            if self.debug:
+                print("workout:", workout)
             workout = json.loads(workout)  # turning str to dic
             self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
 
@@ -195,7 +258,6 @@ class MainApp(MDApp):
         # json data to iterable list, return dict of workout dicts {key: {workout name :[[split 1],[split2]]}}
         workoutdicReadAble = {}
         for workoutkey in workoutIdDic:
-            print(workoutkey)
             workoutTemp = {}
             workoutdic = workoutIdDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
             for workoutName in workoutdic:
@@ -205,82 +267,197 @@ class MainApp(MDApp):
             workoutdicReadAble[workoutkey] = workoutTemp
         return workoutdicReadAble
 
+    def create_new_workout(self, *args):
+        new_workout = args[0].parent.parent.parent.children[2].children[0].children[0].text
+        # If the user hasnt written any name, dont do nothing.
+        if new_workout:
+            self.dialog.dismiss()
+            self.root.ids['workoutscreen'].workout = []
+            self.root.ids['workoutscreen'].temp_workout = []
+            self.root.ids['workoutscreen'].workout_name = new_workout
+            self.root.ids['workoutscreen'].create_mode = 1
+            self.root.ids['workoutscreen'].num_of_splits = 1
+            self.change_screen1("workoutscreen")
+
+    def show_create_workout_dialog(self):
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title="Enter workout name:",
+            type="custom",
+            content_cls=AddWorkoutContent(),
+            buttons=[
+
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.create_new_workout
+                ),
+                MDFlatButton(
+                    text="Cancel",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                )
+            ],
+        )
+        self.dialog.open()
+
+    def dismiss_dialog(self, *args):
+        self.dialog.dismiss()
+
+    # def add_workouts(self, workoutDic):
+    #     self.delete_workout_grid()
+    #     workoutgrid = self.root.ids['workoutsscreen'].ids[
+    #         'banner_grid']  # getting the id of where the widgets are coming in
+    #     for workoutkey in workoutDic:
+    #         workoutdic = workoutDic[workoutkey]  # argument 0 its the workout key, and 1 is the dict
+    #         for workoutname in workoutdic:
+    #             exercises = workoutdic[workoutname]  # getting the the exercises of the workout
+    #
+    #             newlayout = MDFloatLayout()  # for centering
+    #
+    #             workoutcard = MDCard(
+    #                 radius=[14],
+    #                 orientation="vertical",
+    #                 size_hint=(0.9, 0.9),
+    #                 padding="8dp",
+    #                 pos_hint={"center_y": 0.5, "center_x": 0.5}
+    #             )
+    #             workoutcard.add_widget(MDLabel(
+    #                 text=workoutname,
+    #                 font_style="H4",
+    #                 size_hint=(None, 0.1),
+    #                 theme_text_color="Custom",
+    #                 text_color=self.theme_cls.primary_color
+    #             ))
+    #             splits_tabs = MDTabs()
+    #             splits_tabs.background_color = (1, 1, 1, 1)
+    #             splits_tabs.text_color_normal = (0, 0, 0, 1)
+    #             splits_tabs.text_color_active = (0, 0, 1, 1)
+    #             splits_tabs.color_indicator = (0, 0, 1, 1)
+    #             splits_tabs.on_tab_switch = self.on_split_switch
+    #
+    #             for numofsplit, split in enumerate(exercises):
+    #                 splits = "Split " + str(numofsplit + 1)
+    #                 tab = Tab(text=splits)
+    #                 layout = MDBoxLayout(orientation='vertical')
+    #                 view = ScrollView()
+    #                 layout.add_widget(view)
+    #                 lst = MDList()
+    #                 for exc in split:
+    #                     lst.add_widget(OneLineListItem(text=exc))
+    #                 view.add_widget(lst)
+    #                 tab.add_widget(layout)
+    #                 splits_tabs.add_widget(tab)
+    #             workoutcard.add_widget(splits_tabs)
+    #
+    #             startButton = MDIconButton(
+    #                 icon="play",
+    #                 pos_hint={'right': 0},
+    #                 user_font_size="45sp",
+    #                 theme_text_color="Custom",
+    #                 text_color=self.theme_cls.primary_color,
+    #                 on_release=self.start_workout
+    #             )
+    #             editButton = MDIconButton(
+    #                 icon="file-edit",
+    #                 user_font_size="40sp",
+    #                 theme_text_color="Custom",
+    #                 text_color=self.theme_cls.primary_color,
+    #                 on_release=self.view_workout
+    #             )
+    #             deleteButton = MDIconButton(
+    #                 icon="trash-can-outline",
+    #                 pos_hint={'right': 0},
+    #                 user_font_size="40sp",
+    #                 theme_text_color="Custom",
+    #                 text_color=self.theme_cls.primary_color,
+    #                 on_release=self.delete_workout_msg
+    #             )
+    #             buttonlayout = MDBoxLayout(
+    #                 adaptive_height=True,
+    #                 orientation='horizontal',
+    #                 spacing=20
+    #             )
+    #
+    #             keybutton = MDRaisedButton(
+    #                 opacity=0,
+    #                 size_hint=(.01, .2 / 3),
+    #                 text=workoutkey
+    #             )
+    #             self.split_Choice_dict[workoutkey] = 1
+    #
+    #             buttonlayout.add_widget(keybutton)
+    #             buttonlayout.add_widget(startButton)
+    #             buttonlayout.add_widget(editButton)
+    #             buttonlayout.add_widget(deleteButton)
+    #             workoutcard.add_widget(buttonlayout)
+    #             newlayout.add_widget(workoutcard)
+    #             workoutgrid.add_widget(newlayout)
 
     def add_workouts(self, workoutDic):
         self.delete_workout_grid()
         workoutgrid = self.root.ids['workoutsscreen'].ids[
             'banner_grid']  # getting the id of where the widgets are coming in
         for workoutkey in workoutDic:
-            workoutdic = workoutDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
+            workoutdic = workoutDic[workoutkey]  # argument 0 its the workout key, and 1 is the dict
             for workoutname in workoutdic:
                 exercises = workoutdic[workoutname]  # getting the the exercises of the workout
 
                 newlayout = MDFloatLayout()  # for centering
+                card_layout = MDFloatLayout()  # for centering
 
                 workoutcard = MDCard(
                     radius=[14],
                     orientation="vertical",
                     size_hint=(0.9, 0.9),
                     padding="8dp",
-                    pos_hint={"center_y": 0.5, "center_x": 0.5}
+                    pos_hint={"center_y": 0.5, "center_x": 0.5},
+                    background = "resources/card_1.jpeg",
+                    on_release=self.view_workout
                 )
-                workoutcard.add_widget(MDLabel(
+                # workoutcard.add_widget(MDLabel(
+                #     text=workoutname,
+                #     font_style="H4",
+                #     size_hint=(None, 0.1),
+                #     theme_text_color="Custom",
+                #     text_color=self.theme_cls.primary_color
+                # ))
+                card_layout.add_widget(MDLabel(
                     text=workoutname,
                     font_style="H4",
-                    size_hint=(None, 0.1),
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color
+                    pos_hint={"center_y": 0.195, "center_x": 0.5},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color = (0, 0, 1, 1)
                 ))
-                splits_tabs = MDTabs()
-                splits_tabs.background_color = (1, 1, 1, 1)
-                splits_tabs.text_color_normal = (0, 0, 0, 1)
-                splits_tabs.text_color_active = (0, 0, 1, 1)
-                splits_tabs.color_indicator = (0, 0, 1, 1)
-                splits_tabs.on_tab_switch = self.on_split_switch
 
-                for numofsplit, split in enumerate(exercises):
-                    splits = "Split " + str(numofsplit + 1)
-                    tab = Tab(text=splits)
-                    layout = MDBoxLayout(orientation='vertical')
-                    view = ScrollView()
-                    layout.add_widget(view)
-                    lst = MDList()
-                    for exc in split:
-                        lst.add_widget(OneLineListItem(text=exc))
-                    view.add_widget(lst)
-                    tab.add_widget(layout)
-                    splits_tabs.add_widget(tab)
-                workoutcard.add_widget(splits_tabs)
-
-                startButton = MDIconButton(
-                    icon="play",
-                    pos_hint={'right': 0},
-                    user_font_size="45sp",
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.start_workout
-                )
-                editButton = MDIconButton(
-                    icon="file-edit",
-                    user_font_size="40sp",
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.delete_workout_msg
-                )
-                deleteButton = MDIconButton(
-                    icon="trash-can-outline",
-                    pos_hint={'right': 0},
-                    user_font_size="40sp",
-                    theme_text_color="Custom",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.delete_workout_msg
-                )
-                buttonlayout = MDBoxLayout(
-                    adaptive_height=True,
-                    orientation='horizontal',
-                    spacing=20
-                )
-
+                card_layout.add_widget(MDLabel(
+                    text="12/08/20",
+                    font_style="Subtitle1",
+                        pos_hint={"center_y": 0.07, "center_x": 0.5},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color = (0, 0, 1, 1)
+                ))
+                # ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button',
+                #  'Caption', 'Overline', 'Icon']
+                card_layout.add_widget(MDLabel(
+                    text="Times Completed:",
+                    font_style="Subtitle1",
+                    pos_hint={"center_y": 0.07, "x": 0.45},
+                    # theme_text_="Custom",
+                    # text_color=selfcolor.theme_cls.primary_color
+                    text_color=(0, 0, 1, 1)
+                ))
+                card_layout.add_widget(MDLabel(
+                    text="7",
+                    font_style="Subtitle1",
+                    pos_hint={"center_y": 0.07, "x": 0.95},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color = (0, 0, 1, 1)
+                ))
                 keybutton = MDRaisedButton(
                     opacity=0,
                     size_hint=(.01, .2 / 3),
@@ -288,11 +465,8 @@ class MainApp(MDApp):
                 )
                 self.split_Choice_dict[workoutkey] = 1
 
-                buttonlayout.add_widget(keybutton)
-                buttonlayout.add_widget(startButton)
-                buttonlayout.add_widget(editButton)
-                buttonlayout.add_widget(deleteButton)
-                workoutcard.add_widget(buttonlayout)
+                card_layout.add_widget(keybutton)
+                workoutcard.add_widget(card_layout)
                 newlayout.add_widget(workoutcard)
                 workoutgrid.add_widget(newlayout)
 
@@ -305,13 +479,19 @@ class MainApp(MDApp):
         print("here", self.split_Choice_dict)
 
     # Methods for when User want to start a new workout session:
+    def view_workout(self, *args):
+        workout_key = args[0].children[0].children[0].text
+        self.workout_key_to_view = workout_key
+        self.change_screen1("workoutscreen")
+
     def start_workout(self, *args):
         # start new session of workout
 
-        workoutkey = args[0].parent.children[3].text
-        print("div", self.split_Choice_dict)
-        workout_split = self.split_Choice_dict[workoutkey]
+        # workoutkey = args[0].parent.children[3].text
+        workoutkey = args[0]
 
+        # workout_split = self.split_Choice_dict[workoutkey]
+        workout_split = args[1]
         workout_list = list(self.workoutsParsed[workoutkey].values())
         workout_name = list(self.workoutsParsed[workoutkey].keys())[0]
         num_splits = len(workout_list[0])
@@ -324,7 +504,7 @@ class MainApp(MDApp):
 
         SessionScreen.new_workout = 1  # Sets the enitre workout
         SessionScreen.workout_splits = chosen_workout  # Sets the enitre workout
-        SessionScreen.workout = chosen_workout[workout_split - 1]  # Sets the exercise list
+        SessionScreen.workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
         SessionScreen.workout_key = workoutkey  # Sets the workout key list
         SessionScreen.num_of_split = workout_split  # Sets which split was chosen
 
@@ -352,7 +532,7 @@ class MainApp(MDApp):
 
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
-        workoutkey = args[0].parent.children[3].text
+        workoutkey = args[0]
         workout_name = list(self.workoutsParsed[workoutkey].keys())[0]
 
         self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
@@ -375,9 +555,9 @@ class MainApp(MDApp):
         self.dialog.dismiss()
 
     def del_workout(self, caller):
-
+        self.display_loading_screen()
         if self.workout_to_delete:
-            workoutkey = self.workout_to_delete.parent.children[3].text
+            workoutkey = self.workout_to_delete
             workoutlink = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
                 self.local_id, workoutkey, self.id_token)
             del_req = UrlRequest(workoutlink, on_success=self.success_del_workout, on_error=self.error_del_workout,
@@ -389,12 +569,16 @@ class MainApp(MDApp):
             self.dialog.dismiss()
 
     def success_del_workout(self, req, result):
+        self.hide_loading_screen()
+        self.change_screen1("workoutsscreen")
+        Snackbar(text="Workout Deleted!").show()
         # self.load_workout_data()
         self.add_workouts(self.workoutsParsed)
         self.dialog.dismiss()
         self.workout_to_delete = 0
 
     def error_del_workout(self, *args):
+        self.hide_loading_screen()
         # show proper msg
         print('failed')
 
@@ -442,9 +626,18 @@ class MainApp(MDApp):
             # else:
             #     self.change_screen1("homescreen", "right")
             if self.lastscreens:
-                lastscreen = self.lastscreens.pop(-1)
+                current_screen = self.root.ids['screen_manager1'].current
+                last_screen = self.lastscreens.pop(-1)
+                if last_screen == "blankscreen":
+                    last_screen = self.lastscreens.pop(-1)
+                    while self.lastscreens and self.lastscreens[-1] == current_screen:
+                        last_screen = self.lastscreens.pop(-1)
+                    last_screen = self.lastscreens.pop(-1)
+                while self.lastscreens and last_screen == self.lastscreens[-1]:
+                    last_screen = self.lastscreens.pop(-1)
+                # lastscreen = self.root.ids['screen_manager1'].previous()
                 # -1 is 'back' indicator for change screen method
-                self.change_screen1(lastscreen, -1, "right")
+                self.change_screen1(last_screen, -1, "right")
             else:
                 self.change_screen1("homescreen", "right")
 
@@ -463,10 +656,10 @@ class MainApp(MDApp):
         screen_manager = self.root.ids
 
     # For app screens
+
     def change_screen1(self, screen_name, *args):
-        if screen_name == "workoutscreen":
-            self.root.ids['workoutscreen'].workout = [['Side Raises', 'Squat', 'Bent Over Rows', 'Bent Over Rows'], ['Pull Ups', 'Bent Over Rows']]
-            self.root.ids['workoutscreen'].temp_workout = []
+        # if screen_name == "workoutscreen":
+        #     self.test_workout()
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
         screen_manager = self.root.ids['screen_manager1']
@@ -571,13 +764,14 @@ class MainApp(MDApp):
         print("error uploading")
 
     def update_existing_workout(self, workout_key, workout_name, workout_exc):
+        if self.debug:
+            print("workout_key to update:", workout_key)
+            print("workout_name to update:", workout_name)
+            print("workout_exc to update:", workout_exc)
+            print("real workout details:", self.workoutsParsed[workout_key])
+
         self.display_loading_screen()
-        print(workout_key)
-        for key in self.workoutsParsed:
-            print(key)
-            workout_key=key
-        print(workout_key==key)
-        print(workout_key)
+
         workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
             self.local_id, workout_key, self.id_token)
         print(workout_link)

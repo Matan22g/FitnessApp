@@ -22,29 +22,87 @@
             _no_ripple_effect: True
 
 
+#Md:
+#
+#            MDLabel:
+#                text:"",
+#                font_style:"H5",
+#                size_hint:(1, None),
+#                theme_text_color:"Custom",
+#                text_color:self.app.theme_cls.primary_color
+#
+#            MDLabel:
+#                text:"                                                Reps                  Kg",
+#                font_style:"Caption",
+#                size_hint:(1, None),
+#                theme_text_color:"Secondary"
+
 <ExerciseScreen>:
     FloatLayout:
 
         MDLabel:
             id: ex_name
             pos_hint: {"center_x": 0.28, "top": .99}
-            size_hint: (.5, .15)
+            size_hint: (.2, .2)
             font_size: "30sp"
             halign: "left"
             text: "Fitness App"
 #            theme_text_color: "Primary"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
+            opacity: 0
+
+        MDBoxLayout:
+            size_hint: (.4, .1)
+            pos_hint: {"center_x": .7, "center_y": .95}
+
+            MyToggleButton:
+                text: "+1"
+                group: "x"
+                size_hint: (.75, .5)
+                on_release: root.change_scale(1)
+
+
+            MyToggleButton:
+                text: "+2.5"
+                group: "x"
+                size_hint: (.75, .5)
+                on_release: root.change_scale(2.5)
+
+            MyToggleButton:
+                text: "+10"
+                group: "x"
+                size_hint: (.75, .5)
+                on_release: root.change_scale(10)
+
+        MDIconButton:
+            icon: 'history'
+            on_release: root.changeInput("w" , 1)
+            pos_hint: {"center_x": 0.1, "top": .98}
+            user_font_size: "30sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: app.show_exc_history(root.exercise)
 
         MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.75, "top": .35}
+            pos_hint: {"center_x": 0.2, "top": .1}
+            icon: "minus"
+            text: "Set"
+            size_hint: (.25, .067)
+            on_release: root.delete_set()
+
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x": 0.5, "top": .1}
             icon: "plus"
-            text: "Add Set"
+            text: "Set"
+            size_hint: (.25, .067)
             on_release: root.add_set()
 
         MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.75, "top": .25}
+            pos_hint: {"center_x": 0.8, "top": .1}
+            icon: "content-save"
             text: "Save"
+            size_hint: (.25, .067)
             on_release: root.save_exc()
 
         MDTextField:
@@ -53,8 +111,8 @@
             input_filter: 'float'
             helper_text: "Reps"
             helper_text_mode: "persistent"
-            pos_hint: {"x": .2, "top": .6}
-            size_hint: (.2, .12)
+            pos_hint: {"x": .2, "top": .8}
+            size_hint: (.22, .12)
             halign: "center"
             text: "0"
             font_size: "30sp"
@@ -66,15 +124,15 @@
             helper_text: "Kg"
             helper_text_mode: "persistent"
             font_size: "30sp"
-            pos_hint: {"x": .6, "top": .6}
-            size_hint: (.2, .12)
+            pos_hint: {"x": .6, "top": .8}
+            size_hint: (.22, .12)
             halign: "center"
             text: "0"
 
         MDIconButton:
             icon: 'chevron-up'
             on_release: root.changeInput("w" , 1)
-            pos_hint: {"center_x": 0.7, "top": .71}
+            pos_hint: {"center_x": 0.7, "top": .91}
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -82,7 +140,7 @@
         MDIconButton:
             icon: 'chevron-up'
             on_release: root.changeInput("r" , 1)
-            pos_hint: {"center_x": 0.3, "top": .71}
+            pos_hint: {"center_x": 0.3, "top": .91}
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -90,7 +148,7 @@
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("w" , 0)
-            pos_hint: {"center_x": 0.7, "top": .52}
+            pos_hint: {"center_x": 0.7, "top": .72}
             user_font_size: "64sp"
             text_color: 0, 0, 1, 1
             theme_text_color: "Custom"
@@ -99,16 +157,32 @@
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("r" , 0)
-            pos_hint: {"center_x": 0.3, "top": .52}
+            pos_hint: {"center_x": 0.3, "top": .72}
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
 
-        ScrollView:
-            pos_hint: {"top": .40}
-            size_hint_y: None
-            size_hint: .40, .40
             MDList:
+                size_hint: 0.1, 0.1
                 id: md_list
                 padding: 0
+                pos_hint: {"top": .9}
+
+        ScrollView:
+            id: sets_scroll
+            pos_hint: {"top": .6}
+            size_hint_y: None
+            size_hint: 1, .47
+            GridLayout:
+                # sets_grid
+                id: sets_grid
+                cols: 1
+                spacing: 20,10
+                size_hint_y: None
+                height: self.minimum_height
+                row_force_default: True
+                row_default_height: '50dp'
+
+
+

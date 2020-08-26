@@ -49,7 +49,7 @@
 
 
         MDIconButton:
-            pos_hint: {"center_x": 0.3, "top": .125}
+            pos_hint: {"center_x": 0.5, "top": .125}
             id: edit_workout
             icon: "pencil"
             user_font_size: "40sp"
@@ -61,7 +61,7 @@
                 root.edit_mode = 1
 
         MDIconButton:
-            pos_hint: {"center_x": 0.7, "top": .135}
+            pos_hint: {"center_x": 0.75, "top": .135}
             id: start_session
             icon: "play"
             user_font_size: "55sp"
@@ -70,6 +70,15 @@
             on_release:
                 root.start_session()
 
+        MDIconButton:
+            pos_hint: {"center_x": 0.25, "top": .135}
+            id: delete_workout
+            icon: "trash-can-outline"
+            user_font_size: "55sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release:
+                app.delete_workout_msg(root.workout_key)
 
         MDRoundFlatIconButton:
             pos_hint: {"center_x": 0.3, "top": .1}

@@ -11,69 +11,43 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.tab import MDTabsBase
 import copy
 
+
 class Tab(FloatLayout, MDTabsBase):
     '''Class implementing content for a tab.'''
 
-    def on_touch_down(self, touch):
-        print(touch)
-        '''Receive a touch down event.
-
-        :Parameters:
-            `touch`: :class:`~kivy.input.motionevent.MotionEvent` class
-                Touch received. The touch is in parent coordinates. See
-                :mod:`~kivy.uix.relativelayout` for a discussion on
-                coordinate systems.
-
-        :Returns: bool
-            If True, the dispatching of the touch event will stop.
-            If False, the event will continue to be dispatched to the rest
-            of the widget tree.
-        '''
-        if self.collide_point(touch.x, touch.y):
-            print('down')
-
-        if self.disabled and self.collide_point(*touch.pos):
-            print("hereerererererereereeeeeeeeeeeeeeee")
-            return True
-        for child in self.children[:]:
-            if child.dispatch('on_touch_down', touch):
-                print("nanananananaannnaanan")
-
-                return True
 
 class AddExerciseContent(BoxLayout):
     pass
+
 
 class WorkoutScreen(Screen):
     workout_key = 0
     workout_name = "ABC"
     num_of_splits = 0
-    workout = []
-    temp_workout = []
+    workout = []  # original workout
+    temp_workout = []  # used for creating or editing workout
     dialog = 0
-    split_active = 1
+    split_active = 1  # remeber which split the user clicked on
     del_button_id_by_exc = {}  # del_button.parent.parent is the md card
     exc_by_del_button = {}
-    stats_button_id_by_exc = {}
+    stats_button_id_by_exc = {}  # not used yet
     exc_by_stats_button = {}
     edit_mode = 0
     exc_to_del = ""
     tabs_by_split = {}
-    create_mode = 0
-    first_tab = 0
-    tabs_label_by_tab = {}
-    # tabs_id_by_split = {}
+    create_mode = 0  # used when creating new workout
 
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
 
-
     def on_enter(self, *args):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
 
     def on_leave(self, *args):
+        # always deleting all splits and remaining with one tab.
         self.reset_tabs()
+
     def on_pre_enter(self, *args):
 
         self.app.change_title(self.workout_name)
@@ -154,6 +128,9 @@ class WorkoutScreen(Screen):
             self.show_edit_buttons(True)
 
     def reload_page(self):
+        # used for loading all exercises when switching tabs.
+        # also when the user switches modes. edit/view.
+
         # self.clear_tabs()
         if self.app.debug:
             print("EDIT MODE: ", self.edit_mode)
@@ -184,11 +161,17 @@ class WorkoutScreen(Screen):
             self.app.root.ids['workoutscreen'].ids["edit_workout"].disabled = False
             self.app.root.ids['workoutscreen'].ids["start_session"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["start_session"].disabled = False
+            self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 1
+            self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = False
+
+
         else:
             self.app.root.ids['workoutscreen'].ids["edit_workout"].opacity = 0
             self.app.root.ids['workoutscreen'].ids["edit_workout"].disabled = True
             self.app.root.ids['workoutscreen'].ids["start_session"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["start_session"].disabled = False
+            self.app.root.ids['workoutscreen'].ids["start_session"].disabled = True
+            self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 0
+            self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = True
 
     def show_edit_buttons(self, to_show):
         if to_show:
@@ -238,19 +221,16 @@ class WorkoutScreen(Screen):
                 self.add_split()
 
     def add_split(self):
-        print("trying to add split")
+
         self.num_of_splits = len(self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list()) + 1
-        print("num of split to add:", self.num_of_splits)
+        if self.app.debug:
+            print("trying to add split")
+            print("num of split to add:", self.num_of_splits)
 
         tab = Tab(text=f"Split {self.num_of_splits}")
         self.app.root.ids['workoutscreen'].ids["split_tabs"].add_widget(tab)
-        tabs_list = self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list()
-        if self.num_of_splits == 1:
-            print("initial tab", tab)
-            self.first_tab = tabs_list[0]
-        self.tabs_label_by_tab[tab] = tabs_list[0]
 
-        # self.tabs_by_split[self.num_of_splits] = tab
+        # in case of new split space for new exercises being saved
         if len(self.temp_workout) < self.num_of_splits:
             self.temp_workout.append([])
         self.reload_page()
@@ -533,15 +513,16 @@ class WorkoutScreen(Screen):
         self.reload_page()
 
     def leave_in_middle_edit_workout(self):
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
-                               title="You will lose all unsaved progress. Are you sure you want to quit?",
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, None),
+                               title="Are you sure you want to quit?",
+                               text= "You will lose all unsaved progress.",
                                buttons=[
                                    MDFlatButton(
-                                       text="Stay", text_color=self.app.theme_cls.primary_color,
+                                       text="STAY", text_color=self.app.theme_cls.primary_color,
                                        on_release=self.dismiss_dialog
                                    ),
                                    MDFlatButton(
-                                       text="Exit", text_color=self.app.theme_cls.primary_color,
+                                       text="EXIT", text_color=self.app.theme_cls.primary_color,
                                        on_release=self.cancel_edit_mode
                                    )
                                ],
@@ -581,7 +562,6 @@ class WorkoutScreen(Screen):
         else:
             return False
 
-
     def switch_to_first_split(self):
         pass
 
@@ -595,7 +575,7 @@ class WorkoutScreen(Screen):
                                    title="Save " + self.workout_name + "?",
                                    buttons=[
                                        MDFlatButton(
-                                           text="Save", text_color=self.app.theme_cls.primary_color,
+                                           text="SAVE", text_color=self.app.theme_cls.primary_color,
                                            on_release=self.save_workout
                                        ),
                                        MDFlatButton(

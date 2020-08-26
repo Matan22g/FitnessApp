@@ -9,8 +9,9 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.behaviors import TouchBehavior
+from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDFlatButton, MDRoundFlatIconButton, MDIconButton
+from kivymd.uix.button import MDFlatButton, MDRoundFlatIconButton, MDIconButton, MDRectangleFlatButton
 from kivymd.uix.card import MDCardSwipe, MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
@@ -21,7 +22,6 @@ from kivymd.uix.list import OneLineListItem, ThreeLineListItem, OneLineAvatarIco
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.picker import MDDatePicker
-
 
 class SwipeToDeleteItem(MDCardSwipe):
     text = StringProperty()
@@ -61,8 +61,7 @@ class MDCard_Custom(MDCard, TouchBehavior):
 
 
 class MDLabel_custom(MDLabel, ButtonBehavior):
-    def on_release(self):
-        self.app.root.ids['sessionscreen'].show_example_date_picker()
+    pass
 
 
 class SessionScreen(Screen):
@@ -103,10 +102,9 @@ class SessionScreen(Screen):
     #         exc_id.children[0].children[0].opacity = 0
 
     def on_pre_enter(self, *args):
+        self.app.root.ids['toolbar'].title = self.workout_name
         self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
-
         self.app.title = "Session"
-        print(self.session_rec)
         # First visit: setting date to today's date, and loading all exc to the list.
         self.show_checkbox(False)
         if self.app.new_session == 1:
@@ -132,129 +130,154 @@ class SessionScreen(Screen):
                 row_enlarger = 50 * len(self.session_rec[exc])
                 dict_of_row_height[i] += row_enlarger
         self.ids.exc_cards.rows_minimum = dict_of_row_height
-        print(dict_of_row_height)
+        # print(dict_of_row_height)
         for num_of_exc, exc in enumerate(self.workout):
-            name_layout = MDGridLayout(size_hint_y=0.1, rows=1, cols=2)
-            newlayout = MDFloatLayout()  # for centering
-            if exc in self.session_rec:
-                set_amount = len(self.session_rec[exc])
-            else:
-                set_amount = 0
-            # card_y_size = 200
-            # card_y_size = str(card_y_size + set_amount * 50) + "dp"
-            self.ids.exc_cards.row_default_height += set_amount * 50
-
-            excCard = MDCard_Custom(
-                spacing=5,
-                radius=[14],
-                orientation="vertical",
-                size_hint=(0.9, 0.9),
-                padding="12dp",
-                pos_hint={"center_y": 0.5, "center_x": 0.5}
-            )
-            help_layout = MDFloatLayout(size_hint_y=0.05)
-            excnum = str(num_of_exc + 1) + " of " + str(num_of_exc_total)
-            exc_num = MDLabel(
-                text=excnum,
-                font_style="Caption",
-                size_hint=(None, 0.1),
-                theme_text_color="Secondary",
-                pos_hint={"center_y": 0.85, "center_x": 0.17}
-            )
-            deleteBox = MDCheckbox(
-                pos_hint={"center_y": 0.85, "center_x": 0.9275},
-                on_release=self.choose_mode
-
-            )
-            self.ex_reference_by_checkBox[deleteBox] = exc
-            help_layout.add_widget(exc_num)
-            help_layout.add_widget(deleteBox)
-            excCard.add_widget(help_layout)
-            exc_name = MDLabel(
-                text=exc,
-                font_style="H5",
-                size_hint=(1, 0.1),
-                theme_text_color="Custom",
-                text_color=self.app.theme_cls.primary_color
-            )
-
-            sButton = MDIconButton(
-                icon="history",
-                user_font_size="25sp",
-                theme_text_color="Custom",
-                text_color=self.app.theme_cls.primary_color,
-                on_release=self.test
-            )
-            name_layout.add_widget(exc_name)
-            name_layout.add_widget(sButton)
-
-            excCard.add_widget(name_layout)
-
-            # session = ["3   X   8", "3   X   8", "3   X   8", "3   X   8"]
-            session = []
-            if exc in self.session_rec:
-                session = self.session_rec[exc]
-            for num_of_set, set in enumerate(reversed(session)):
-                exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08)
-                units_layout = MDGridLayout(rows=1, cols=1, size_hint_y=0.1)
-                num_of_set = "SET " + str(num_of_set + 1)
-                units_pos = 1
-                set = self.str_to_set(set)
-                # units_pos -= space_to_add/10
-                reps = set.split()
-                reps = reps[0]
-                if len(reps) > 1:
-                    units_pos = 0.9
-                set_label = MDLabel(
-                    text=num_of_set,
-                    font_style="H6",
-                    size_hint=(units_pos, None),
-                    theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
-                )
-                set_number = MDLabel(
-                    text=set,
-                    font_style="H5",
-                    size_hint=(1, None),
-                    theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
-                )
-                reps_label = MDLabel(
-                    text="                                                Reps                  Kg",
-                    font_style="Caption",
-                    size_hint=(1, None),
-                    theme_text_color="Secondary"
-                )
-
-                exc_layout.add_widget(set_label)
-                exc_layout.add_widget(set_number)
-                units_layout.add_widget(reps_label)
-
-                excCard.add_widget(exc_layout)
-                excCard.add_widget(units_layout)
-
-            startButton = MDIconButton(
-                icon="arrow-right-drop-circle-outline",
-                user_font_size="45sp",
-                theme_text_color="Custom",
-                text_color=self.app.theme_cls.primary_color,
-                on_release=self.start_exc
-            )
-            buttonlayout = MDBoxLayout(
-                size_hint_y=0.4,
-                orientation='horizontal',
-                spacing=20
-            )
-            buttonlayout.add_widget(startButton)
-            self.ex_reference_by_id[startButton] = exc
-
-            excCard.add_widget(buttonlayout)
-            # For fast deletion
-            self.ex_reference_by_exc[exc] = excCard
-
-            newlayout.add_widget(excCard)
-            layout.add_widget(newlayout)
+            new_card_layout = self.create_card(num_of_exc, exc, num_of_exc_total)
+            layout.add_widget(new_card_layout)
         self.show_checkbox(False)
+
+    def create_card(self, num_of_exc, exc, num_of_exc_total):
+        newlayout = MDFloatLayout()  # for centering
+        if exc in self.session_rec:
+            set_amount = len(self.session_rec[exc])
+        else:
+            set_amount = 0
+        # card_y_size = 200
+        # card_y_size = str(card_y_size + set_amount * 50) + "dp"
+        self.ids.exc_cards.row_default_height += set_amount * 50
+
+        excCard = MDCard_Custom(
+            spacing=5,
+            radius=[14],
+            orientation="vertical",
+            size_hint=(0.9, 0.85),
+            padding="12dp",
+            pos_hint={"center_y": 0.5, "center_x": 0.5}
+        )
+
+        help_layout = self.create_top_card_layout(num_of_exc,num_of_exc_total, exc)
+        excCard.add_widget(help_layout)
+
+
+        name_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=1)
+
+        exc_name = MDLabel(
+            text=exc,
+            font_style="H5",
+            size_hint=(1, 0.1),
+            theme_text_color="Custom",
+            text_color=self.app.theme_cls.primary_color
+        )
+        name_layout.add_widget(exc_name)
+        excCard.add_widget(name_layout)
+
+        # session = ["3   X   8", "3   X   8", "3   X   8", "3   X   8"]
+        session = []
+        if exc in self.session_rec:
+            session = self.session_rec[exc]
+        for num_of_set, set in enumerate(session):
+            exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08)
+            units_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.1)
+            set_label, set_number, reps_label = self.create_set_label(set, num_of_set)
+            exc_layout.add_widget(set_label)
+            exc_layout.add_widget(set_number)
+            units_layout.add_widget(MDLabel(text="", size_hint_x = 0.9))
+            units_layout.add_widget(reps_label)
+            excCard.add_widget(exc_layout)
+            excCard.add_widget(units_layout)
+
+
+            # new_exc_layout, new_units_layout = self.create_set_label(set, num_of_set)
+            # excCard.add_widget(new_exc_layout)
+            # excCard.add_widget(new_units_layout)
+
+        button_layout = self.create_button_layout(exc)
+
+        excCard.add_widget(button_layout)
+        # For fast deletion
+        self.ex_reference_by_exc[exc] = excCard
+        newlayout.add_widget(excCard)
+        return newlayout
+
+    def create_top_card_layout(self, num_of_exc, num_of_exc_total, exc):
+        help_layout = MDFloatLayout(size_hint_y=0.1)
+        excnum = str(num_of_exc + 1) + " of " + str(num_of_exc_total)
+        exc_num = MDLabel(
+            text=excnum,
+            font_style="Caption",
+            size_hint=(None, 0.1),
+            theme_text_color="Secondary",
+            pos_hint={"center_y": 0.85, "center_x": 0.17}
+        )
+        deleteBox = MDCheckbox(
+            pos_hint={"center_y": 0.85, "center_x": 0.9275},
+            on_release=self.choose_mode
+
+        )
+        self.ex_reference_by_checkBox[deleteBox] = exc
+        help_layout.add_widget(exc_num)
+        help_layout.add_widget(deleteBox)
+
+        return help_layout
+
+    def create_button_layout(self, exc):
+        startButton = MDIconButton(
+            icon="arrow-right-drop-circle-outline",
+            user_font_size="45sp",
+            theme_text_color="Custom",
+            text_color=self.app.theme_cls.primary_color,
+            on_release=self.start_exc
+        )
+        buttonlayout = MDBoxLayout(
+            size_hint_y=0.5,
+            orientation='horizontal',
+            spacing=20
+        )
+        buttonlayout.add_widget(startButton)
+        self.ex_reference_by_id[startButton] = exc
+        return buttonlayout
+
+    def create_set_label(self, set, num_of_set):
+        # create and return two rows, of set and units
+
+        # exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08)
+        # units_layout = MDGridLayout(rows=1, cols=1, size_hint_y=0.1)
+        num_of_set = "SET " + str(num_of_set + 1)
+        units_pos = 1
+        set = self.str_to_set(set)
+        # units_pos -= space_to_add/10
+        reps = set.split()
+        reps = reps[0]
+        if len(reps) > 1:
+            units_pos = 0.9
+        set_label = MDLabel(
+            text=num_of_set,
+            font_style="H6",
+            size_hint=(units_pos, None),
+            theme_text_color="Custom",
+            text_color=self.app.theme_cls.primary_color
+        )
+        set_number = MDLabel(
+            text=set,
+            font_style="H5",
+            size_hint=(1, None),
+            theme_text_color="Custom",
+            text_color=self.app.theme_cls.primary_color
+        )
+        reps_label = MDLabel(
+            text="Reps                 Kg",
+            font_style="Caption",
+            size_hint=(1, None),
+            theme_text_color="Secondary"
+        )
+        return set_label , set_number , reps_label
+
+
+        # exc_layout.add_widget(set_label)
+        # exc_layout.add_widget(set_number)
+        # units_layout.add_widget(reps_label)
+        # return exc_layout, units_layout
+
 
     def choose_mode(self, *args):
         # shows num of rows selected
@@ -268,23 +291,21 @@ class SessionScreen(Screen):
     def str_to_set(self, set):
         # space_before_x = 4
         # space_after_x = 4
-        print(set)
 
         set = set.split()
         reps_leng = len(set[0])
         weight_leng = len(set[2])
 
-        new_space_before_x = "    "
+        new_space_before_x = "   "
         if reps_leng - 1 > 0:
             new_space_before_x = new_space_before_x[:-(reps_leng - 1)]
 
-        new_space_after_x = "    "
+        new_space_after_x = "     "
         if weight_leng - 1 > 0:
             new_space_after_x = new_space_after_x[:-(weight_leng - 1)]
 
         fixed_set = set[0] + new_space_before_x + "X" + new_space_after_x + set[2]
 
-        print(fixed_set)
         return fixed_set
 
     def on_enter(self, *args):
@@ -296,6 +317,8 @@ class SessionScreen(Screen):
 
     def on_leave(self, *args):
         self.show_checkbox(False)
+        self.app.root.ids['toolbar'].right_action_items = [
+            ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
     def test(self, *args):
         print(3)
@@ -311,10 +334,9 @@ class SessionScreen(Screen):
     def save_session(self):
         unfinished_exc = 0
         msg = "Save your workout?"
-
+        text = ""
         # Find if the user hasn't completed his workout
         for exc in self.workout:
-
             if exc not in self.session_rec:
                 unfinished_exc += 1
             elif not self.session_rec[exc]:
@@ -322,7 +344,7 @@ class SessionScreen(Screen):
         num_of_exc = len(self.workout)
 
         if unfinished_exc == num_of_exc:
-            msg = "Come on at least complete one exercise"
+            msg = "Come on, at least complete one exercise"
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
                                    title=msg,
                                    buttons=[
@@ -334,26 +356,25 @@ class SessionScreen(Screen):
                                    )
         else:
             if unfinished_exc:
-                msg = str(unfinished_exc) + " Unfinished exercise, " + msg
-                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.6, None),
-                                       title=msg,
-                                       buttons=[
-                                           MDFlatButton(
-                                               text="SAVE", text_color=self.app.theme_cls.primary_color,
-                                               on_release=self.upload_session
-                                           ),
-                                           MDFlatButton(
-                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                               on_release=self.cancel_save
-                                           )
-                                       ],
+                text = str(unfinished_exc) + " Unfinished exercise"
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, None),
+                                   title=msg,
+                                   text=text,
+                                   buttons=[
+                                       MDFlatButton(
+                                           text="SAVE", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.upload_session
+                                       ),
+                                       MDFlatButton(
+                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.cancel_save
                                        )
+                                   ],
+                                   )
         self.dialog.open()
 
     def upload_session(self, *args):
         self.app.display_loading_screen()
-
-
 
         date = self.ids["date_picker_label"].text
         date = self.session_date
@@ -374,10 +395,12 @@ class SessionScreen(Screen):
         self.app.change_screen1("homescreen")
         Snackbar(text="Session saved!").show()
         self.app.hide_loading_screen()
+
     def on_save_error(self, *args):
         self.dialog.dismiss()
         print("error session save")
         self.app.hide_loading_screen()
+
     def cancel_save(self, *args):
         self.dialog.dismiss()
 
@@ -389,9 +412,13 @@ class SessionScreen(Screen):
             to_show = 1
 
         if to_show:
+            self.ids["date_picker_label"].opacity = 0
+            self.ids["date_picker_label"].disabled = True
             self.ids["show_checkbox"].opacity = 1
             self.ids["show_checkbox"].disabled = False
         else:
+            self.ids["date_picker_label"].opacity = 1
+            self.ids["date_picker_label"].disabled = False
             self.ids["show_checkbox"].opacity = 0
             self.ids["show_checkbox"].disabled = True
 
@@ -407,6 +434,15 @@ class SessionScreen(Screen):
 
     def show_del_exercise_dialog(self):
         num_to_del = self.app.root.ids['sessionscreen'].ids["num_to_delete"].text
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                               title="Select exercise to delete",
+                               buttons=[
+                                   MDFlatButton(
+                                       text="Ok", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.cancel_del_exc
+                                   )
+                               ],
+                               )
         if num_to_del:
             if int(num_to_del):
                 self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
@@ -422,21 +458,10 @@ class SessionScreen(Screen):
                                            )
                                        ],
                                        )
-        else:
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
-                                   text="Select exercise to delete",
-                                   buttons=[
-                                       MDFlatButton(
-                                           text="Ok", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.cancel_del_exc
-                                       )
-                                   ],
-                                   )
         self.dialog.open()
 
     def del_exc(self, *args):
         self.dialog.dismiss()
-        print(self.ex_reference_by_exc)
         for checkbox in list(
                 self.ex_reference_by_checkBox):  # force a copy to avoid "dict changed size during iteration"
             if checkbox.active:
@@ -492,8 +517,10 @@ class SessionScreen(Screen):
     def fix_resize(self):
         # after delete or add exercise, needs to adjust scroll view size
         # current fix is by rentering the page, so the original fix will work
-        self.app.change_screen1("workoutsscreen", -2)
+        self.app.change_screen1("blankscreen", -2)
         self.app.change_screen1("sessionscreen", -3)
+        self.load_session()
+        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
 
     def show_example_date_picker(self, *args):
         MDDatePicker(self.set_previous_date).open()
@@ -502,13 +529,27 @@ class SessionScreen(Screen):
         new_date = date_obj.strftime("%d/%m/%Y")
         self.ids["date_picker_label"].text = new_date
         self.session_date = new_date + " 00:00:00"
-        print(self.ids["date_picker_label"].text)
+        if self.app.debug:
+            print(self.ids["date_picker_label"].text)
+
+
+class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.background_down = self.theme_cls.primary_light
+        self.background_normal = (1, 1, 1, 1)
+
+
+class MDSetsLabel(MDGridLayout):
+    cols = 1
 
 
 class ExerciseScreen(Screen):
     exercise = "TEST EXC"
     repScale = 1
     weightScale = 5
+    sets = []
+    dialog = 0
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -518,7 +559,7 @@ class ExerciseScreen(Screen):
     def changeInput(self, toScale, increase):
 
         if self.ids["weight"].text:
-            currWeight = int(self.ids["weight"].text)
+            currWeight = float(self.ids["weight"].text)
         else:
             currWeight = 0
 
@@ -546,20 +587,22 @@ class ExerciseScreen(Screen):
                     self.ids["reps"].text = "0"
 
     def on_pre_enter(self, *args):
+        self.sets = []
         self.app.title = "Home"
+        self.app.root.ids['toolbar'].title = self.exercise
+
         exc = self.exercise
         self.ids["ex_name"].text = exc
         # if already completed a few sets in this session:
         if exc in SessionScreen.session_rec:
             sets = SessionScreen.session_rec[exc]
-            for set in reversed(sets):
-                self.ids["md_list"].add_widget(
-                    SwipeToDeleteItem(text=f"{set}")
-                )
-            if sets:
+            for set in sets:
                 set = set.split()
-                self.ids["reps"].text = set[0]
-                self.ids["weight"].text = set[2]
+                reps = set[0]
+                weight = set[2]
+                self.add_set_to_grid(int(reps), float(weight))
+                self.ids["reps"].text = reps
+                self.ids["weight"].text = weight
 
         else:
             SessionScreen.session_rec[exc] = []
@@ -568,29 +611,122 @@ class ExerciseScreen(Screen):
         self.clear_screen()
 
     def add_set(self):
-        currWeight = int(self.ids["weight"].text)
+        currWeight = float(self.ids["weight"].text)
         currReps = int(self.ids["reps"].text)
-        self.ids["md_list"].add_widget(
-            SwipeToDeleteItem(text=f"{currReps}    X    {currWeight}")
+        if not currReps:
+            self.show_invalid_input_msg()
+        else:
+            self.add_set_to_grid(currReps, currWeight)
+
+    def show_invalid_input_msg(self):
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                               title="Not a single Rep? Too lazy..",
+                               buttons=[
+                                   MDFlatButton(
+                                       text="Ok, Ill try harder", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.invalid_input_dismiss
+                                   )
+                               ],
+                               )
+        self.dialog.open()
+
+    def invalid_input_dismiss(self, *args):
+        self.dialog.dismiss()
+
+    def add_set_to_grid(self, currReps, currWeight):
+        rep_inc = 0
+        if currReps > 9:
+            rep_inc = -0.015
+        self.sets.append([currReps, currWeight])
+        num_of_set = len(self.sets)
+        # self.ids["md_list"].add_widget(
+        #     SwipeToDeleteItem(text=f"{currReps}    X    {currWeight}", size_hint=(1, 1))
+        # )
+        set_add = 0.1
+        x_add = 0.2
+
+        set = f"{currReps}    X    {currWeight}"
+        set_layout = MDFloatLayout()
+        set_num = "SET " + str(num_of_set) + ":"
+        set_layout.add_widget(
+            MDLabel(text=set_num, size_hint=(1, 0.2), font_style="H5",
+                    pos_hint={"center_y": 0.7, "center_x": 0.62 + set_add}, theme_text_color="Custom",
+                    text_color=self.app.theme_cls.primary_color
+                    )
         )
+        set_layout.add_widget(
+            MDLabel(text=str(currReps), size_hint=(1, 0.2), font_style="H5",
+                    pos_hint={"center_y": 0.7, "center_x": 0.88 + x_add + rep_inc}, theme_text_color="Custom",
+                    text_color=self.app.theme_cls.primary_color
+                    )
+        )
+        set_layout.add_widget(
+            MDLabel(text="X", size_hint=(1, 0.2), font_style="H5",
+                    pos_hint={"center_y": 0.7, "center_x": 0.981 + x_add}, theme_text_color="Custom",
+                    text_color=self.app.theme_cls.primary_color
+                    )
+        )
+        set_layout.add_widget(
+            MDLabel(text=str(currWeight), size_hint=(1, 0.2), font_style="H5",
+                    pos_hint={"center_y": 0.7, "center_x": 1.07 + x_add}, theme_text_color="Custom",
+                    text_color=self.app.theme_cls.primary_color
+                    )
+        )
+        set_layout.add_widget(
+            MDLabel(text=f"Reps", size_hint=(1, 0.2), font_style="Caption",
+                    pos_hint={"center_y": 0.3, "center_x": 0.87 + x_add},
+                    theme_text_color="Custom",
+                    text_color=self.app.theme_cls.primary_color
+                    ))
+        last_label = MDLabel(text=f"Kg", size_hint=(1, 0.2), font_style="Caption",
+                             pos_hint={"center_y": 0.3, "center_x": 1.09 + x_add},
+                             theme_text_color="Custom",
+                             text_color=self.app.theme_cls.primary_color
+                             )
+        set_layout.add_widget(last_label)
+
+        self.ids["sets_grid"].add_widget(set_layout)
+
+        self.ids.sets_scroll.scroll_to(last_label, padding=10, animate=True)
 
     def save_exc(self):
         exc = self.ids["ex_name"].text
         sets_list = []
-        SessionScreen.session_rec[exc] = sets_list
-        for child in self.ids["md_list"].children:
-            set = child.text
-            sets_list.append(set)
-        SessionScreen.session_rec[exc] = sets_list
+        # SessionScreen.session_rec[exc] = sets_list
+        # for child in self.ids["md_list"].children:
+        #     set = child.text
+        #     sets_list.append(set)
 
+        for set in self.sets:
+            set_str = f"{set[0]}    X    {set[1]}"
+            sets_list.append(set_str)
+        SessionScreen.session_rec[exc] = sets_list
+        # SessionScreen.session_rec[exc] = sets_list
+        self.sets = []
         self.app.change_screen1("sessionscreen", -1, "right")
         # sets_list_str = ', '.join(sets_list)
         # SessionScreen.ex_reference_by_exc[exc].tertiary_text = "Done: " + sets_list_str
 
     def clear_screen(self):
-        self.ids["md_list"].clear_widgets()
+        self.ids["sets_grid"].clear_widgets()
+        self.ids["weight"].text = "0"
+        self.ids["reps"].text = "0"
+
+    def delete_set(self):
+        sets_layout = self.ids["sets_grid"].children
+        if sets_layout:
+            self.ids["sets_grid"].remove_widget(sets_layout[0])
+            self.sets.pop(-1)
+
         self.ids["weight"].text = "0"
         self.ids["reps"].text = "0"
 
     def remove_set(self, instance):
         self.ids["md_list"].remove_widget(instance)
+
+    def change_scale(self, new_scale):
+        self.weightScale = new_scale
+        if new_scale != 2.5:
+            self.repScale = new_scale
+        else:
+            self.repScale = 1
