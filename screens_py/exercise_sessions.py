@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime
 
 from akivymd.uix.datepicker import AKDatePicker
@@ -25,26 +26,41 @@ class ExerciseSessionsScreen(Screen):
         self.dates = {}
         self.app.change_title("Stats for Geeks")
         self.app.root.ids['exercise_sessions_screen'].ids["exc_name"].text = self.exercise
-        print("entering history", self.exercise)
-        record = self.app.exc_sessions[self.exercise]["record"]
-        self.set_record(record)
-        self.sessions = self.app.exc_sessions[self.exercise]
-        self.sort_sessions()
-        curr_month = int(datetime.today().month)
+        if self.app.debug:
+            print("entering history", self.exercise)
+        if self.exercise in self.app.exc_sessions:
+            if "record" in self.app.exc_sessions[self.exercise]:
+                record = self.app.exc_sessions[self.exercise]["record"]
+                self.set_record(record)
+            else:
+                self.set_record(0)
+            self.sessions = self.app.exc_sessions[self.exercise]
+            self.sort_sessions()
+            today = datetime.today()
+            curr_month = int(today.month)
+            curr_year = int(today.year)
+            if curr_month in self.dates[curr_year]:
+                month = curr_month
+            else:
+                month = self.nearest(self.dates[curr_year], curr_month)
 
-        if curr_month in self.dates:
-            month = curr_month
+            self.load_sessions(curr_year, month)
         else:
-            curr_month = self.nearest(self.dates, curr_month)
-
-        self.load_sessions(curr_month)
+            sessions_layout = self.ids.sets_grid
+            sessions_layout.clear_widgets()
+            self.set_record(0)
+            self.no_sessions_grid("No records for " + self.exercise)
 
     def set_record(self, record):
-        record = record.split()
-        best_reps = record[0]
-        best_weight = record[2]
-        self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = best_reps
-        self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = best_weight
+        if record:
+            record = record.split()
+            best_reps = record[0]
+            best_weight = record[2]
+            self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = best_reps
+            self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = best_weight
+        else:
+            self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = "0"
+            self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = "0"
 
     def nearest(self, items, pivot):
         return min(items, key=lambda x: abs(x - pivot))
@@ -55,11 +71,18 @@ class ExerciseSessionsScreen(Screen):
         dates.sort(reverse=True)
         print(dates)
         for date in dates:
+            year = int(date.year)
             month = int(date.month)
-            if month not in self.dates:
-                self.dates[month] = [date]
+
+            if year not in self.dates:
+                self.dates[year] = {}
+
+            if month not in self.dates[year]:
+                self.dates[year][month] = [date]
+
             else:
-                self.dates[month].append(date)
+                self.dates[year][month].append(date)
+
         print(self.dates)
 
     def on_enter(self, *args):
@@ -69,17 +92,24 @@ class ExerciseSessionsScreen(Screen):
         # always deleting all splits and remaining with one tab.
         pass
 
-    def load_sessions(self, month):
+    def load_sessions(self, year, month):
+        print("loading sessions of", year, month)
+        print(self.dates)
         sessions_layout = self.ids.sets_grid
         sessions_layout.clear_widgets()
+        month_abb = calendar.month_abbr[month]
+        self.app.root.ids['exercise_sessions_screen'].ids["date_label"].text = "Previous sessions, " + month_abb
+
+
         dict_of_row_height = {}
-        if month in self.dates:
-            sessions_keys = self.dates[month]
+        if year in self.dates and month in self.dates[year]:
+            sessions_keys = self.dates[year][month]  # represents all session dates given a certain month
         else:
-            self.no_sessions_grid()
+            msg = "No sessions available for " + month_abb + ", " + str(year)
+            self.no_sessions_grid(msg,sessions_layout)
             return
-        month = sessions_keys[0].ctime()[4:7]
-        self.app.root.ids['exercise_sessions_screen'].ids["date_label"].text = "Previous sessions, " + month
+
+        # month = sessions_keys[0].ctime()[4:7]
 
         for i, session_key in enumerate(sessions_keys):
             print(self.sessions)
@@ -96,7 +126,7 @@ class ExerciseSessionsScreen(Screen):
             new_card_layout = self.create_card(session_exc, i, total_session_num, session_workout_name, session_date)
             sessions_layout.add_widget(new_card_layout)
 
-    def no_sessions_grid(self, month):
+    def no_sessions_grid(self, msg , layout):
         new_card_layout = MDFloatLayout()  # for centering
 
         excCard = MDCard(
@@ -106,24 +136,22 @@ class ExerciseSessionsScreen(Screen):
             size_hint=(0.87, 0.7),
             padding=[11, 16, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
-            elevation=0
+            elevation=1
 
         )
-
         workout_name = MDLabel(
-            text="no sessions availabe for this month",
-            font_style="H6",
+            text=msg,
+            font_style="Subtitle2",
             size_hint=(1, 0.1),
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color
         )
-        sessions_layout = self.ids.sets_grid
+
         excCard.add_widget(workout_name)
         new_card_layout.add_widget(excCard)
-        sessions_layout.add_widget(new_card_layout)
+        layout.add_widget(new_card_layout)
         dict_of_row_height = {0: 50}
-        self.ids.sets_grid.rows_minimum = dict_of_row_height
-
+        layout.rows_minimum = dict_of_row_height
 
     def create_card(self, session, num_of_session, total_session_num, session_workout_name, session_date):
         new_card_layout = MDFloatLayout()  # for centering
@@ -206,4 +234,4 @@ class ExerciseSessionsScreen(Screen):
             return
         new_date = '%d / %d / %d' % (date.day, date.month, date.year)
         print(new_date)
-        self.load_sessions(int(date.month))
+        self.load_sessions(int(date.year), int(date.month))

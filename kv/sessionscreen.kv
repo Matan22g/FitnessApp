@@ -56,15 +56,6 @@
             on_release: root.save_session()
             opacity:0
 
-        MDRoundFlatIconButton:
-            id: change_date
-            width: dp(140)
-            text: "Change date"
-            pos_hint: {"center_x": .24, "top": .1}
-            opposite_colors: True
-            icon: "calendar"
-            on_release: root.show_example_date_picker()
-            opacity:0
 
         MDLabel:
             id: workout_name
@@ -78,7 +69,6 @@
             text_color: app.theme_cls.primary_color
 
         MDRectangleFlatIconButton:
-            background_normal: ''
             id: date_picker_label
             icon: "calendar"
             pos_hint: {"center_x": 0.8, "top": .958}
@@ -88,6 +78,15 @@
 #            text_color: app.theme_cls.primary_color
             on_release: root.show_example_date_picker()
 
+        MDRectangleFlatIconButton:
+            id: date_picker_label_view
+            icon: "calendar"
+            pos_hint: {"center_x": 0.8, "top": .958}
+            text: "Date: "
+            line_color: 0, 0, 0, 0
+#            theme_text_color: "Custom"
+#            text_color: app.theme_cls.primary_color
+
         MDLabel:
             id: timer
             pos_hint: {"center_x": 0.41, "top": .999}
@@ -95,6 +94,16 @@
             font_size: "16sp"
             halign: "left"
             text: app.timer_format
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDLabel:
+            id: timer_view
+            pos_hint: {"center_x": 0.41, "top": .999}
+            size_hint: (.5, .15)
+            font_size: "16sp"
+            halign: "left"
+            text: ""
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 

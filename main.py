@@ -39,7 +39,9 @@ from screens_py.homescreen import HomeScreen
 from screens_py.settingsscreen import SettingsScreen
 from screens_py.workoutsscreen import WorkoutsScreen
 from screens_py.workoutscreen import WorkoutScreen
-from screens_py.exercise_sessions_screen import ExerciseSessionsScreen
+from screens_py.exercise_sessions import ExerciseSessionsScreen
+from screens_py.previous_workouts import PreviousWorkoutsScreen
+
 from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 from customKv.tab import MDTabs, MDTabsBase
@@ -88,7 +90,7 @@ class MainApp(MDApp):
     user_data = []  # on login loads all user data
     workouts = {}  # straight from database
     workoutsParsed = {}  # analyze to list  'workout_key': {'name': "[['exc1'], ['exc2']]"} ----> '-workout_key': {'name': [['exc1'], ['exc2']]}
-    sessions = []  # list of sessions obj
+    sessions = {}  # dic of sessions obj by dates
     sessions_by_key = {}  # dic of all sessions -- may be not needed ***
     friends_list = {}  # will have all user names of the users friends.
     dialog = ""  # for presenting dialog to user.
@@ -106,6 +108,9 @@ class MainApp(MDApp):
     popup = Factory.LoadingPopup()
     popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
     exc_sessions = {}
+    sessions_by_month_year = {} # dict of session dates by month by year
+    sessions = {}  # dic of sessions obj by dates
+    running_session_workout = []
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -132,7 +137,7 @@ class MainApp(MDApp):
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
-
+        self.change_screen1("previous_workouts_screen")
         # self.get_user_name_data(user_name)
         ### debug:
         # if self.debug == 0:
@@ -180,7 +185,7 @@ class MainApp(MDApp):
         session_dic = self.user_data["sessions"]
         if self.debug:
             print("session dic: ", session_dic)
-
+        temp_session_list = []
         for session_key in session_dic:
             session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
             date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
@@ -192,16 +197,34 @@ class MainApp(MDApp):
             self.add_session_to_excs_stats(exercises, date , workout_name)
             new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
                                           exercises)
-            self.sessions.append(new_session)
+            self.sessions[date]=new_session
+        self.sort_workouts_sessions()
 
-        self.sessions.sort(key=lambda r: r.date, reverse=True)
         if self.debug:
             print("sessions: ", self.sessions)
-            print("exc_sessions: ", self.exc_sessions)
+
+    def sort_workouts_sessions(self):
+        session_dates = [session_date for session_date in self.sessions]
+        print(session_dates)
+        session_dates.sort(reverse=True)
+        print(session_dates)
+        self.sessions_by_month_year={}
+        for date in session_dates:
+            year = int(date.year)
+            month = int(date.month)
+            if year not in self.sessions_by_month_year:
+                self.sessions_by_month_year[year] = {}
+
+            if month not in self.sessions_by_month_year[year]:
+                self.sessions_by_month_year[year][month] = [date]
+            else:
+                self.sessions_by_month_year[year][month].append(date)
+
+        if self.debug:
+            print("sessions_by_month_year: ", self.sessions_by_month_year)
 
     def add_session_to_excs_stats(self, exercises , date , workout_name):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
-
         for exc in exercises:
             exercises_list = list(exercises.values())[0]
 
@@ -269,7 +292,7 @@ class MainApp(MDApp):
 
     def create_new_workout(self, *args):
         new_workout = args[0].parent.parent.parent.children[2].children[0].children[0].text
-        # If the user hasnt written any name, dont do nothing.
+        # If the user hasnt written any name, do nothing.
         if new_workout:
             self.dialog.dismiss()
             self.root.ids['workoutscreen'].workout = []
@@ -501,12 +524,23 @@ class MainApp(MDApp):
         session_grid = self.root.ids['sessionscreen'].ids[
             'exc_cards']
         session_grid.clear_widgets()
+        # SessionScreen.new_workout = 1  # Sets the enitre workout
+        # SessionScreen.workout_splits = chosen_workout  # Sets the enitre workout
+        # SessionScreen.workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
+        # SessionScreen.workout_key = workoutkey  # Sets the workout key list
+        # SessionScreen.num_of_split = workout_split  # Sets which split was chosen
 
-        SessionScreen.new_workout = 1  # Sets the enitre workout
-        SessionScreen.workout_splits = chosen_workout  # Sets the enitre workout
-        SessionScreen.workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
-        SessionScreen.workout_key = workoutkey  # Sets the workout key list
-        SessionScreen.num_of_split = workout_split  # Sets which split was chosen
+        self.root.ids['sessionscreen'].new_workout = 1  # Sets the enitre workout
+        self.root.ids['sessionscreen'].workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
+        self.root.ids['sessionscreen'].workout_key = workoutkey  # Sets the workout key list
+        self.root.ids['sessionscreen'].num_of_split = workout_split  # Sets which split was chosen
+        self.running_session_workout = self.root.ids['sessionscreen'].workout
+
+        if self.debug:
+            print("trying to start new session")
+            print("SessionScreen.workout",SessionScreen.workout)
+            print("SessionScreen.workout_key",SessionScreen.workout_key)
+            print("SessionScreen.num_of_split",SessionScreen.num_of_split)
 
         # Reset all dicts from previous workouts
         SessionScreen.ex_reference_by_id = {}
@@ -517,11 +551,29 @@ class MainApp(MDApp):
         SessionScreen.workout_name = workout_name
         self.new_session = 1
         self.running_session = 1
+        self.root.ids['sessionscreen'].view_mode = 0
+
         self.root.ids['workoutsscreen'].ids["running_session"].text = workout_name
 
         # Start workout timer.
         self.start_session_timer()
 
+
+        self.change_screen1("sessionscreen")
+
+    def view_session(self,session_key):
+        session_grid = self.root.ids['sessionscreen'].ids[
+            'exc_cards']
+        session_grid.clear_widgets()
+
+        SessionScreen.session_key = session_key
+        self.root.ids['sessionscreen'].view_mode = 1
+
+        self.change_screen1("sessionscreen")
+
+    def back_to_running_session(self):
+        self.root.ids['sessionscreen'].view_mode = 0
+        self.root.ids['sessionscreen'].workout = self.running_session_workout
         self.change_screen1("sessionscreen")
 
     def start_session_timer(self):
@@ -578,6 +630,33 @@ class MainApp(MDApp):
         self.workout_to_delete = 0
 
     def error_del_workout(self, *args):
+        self.hide_loading_screen()
+        # show proper msg
+        print('failed')
+
+    def del_session(self, session_date_key):
+        self.display_loading_screen()
+        session = self.sessions.pop(session_date_key)
+
+        session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
+            self.local_id, session.session_key, self.id_token)
+        del_req = UrlRequest(session_link, on_success=self.success_del_session, on_error=self.error_del_session,
+                             on_failure=self.error_del_session,
+                             ca_file=certifi.where(), method='DELETE', verify=True)
+        try:
+            sessions_list = self.sessions_by_month_year[session_date_key.year][session_date_key.month]
+            ind_to_pop = sessions_list.index(session_date_key)
+            sessions_list.pop(ind_to_pop)
+        except:
+            print("error somehow")
+
+    def success_del_session(self, req, result):
+        self.hide_loading_screen()
+        self.root.ids['previous_workouts_screen'].on_pre_enter()
+        Snackbar(text="Session Deleted!").show()
+        # self.load_workout_data()
+
+    def error_del_session(self, *args):
         self.hide_loading_screen()
         # show proper msg
         print('failed')

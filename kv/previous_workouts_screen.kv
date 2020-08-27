@@ -1,0 +1,41 @@
+<PreviousWorkoutsScreen>:
+    FloatLayout:
+
+        MDLabel:
+            pos_hint: {"center_x": 0.57, "top":1.05}
+            size_hint: (1, .2)
+            font_style: "H5"
+            text: "Recent Workouts"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            pos_hint: {"center_x": .88, "top": .94}
+            icon: "chart-box-outline"
+            user_font_size: "25sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.choose_date()
+
+        MDLabel:
+            id: month_to_view
+            pos_hint: {"center_x": 0.57, "top":1.0}
+            size_hint: (1, .2)
+            font_style: "H6"
+            text: "Jul"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+        ScrollView:
+            id: sessions_scroll
+            pos_hint: {"top": .87}
+            size_hint_y: None
+            size_hint: 1, .87
+            GridLayout:
+                # sets_grid
+                id: sessions_grid
+                cols: 1
+                spacing: 20,3
+                size_hint_y: None
+                height: self.minimum_height
+                row_force_default: True
+                row_default_height: '100dp'

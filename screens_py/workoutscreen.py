@@ -50,7 +50,6 @@ class WorkoutScreen(Screen):
 
     def on_pre_enter(self, *args):
 
-        self.app.change_title(self.workout_name)
 
         if self.app.debug:
             print("entering workout screen")
@@ -336,7 +335,7 @@ class WorkoutScreen(Screen):
             user_font_size="25sp",
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color,
-            on_release=self.test
+            on_release=self.show_exc_history
         )
 
         self.stats_button_id_by_exc[exc] = sButton
@@ -348,6 +347,12 @@ class WorkoutScreen(Screen):
         excCard.add_widget(name_layout)
         card_layout.add_widget(excCard)
         return card_layout
+
+    def show_exc_history(self, *args):
+        exc_name = args[0].parent.children[1].text
+        self.app.show_exc_history(exc_name)
+
+
 
     def show_exc_del_buttons(self, to_Show):
         for del_button_id in self.exc_by_del_button:

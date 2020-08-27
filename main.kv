@@ -10,6 +10,7 @@
 #: include kv/exercisescreen.kv
 #: include kv/workoutscreen.kv
 #: include kv/exercise_sessions_screen.kv
+#: include kv/previous_workouts_screen.kv
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
@@ -109,6 +110,10 @@ NavigationLayout:
                         id: workoutscreen
                         name: "workoutscreen"
 
+                    PreviousWorkoutsScreen:
+                        id: previous_workouts_screen
+                        name: "previous_workouts_screen"
+
 
 
     MDNavigationDrawer:
@@ -148,6 +153,15 @@ NavigationLayout:
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "account-group"
+
+                    OneLineIconListItem:
+                        text: "Previous Workouts"
+                        on_release:
+                            app.change_screen1("previous_workouts_screen")
+#                            screen_manager1.current = "workoutsscreen"
+                            nav_drawer.set_state()
+                        IconLeftWidget:
+                            icon: "calendar-clock"
 
                     OneLineIconListItem:
                         text: "Workouts"

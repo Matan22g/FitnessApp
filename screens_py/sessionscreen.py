@@ -69,6 +69,7 @@ class SessionScreen(Screen):
     ex_reference_by_id = {}
     ex_reference_by_exc = {}
     session_rec = {}  # dic: key is exc, value, list of sets
+    session_rec_to_view = {}
     workout_name = ""
     workout_key = 0
     num_of_split = 0  # problem between sessions
@@ -76,8 +77,9 @@ class SessionScreen(Screen):
     num_to_del = 0
     session_date = 0
     ex_reference_by_checkBox = {}
-
+    view_mode = 0
     # long_press = 0
+    session_key = 0
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -102,32 +104,97 @@ class SessionScreen(Screen):
     #         exc_id.children[0].children[0].opacity = 0
 
     def on_pre_enter(self, *args):
-        self.app.root.ids['toolbar'].title = self.workout_name
-        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+        if self.app.debug:
+            print("entering session page")
+            print("session screen, view mode:", self.view_mode)
+            print("session workout", self.workout)
         self.app.title = "Session"
-        # First visit: setting date to today's date, and loading all exc to the list.
-        self.show_checkbox(False)
-        if self.app.new_session == 1:
-            self.app.new_session = 0
-            now = datetime.now()
-            now = now.strftime("%d/%m/%Y %H:%M:%S")
-            self.ids["date_picker_label"].text = now[0:10]
-            self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
-            self.ids["workout_name"].text = self.workout_name
-            self.session_date = now
-        # for exc_id in self.ex_reference_by_id:
-        #     exc_id.children[0].children[0].opacity = 0
-        self.load_session()
+        if not self.view_mode:
+
+
+            self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+            # First visit: setting date to today's date, and loading all exc to the list.
+            self.show_checkbox(False)
+            if self.app.new_session == 1:
+                self.app.new_session = 0
+                now = datetime.now()
+                now = now.strftime("%d/%m/%Y %H:%M:%S")
+                self.ids["date_picker_label"].text = now[0:10]
+                self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
+                self.ids["workout_name"].text = self.workout_name
+                self.session_date = now
+            # for exc_id in self.ex_reference_by_id:
+            #     exc_id.children[0].children[0].opacity = 0
+            self.load_session()
+            self.hide_edit_buttons(False)
+            self.app.change_title(self.workout_name)
+
+        else:
+            session = self.app.sessions[self.session_key]
+            session_workout = list(session.exercises.keys())
+            session_sets_dict = session.exercises
+
+            self.workout = session_workout
+            self.session_rec_to_view = session_sets_dict
+            session_duration = session.duration
+            session_date = session.date
+            print("session workout", self.workout)
+            print("session.exercises", session.exercises)
+            print("self.session_key", self.session_key)
+            print(" self.app.sessions[self.session_key]", self.app.sessions[self.session_key])
+
+            self.ids["timer_view"].text = session_duration
+            self.ids["date_picker_label_view"].text = str(session_date)[0:10]
+            self.load_session()
+            self.hide_edit_buttons(True)
+            self.app.change_title(session.workout_name)
+
+    def hide_edit_buttons(self, to_hide):
+        if to_hide:
+            self.ids["date_picker_label"].disabled = True
+            self.ids["date_picker_label"].opacity = 0
+
+            self.ids["add_exc"].opacity = 0
+            self.ids["add_exc"].disabled = True
+
+            self.ids["timer"].opacity = 0
+
+            self.ids["timer_view"].opacity = 1
+
+            self.ids["date_picker_label_view"].opacity = 1
+        else:
+            self.ids["date_picker_label"].disabled = False
+            self.ids["date_picker_label"].opacity = 1
+
+            self.ids["add_exc"].opacity = 1
+            self.ids["add_exc"].disabled = False
+
+            self.ids["timer"].opacity = 1
+
+            self.ids["timer_view"].opacity = 0
+
+            self.ids["date_picker_label_view"].opacity = 0
 
     def load_session(self):
+        if self.app.debug:
+            print("loading session:")
+        if self.view_mode:
+            session_rec = self.session_rec_to_view
+        else:
+            session_rec = self.session_rec
+
         num_of_exc_total = len(self.workout)
         dict_of_row_height = {}
         layout = self.ids.exc_cards
         layout.clear_widgets()
         for i, exc in enumerate(self.workout):
-            dict_of_row_height[i] = 175
-            if exc in self.session_rec:
-                row_enlarger = 50 * len(self.session_rec[exc])
+            if not self.view_mode:
+                dict_of_row_height[i] = 175
+            else:
+                dict_of_row_height[i] = 100
+
+            if exc in session_rec:
+                row_enlarger = 50 * len(session_rec[exc])
                 dict_of_row_height[i] += row_enlarger
         self.ids.exc_cards.rows_minimum = dict_of_row_height
         # print(dict_of_row_height)
@@ -137,23 +204,38 @@ class SessionScreen(Screen):
         self.show_checkbox(False)
 
     def create_card(self, num_of_exc, exc, num_of_exc_total):
+        if self.view_mode:
+            session_rec = self.session_rec_to_view
+        else:
+            session_rec = self.session_rec
+
         newlayout = MDFloatLayout()  # for centering
-        if exc in self.session_rec:
-            set_amount = len(self.session_rec[exc])
+        if exc in session_rec:
+            set_amount = len(session_rec[exc])
         else:
             set_amount = 0
         # card_y_size = 200
         # card_y_size = str(card_y_size + set_amount * 50) + "dp"
         self.ids.exc_cards.row_default_height += set_amount * 50
 
-        excCard = MDCard_Custom(
-            spacing=5,
-            radius=[14],
-            orientation="vertical",
-            size_hint=(0.9, 0.85),
-            padding="12dp",
-            pos_hint={"center_y": 0.5, "center_x": 0.5}
-        )
+        if not self.view_mode:
+            excCard = MDCard_Custom(
+                spacing=5,
+                radius=[14],
+                orientation="vertical",
+                size_hint=(0.9, 0.85),
+                padding="12dp",
+                pos_hint={"center_y": 0.5, "center_x": 0.5}
+            )
+        else:
+            excCard = MDCard(
+                spacing=5,
+                radius=[14],
+                orientation="vertical",
+                size_hint=(0.9, 0.85),
+                padding="12dp",
+                pos_hint={"center_y": 0.5, "center_x": 0.5}
+            )
 
         help_layout = self.create_top_card_layout(num_of_exc,num_of_exc_total, exc)
         excCard.add_widget(help_layout)
@@ -173,11 +255,17 @@ class SessionScreen(Screen):
 
         # session = ["3   X   8", "3   X   8", "3   X   8", "3   X   8"]
         session = []
-        if exc in self.session_rec:
-            session = self.session_rec[exc]
+        if exc in session_rec:
+            session = session_rec[exc]
         for num_of_set, set in enumerate(session):
             exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08)
             units_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.1)
+            if self.view_mode:
+                exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08, row_force_default=True,
+                                          row_default_height=70)
+                units_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.1, row_force_default=True,
+                                            row_default_height=67)
+
             set_label, set_number, reps_label = self.create_set_label(set, num_of_set)
             exc_layout.add_widget(set_label)
             exc_layout.add_widget(set_number)
@@ -190,10 +278,9 @@ class SessionScreen(Screen):
             # new_exc_layout, new_units_layout = self.create_set_label(set, num_of_set)
             # excCard.add_widget(new_exc_layout)
             # excCard.add_widget(new_units_layout)
-
-        button_layout = self.create_button_layout(exc)
-
-        excCard.add_widget(button_layout)
+        if not self.view_mode:
+            button_layout = self.create_button_layout(exc)
+            excCard.add_widget(button_layout)
         # For fast deletion
         self.ex_reference_by_exc[exc] = excCard
         newlayout.add_widget(excCard)
@@ -277,7 +364,6 @@ class SessionScreen(Screen):
         # exc_layout.add_widget(set_number)
         # units_layout.add_widget(reps_label)
         # return exc_layout, units_layout
-
 
     def choose_mode(self, *args):
         # shows num of rows selected
@@ -393,6 +479,9 @@ class SessionScreen(Screen):
     def on_save_success(self, *args):
         self.dialog.dismiss()
         self.app.change_screen1("homescreen")
+        self.app.get_user_data()
+        self.app.load_session_data()
+
         Snackbar(text="Session saved!").show()
         self.app.hide_loading_screen()
 
@@ -405,6 +494,11 @@ class SessionScreen(Screen):
         self.dialog.dismiss()
 
     def show_checkbox(self, to_show):
+
+        date_id = "date_picker_label"
+        if self.view_mode:
+            date_id = "date_picker_label_view"
+
         self.app.root.ids['sessionscreen'].ids["num_to_delete"].text = ""
         if to_show == "False" or not to_show:
             to_show = 0
@@ -412,13 +506,13 @@ class SessionScreen(Screen):
             to_show = 1
 
         if to_show:
-            self.ids["date_picker_label"].opacity = 0
-            self.ids["date_picker_label"].disabled = True
+            self.ids[date_id].opacity = 0
+            self.ids[date_id].disabled = True
             self.ids["show_checkbox"].opacity = 1
             self.ids["show_checkbox"].disabled = False
         else:
-            self.ids["date_picker_label"].opacity = 1
-            self.ids["date_picker_label"].disabled = False
+            self.ids[date_id].opacity = 1
+            self.ids[date_id].disabled = False
             self.ids["show_checkbox"].opacity = 0
             self.ids["show_checkbox"].disabled = True
 
@@ -445,8 +539,14 @@ class SessionScreen(Screen):
                                )
         if num_to_del:
             if int(num_to_del):
+                msg = "Delete " + num_to_del + " Exercise?"
+                warning =""
+                if self.view_mode:
+                    warning = "Warning: deleting session record cannot be undone"
+
                 self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
-                                       title="Delete " + num_to_del + " Exercise?",
+                                       title=msg,
+                                       text = warning,
                                        buttons=[
                                            MDFlatButton(
                                                text="DELETE", text_color=self.app.theme_cls.primary_color,
@@ -475,8 +575,15 @@ class SessionScreen(Screen):
                 self.ex_reference_by_exc.pop(exc, None)
                 self.session_rec.pop(exc, None)
                 self.workout.remove(exc)
+
+        if self.view_mode:
+            self.delete_exc_from_session(exc)
+
         self.show_checkbox(False)
         self.fix_resize()
+
+    def delete_exc_from_session(self, exc):
+        session = self.app.sessions[self.session_key]
 
     def cancel_del_exc(self, caller):
         self.dialog.dismiss()

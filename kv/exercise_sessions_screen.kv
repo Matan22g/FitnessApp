@@ -1,13 +1,21 @@
 <ExerciseSessionsScreen>:
     FloatLayout:
+        AnchorLayout:
+            pos_hint: {"center_x": 0.58, "center_y": .558}
+            anchor_x:'left'
+            anchor_y:'top'
+            MDLabel:
+                id: exc_name
+                size_hint: (1, .2)
+                font_style: "H4"
+                text: root.exercise
+                theme_text_color: "Custom"
+                text_color: app.theme_cls.primary_color
 
-        MDLabel:
-            id: exc_name
-            pos_hint: {"x": 0.001, "y": .845}
-            size_hint: (.7, .2)
-            font_style: "H4"
-            halign: "center"
-            text: root.exercise
+        MDIconButton:
+            pos_hint: {"center_x": .88, "top": .95}
+            icon: "chart-line"
+            user_font_size: "25sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
@@ -245,13 +253,6 @@
             text: "Previous sessions, Dec"
             user_font_size: "30sp"
             theme_text_color: "Secondary"
-
-        MDIconButton:
-            pos_hint: {"center_x": .88, "top": .98}
-            icon: "chart-line"
-            user_font_size: "25sp"
-            theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
 
         MDIconButton:
             pos_hint: {"center_x": .88, "top": .57}
