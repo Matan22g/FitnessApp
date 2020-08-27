@@ -226,8 +226,8 @@ class MainApp(MDApp):
     def add_session_to_excs_stats(self, exercises , date , workout_name):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
         for exc in exercises:
-            exercises_list = list(exercises.values())[0]
-
+            exercises_list = exercises[exc]
+            print(exc)
             if exc not in self.exc_sessions:
                 self.exc_sessions[exc] = {date: [workout_name, exercises_list]}
                 record = self.find_best_set(exercises_list)
@@ -244,7 +244,6 @@ class MainApp(MDApp):
                 if maybe_record_weight > record_weight:
                     self.exc_sessions[exc]["record"] = maybe_record
                 self.exc_sessions[exc][date] = [workout_name, exercises_list]
-
     def find_best_set(self, exc_session):
         # by weight:
         best_weight = 0

@@ -49,7 +49,7 @@ class ExerciseSessionsScreen(Screen):
             sessions_layout = self.ids.sets_grid
             sessions_layout.clear_widgets()
             self.set_record(0)
-            self.no_sessions_grid("No records for " + self.exercise)
+            self.no_sessions_grid("No records for " + self.exercise, sessions_layout)
 
     def set_record(self, record):
         if record:
