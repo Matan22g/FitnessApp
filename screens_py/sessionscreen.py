@@ -56,12 +56,7 @@ class MDCard_Custom(MDCard, TouchBehavior):
         self.app = MDApp.get_running_app()
 
     def on_long_touch(self, *args):
-        print(3)
         self.app.root.ids['sessionscreen'].show_checkbox(True)
-
-
-class MDLabel_custom(MDLabel, ButtonBehavior):
-    pass
 
 
 class SessionScreen(Screen):
@@ -201,7 +196,13 @@ class SessionScreen(Screen):
         for num_of_exc, exc in enumerate(self.workout):
             new_card_layout = self.create_card(num_of_exc, exc, num_of_exc_total)
             layout.add_widget(new_card_layout)
+
         self.show_checkbox(False)
+
+    def active_card_check_box(self, *args):
+        check_box_state = args[0].children[2].children[0].active
+        args[0].children[2].children[0].active = not check_box_state
+        self.update_delete_num('sessionscreen',self.ex_reference_by_checkBox)
 
     def create_card(self, num_of_exc, exc, num_of_exc_total):
         if self.view_mode:
@@ -225,7 +226,8 @@ class SessionScreen(Screen):
                 orientation="vertical",
                 size_hint=(0.9, 0.85),
                 padding="12dp",
-                pos_hint={"center_y": 0.5, "center_x": 0.5}
+                pos_hint={"center_y": 0.5, "center_x": 0.5},
+                on_release = self.active_card_check_box
             )
         else:
             excCard = MDCard(
@@ -297,9 +299,7 @@ class SessionScreen(Screen):
             pos_hint={"center_y": 0.85, "center_x": 0.17}
         )
         deleteBox = MDCheckbox(
-            pos_hint={"center_y": 0.85, "center_x": 0.9275},
-            on_release=self.choose_mode
-
+            pos_hint={"center_y": 0.85, "center_x": 0.9275}
         )
         self.ex_reference_by_checkBox[deleteBox] = exc
         help_layout.add_widget(exc_num)
@@ -365,14 +365,14 @@ class SessionScreen(Screen):
         # units_layout.add_widget(reps_label)
         # return exc_layout, units_layout
 
-    def choose_mode(self, *args):
+    def update_delete_num(self, screen, check_box_list):
         # shows num of rows selected
         num_to_del = 0
-        for checkbox in SessionScreen.ex_reference_by_checkBox:
+        for checkbox in check_box_list:
             if checkbox.active:
                 num_to_del += 1
-        self.app.root.ids['sessionscreen'].ids["num_to_delete"].text = str(num_to_del)
-        self.num_to_del = self.app.root.ids['sessionscreen'].ids["num_to_delete"].text
+        self.app.root.ids[screen].ids["num_to_delete"].text = str(num_to_del)
+        self.num_to_del = self.app.root.ids[screen].ids["num_to_delete"].text
 
     def str_to_set(self, set):
         # space_before_x = 4
@@ -406,8 +406,7 @@ class SessionScreen(Screen):
         self.app.root.ids['toolbar'].right_action_items = [
             ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
-    def test(self, *args):
-        print(3)
+
 
     def start_exc(self, *args):
         # print(args[0])
@@ -487,8 +486,10 @@ class SessionScreen(Screen):
 
     def on_save_error(self, *args):
         self.dialog.dismiss()
-        print("error session save")
         self.app.hide_loading_screen()
+        if self.app.debug:
+            print(args)
+            print("error session save")
 
     def cancel_save(self, *args):
         self.dialog.dismiss()
@@ -506,11 +507,13 @@ class SessionScreen(Screen):
             to_show = 1
 
         if to_show:
+            self.ids["num_to_delete"].opacity = 1
             self.ids[date_id].opacity = 0
             self.ids[date_id].disabled = True
             self.ids["show_checkbox"].opacity = 1
             self.ids["show_checkbox"].disabled = False
         else:
+            self.ids["num_to_delete"].opacity = 0
             self.ids[date_id].opacity = 1
             self.ids[date_id].disabled = False
             self.ids["show_checkbox"].opacity = 0

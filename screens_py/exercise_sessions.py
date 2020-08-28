@@ -24,13 +24,14 @@ class ExerciseSessionsScreen(Screen):
 
     def on_pre_enter(self, *args):
         self.dates = {}
+        self.sessions = []
         self.app.change_title("Stats for Geeks")
         self.app.root.ids['exercise_sessions_screen'].ids["exc_name"].text = self.exercise
         if self.app.debug:
             print("entering history", self.exercise)
         if self.exercise in self.app.exc_sessions:
             if "record" in self.app.exc_sessions[self.exercise]:
-                record = self.app.exc_sessions[self.exercise]["record"]
+                record = self.app.exc_sessions[self.exercise]["record"][0]
                 self.set_record(record)
             else:
                 self.set_record(0)
@@ -94,7 +95,10 @@ class ExerciseSessionsScreen(Screen):
 
     def load_sessions(self, year, month):
         print("loading sessions of", year, month)
-        print(self.dates)
+        print("self.dates",self.dates)
+        print("self.sessions",self.sessions)
+        print("self.sessions",self.sessions)
+
         sessions_layout = self.ids.sets_grid
         sessions_layout.clear_widgets()
         month_abb = calendar.month_abbr[month]
@@ -112,7 +116,6 @@ class ExerciseSessionsScreen(Screen):
         # month = sessions_keys[0].ctime()[4:7]
 
         for i, session_key in enumerate(sessions_keys):
-            print(self.sessions)
             session = self.sessions[session_key][1]
             dict_of_row_height[i] = 140
             row_enlarger = 50 * (len(session) - 1)

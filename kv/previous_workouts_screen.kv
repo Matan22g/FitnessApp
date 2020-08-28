@@ -1,5 +1,12 @@
 <PreviousWorkoutsScreen>:
     FloatLayout:
+        on_touch_down:
+        #backgroung press hides checkboxes
+            caller = args[0]
+            touch = args[1]
+            if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.show_checkbox("False")
+            if touch.spos[1]>0.875: root.show_checkbox("False")
+
 
         MDLabel:
             pos_hint: {"center_x": 0.57, "top":1.05}
@@ -10,6 +17,7 @@
             text_color: app.theme_cls.primary_color
 
         MDIconButton:
+            id: date_button
             pos_hint: {"center_x": .88, "top": .94}
             icon: "chart-box-outline"
             user_font_size: "25sp"
@@ -25,6 +33,26 @@
             text: "Jul"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
+
+        MDLabel:
+            id: num_to_delete
+            pos_hint: {"center_x": 1.04, "top":0.975}
+            size_hint: (.47, .15)
+            font_size: "16sp"
+            halign: "left"
+            text: "5"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            id: delete_sessions
+            pos_hint: {"center_x": 0.88, "top":0.95}
+            icon: "trash-can-outline"
+            user_font_size: "32sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.show_del_exercise_dialog()
+
         ScrollView:
             id: sessions_scroll
             pos_hint: {"top": .87}

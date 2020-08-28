@@ -11,10 +11,7 @@
         helper_text: "Enter text"
 
 
-<ListItemWithCheckbox>:
 
-    RightCheckbox:
-        on_release: root.choose_mode()
 
 
 
@@ -27,7 +24,6 @@
             touch = args[1]
             if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.show_checkbox("False")
             if touch.spos[1]>0.875: root.show_checkbox("False")
-            if touch.spos[1]<0.15: root.show_checkbox("False")
 #            if touch.spos[1]>0.8: root.fix_grid_heights()
 
 #            caller_touched = caller.collide_point(*touch.pos)
@@ -35,15 +31,6 @@
 #            print('caller -> {0}\ntouch -> {1}'.format(caller, touch))
 #            ## Do stuff if touched and none of the spawn have been touched
 #            if caller_touched and True not in spawn_touched: print('caller -> {0}\ntouch -> {1}'.format(caller, touch))
-
-
-#        MDTabs:
-#            id: split_tabs
-#            on_tab_switch: root.on_tab_switch(*args)
-#            color_indicator: 1, 1 , 1, 1
-#            elevation: 0
-#            tab_indicator_anim: True
-#            lock_swiping: True
 
 
         MDRoundFlatIconButton:

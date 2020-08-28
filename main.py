@@ -30,7 +30,6 @@ import json
 from kivy.clock import Clock
 import time
 
-
 ### screens classes import
 
 from screens_py.create_workout_screen import Create_Workout_Screen, SplitScreensMain, SplitScreen, SplitScreen2, \
@@ -82,7 +81,6 @@ class Tab(FloatLayout, MDTabsBase):
     '''Class implementing content for a tab.'''
 
 
-
 class MainApp(MDApp):
     mainscreens = ["homescreen", "workoutscreen", "friendsscreen", "settingsscreen"]
     id_token = ""
@@ -108,7 +106,7 @@ class MainApp(MDApp):
     popup = Factory.LoadingPopup()
     popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
     exc_sessions = {}
-    sessions_by_month_year = {} # dict of session dates by month by year
+    sessions_by_month_year = {}  # dict of session dates by month by year
     sessions = {}  # dic of sessions obj by dates
     running_session_workout = []
 
@@ -157,7 +155,7 @@ class MainApp(MDApp):
         #                  ca_file=certifi.where(), verify=True)
 
     # Handling user data'
-    def show_exc_history(self , exc_name):
+    def show_exc_history(self, exc_name):
         self.root.ids['exercise_sessions_screen'].exercise = exc_name
         self.change_screen1("exercise_sessions_screen")
 
@@ -168,21 +166,24 @@ class MainApp(MDApp):
             self.user_data = data
             if self.debug:
                 print(data)
-                print("user email:",self.user_data["email"])
-                print("user friends:",self.user_data["friends"])
-                print("user real_user_name:",self.user_data["real_user_name"])
-                print("user user_name:",self.user_data["user_name"])
-                print("user sessions:",self.user_data["sessions"])
-                print("user workouts:",self.user_data["workouts"])
-                print("user streak:",self.user_data["streak"])
+                print("user email:", self.user_data["email"])
+                print("user friends:", self.user_data["friends"])
+                print("user real_user_name:", self.user_data["real_user_name"])
+                print("user user_name:", self.user_data["user_name"])
+                print("user sessions:", self.user_data["sessions"])
+                print("user workouts:", self.user_data["workouts"])
+                print("user streak:", self.user_data["streak"])
 
         except Exception:
             print("no data")
 
     def load_session_data(self):
         # Creates a sessions obj list sorted by dates
+        try:
+            session_dic = self.user_data["sessions"]
+        except KeyError:
+            session_dic = {}
 
-        session_dic = self.user_data["sessions"]
         if self.debug:
             print("session dic: ", session_dic)
         temp_session_list = []
@@ -194,10 +195,10 @@ class MainApp(MDApp):
             workout_name = session[3]
             workout_split = session[4]
             exercises = session[5]
-            self.add_session_to_excs_stats(exercises, date , workout_name)
+            self.add_session_to_excs_stats(exercises, date, workout_name)
             new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
                                           exercises)
-            self.sessions[date]=new_session
+            self.sessions[date] = new_session
         self.sort_workouts_sessions()
 
         if self.debug:
@@ -208,7 +209,7 @@ class MainApp(MDApp):
         print(session_dates)
         session_dates.sort(reverse=True)
         print(session_dates)
-        self.sessions_by_month_year={}
+        self.sessions_by_month_year = {}
         for date in session_dates:
             year = int(date.year)
             month = int(date.month)
@@ -223,18 +224,20 @@ class MainApp(MDApp):
         if self.debug:
             print("sessions_by_month_year: ", self.sessions_by_month_year)
 
-    def add_session_to_excs_stats(self, exercises , date , workout_name):
+    def add_session_to_excs_stats(self, exercises, date, workout_name):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
         for exc in exercises:
             exercises_list = exercises[exc]
             print(exc)
             if exc not in self.exc_sessions:
-                self.exc_sessions[exc] = {date: [workout_name, exercises_list]}
+                self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
                 record = self.find_best_set(exercises_list)
-                self.exc_sessions[exc]["record"] = record
+                self.exc_sessions[exc]["record"][0] = record
+                self.exc_sessions[exc]["record"][1] = date
+
             else:
 
-                record = self.exc_sessions[exc]["record"]
+                record = self.exc_sessions[exc]["record"][0]
                 record_weight = record.split()
                 record_weight = float(record_weight[2])
                 maybe_record = self.find_best_set(exercises_list)
@@ -242,13 +245,34 @@ class MainApp(MDApp):
                 maybe_record_weight = float(maybe_record_weight[2])
 
                 if maybe_record_weight > record_weight:
-                    self.exc_sessions[exc]["record"] = maybe_record
+                    self.exc_sessions[exc]["record"][0] = maybe_record
+                    self.exc_sessions[exc]["record"][1] = date
+
                 self.exc_sessions[exc][date] = [workout_name, exercises_list]
+
+    def del_session_from_exc_dict(self, date, exc_list):
+        print("trying to del", date)
+
+        print("session_exc_list", exc_list)
+        print("self.exc_sessions", self.exc_sessions)
+
+        for exc in exc_list:
+            self.exc_sessions[exc].pop(date)
+            if "record" in self.exc_sessions[exc]:
+                record_date = self.exc_sessions[exc]["record"][1]
+                if record_date == date:
+                    self.exc_sessions[exc]["record"][1] = 0
+                    self.exc_sessions[exc]["record"][0] = ""
+
+            if len(self.exc_sessions) == 1:
+                self.exc_sessions.pop(exc)
+        print("self.exc_sessions", self.exc_sessions)
+
     def find_best_set(self, exc_session):
         # by weight:
         best_weight = 0
         best_weight_ind = 0
-        for i , set in enumerate(exc_session):
+        for i, set in enumerate(exc_session):
             set = set.split()
             weight = float(set[2])
             if weight > best_weight:
@@ -327,96 +351,6 @@ class MainApp(MDApp):
     def dismiss_dialog(self, *args):
         self.dialog.dismiss()
 
-    # def add_workouts(self, workoutDic):
-    #     self.delete_workout_grid()
-    #     workoutgrid = self.root.ids['workoutsscreen'].ids[
-    #         'banner_grid']  # getting the id of where the widgets are coming in
-    #     for workoutkey in workoutDic:
-    #         workoutdic = workoutDic[workoutkey]  # argument 0 its the workout key, and 1 is the dict
-    #         for workoutname in workoutdic:
-    #             exercises = workoutdic[workoutname]  # getting the the exercises of the workout
-    #
-    #             newlayout = MDFloatLayout()  # for centering
-    #
-    #             workoutcard = MDCard(
-    #                 radius=[14],
-    #                 orientation="vertical",
-    #                 size_hint=(0.9, 0.9),
-    #                 padding="8dp",
-    #                 pos_hint={"center_y": 0.5, "center_x": 0.5}
-    #             )
-    #             workoutcard.add_widget(MDLabel(
-    #                 text=workoutname,
-    #                 font_style="H4",
-    #                 size_hint=(None, 0.1),
-    #                 theme_text_color="Custom",
-    #                 text_color=self.theme_cls.primary_color
-    #             ))
-    #             splits_tabs = MDTabs()
-    #             splits_tabs.background_color = (1, 1, 1, 1)
-    #             splits_tabs.text_color_normal = (0, 0, 0, 1)
-    #             splits_tabs.text_color_active = (0, 0, 1, 1)
-    #             splits_tabs.color_indicator = (0, 0, 1, 1)
-    #             splits_tabs.on_tab_switch = self.on_split_switch
-    #
-    #             for numofsplit, split in enumerate(exercises):
-    #                 splits = "Split " + str(numofsplit + 1)
-    #                 tab = Tab(text=splits)
-    #                 layout = MDBoxLayout(orientation='vertical')
-    #                 view = ScrollView()
-    #                 layout.add_widget(view)
-    #                 lst = MDList()
-    #                 for exc in split:
-    #                     lst.add_widget(OneLineListItem(text=exc))
-    #                 view.add_widget(lst)
-    #                 tab.add_widget(layout)
-    #                 splits_tabs.add_widget(tab)
-    #             workoutcard.add_widget(splits_tabs)
-    #
-    #             startButton = MDIconButton(
-    #                 icon="play",
-    #                 pos_hint={'right': 0},
-    #                 user_font_size="45sp",
-    #                 theme_text_color="Custom",
-    #                 text_color=self.theme_cls.primary_color,
-    #                 on_release=self.start_workout
-    #             )
-    #             editButton = MDIconButton(
-    #                 icon="file-edit",
-    #                 user_font_size="40sp",
-    #                 theme_text_color="Custom",
-    #                 text_color=self.theme_cls.primary_color,
-    #                 on_release=self.view_workout
-    #             )
-    #             deleteButton = MDIconButton(
-    #                 icon="trash-can-outline",
-    #                 pos_hint={'right': 0},
-    #                 user_font_size="40sp",
-    #                 theme_text_color="Custom",
-    #                 text_color=self.theme_cls.primary_color,
-    #                 on_release=self.delete_workout_msg
-    #             )
-    #             buttonlayout = MDBoxLayout(
-    #                 adaptive_height=True,
-    #                 orientation='horizontal',
-    #                 spacing=20
-    #             )
-    #
-    #             keybutton = MDRaisedButton(
-    #                 opacity=0,
-    #                 size_hint=(.01, .2 / 3),
-    #                 text=workoutkey
-    #             )
-    #             self.split_Choice_dict[workoutkey] = 1
-    #
-    #             buttonlayout.add_widget(keybutton)
-    #             buttonlayout.add_widget(startButton)
-    #             buttonlayout.add_widget(editButton)
-    #             buttonlayout.add_widget(deleteButton)
-    #             workoutcard.add_widget(buttonlayout)
-    #             newlayout.add_widget(workoutcard)
-    #             workoutgrid.add_widget(newlayout)
-
     def add_workouts(self, workoutDic):
         self.delete_workout_grid()
         workoutgrid = self.root.ids['workoutsscreen'].ids[
@@ -435,7 +369,7 @@ class MainApp(MDApp):
                     size_hint=(0.9, 0.9),
                     padding="8dp",
                     pos_hint={"center_y": 0.5, "center_x": 0.5},
-                    background = "resources/card_1.jpeg",
+                    background="resources/card_1.jpeg",
                     on_release=self.view_workout
                 )
                 # workoutcard.add_widget(MDLabel(
@@ -451,16 +385,16 @@ class MainApp(MDApp):
                     pos_hint={"center_y": 0.195, "center_x": 0.5},
                     # theme_text_color="Custom",
                     # text_color=self.theme_cls.primary_color
-                    text_color = (0, 0, 1, 1)
+                    text_color=(0, 0, 1, 1)
                 ))
 
                 card_layout.add_widget(MDLabel(
                     text="12/08/20",
                     font_style="Subtitle1",
-                        pos_hint={"center_y": 0.07, "center_x": 0.5},
+                    pos_hint={"center_y": 0.07, "center_x": 0.5},
                     # theme_text_color="Custom",
                     # text_color=self.theme_cls.primary_color
-                    text_color = (0, 0, 1, 1)
+                    text_color=(0, 0, 1, 1)
                 ))
                 # ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button',
                 #  'Caption', 'Overline', 'Icon']
@@ -478,7 +412,7 @@ class MainApp(MDApp):
                     pos_hint={"center_y": 0.07, "x": 0.95},
                     # theme_text_color="Custom",
                     # text_color=self.theme_cls.primary_color
-                    text_color = (0, 0, 1, 1)
+                    text_color=(0, 0, 1, 1)
                 ))
                 keybutton = MDRaisedButton(
                     opacity=0,
@@ -530,16 +464,17 @@ class MainApp(MDApp):
         # SessionScreen.num_of_split = workout_split  # Sets which split was chosen
 
         self.root.ids['sessionscreen'].new_workout = 1  # Sets the enitre workout
-        self.root.ids['sessionscreen'].workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
+        self.root.ids['sessionscreen'].workout = copy.deepcopy(
+            chosen_workout[workout_split - 1])  # Sets the exercise list
         self.root.ids['sessionscreen'].workout_key = workoutkey  # Sets the workout key list
         self.root.ids['sessionscreen'].num_of_split = workout_split  # Sets which split was chosen
         self.running_session_workout = self.root.ids['sessionscreen'].workout
 
         if self.debug:
             print("trying to start new session")
-            print("SessionScreen.workout",SessionScreen.workout)
-            print("SessionScreen.workout_key",SessionScreen.workout_key)
-            print("SessionScreen.num_of_split",SessionScreen.num_of_split)
+            print("SessionScreen.workout", SessionScreen.workout)
+            print("SessionScreen.workout_key", SessionScreen.workout_key)
+            print("SessionScreen.num_of_split", SessionScreen.num_of_split)
 
         # Reset all dicts from previous workouts
         SessionScreen.ex_reference_by_id = {}
@@ -557,10 +492,9 @@ class MainApp(MDApp):
         # Start workout timer.
         self.start_session_timer()
 
-
         self.change_screen1("sessionscreen")
 
-    def view_session(self,session_key):
+    def view_session(self, session_key):
         session_grid = self.root.ids['sessionscreen'].ids[
             'exc_cards']
         session_grid.clear_widgets()
@@ -634,25 +568,26 @@ class MainApp(MDApp):
         print('failed')
 
     def del_session(self, session_date_key):
-        self.display_loading_screen()
+        # self.display_loading_screen()
         session = self.sessions.pop(session_date_key)
-
+        print("session_date_key", session_date_key)
         session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
             self.local_id, session.session_key, self.id_token)
         del_req = UrlRequest(session_link, on_success=self.success_del_session, on_error=self.error_del_session,
                              on_failure=self.error_del_session,
                              ca_file=certifi.where(), method='DELETE', verify=True)
-        try:
-            sessions_list = self.sessions_by_month_year[session_date_key.year][session_date_key.month]
-            ind_to_pop = sessions_list.index(session_date_key)
-            sessions_list.pop(ind_to_pop)
-        except:
-            print("error somehow")
+
+        sessions_list_ref = self.sessions_by_month_year[session_date_key.year][session_date_key.month]
+        ind_to_pop = sessions_list_ref.index(session_date_key)
+        sessions_list_ref.pop(ind_to_pop)
+        self.del_session_from_exc_dict(session_date_key, session.exercises)
+        ########################### delete data from exc_sessions!!!
 
     def success_del_session(self, req, result):
-        self.hide_loading_screen()
-        self.root.ids['previous_workouts_screen'].on_pre_enter()
-        Snackbar(text="Session Deleted!").show()
+        pass
+        # self.hide_loading_screen()
+        # self.root.ids['previous_workouts_screen'].on_pre_enter()
+        # Snackbar(text="Session Deleted!").show()
         # self.load_workout_data()
 
     def error_del_session(self, *args):
