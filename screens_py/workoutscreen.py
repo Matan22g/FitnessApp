@@ -8,13 +8,17 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
-from kivymd.uix.tab import MDTabsBase
+from customKv.tab import MDTabsBase, MDTabs
+
 import copy
 
 
 class Tab(FloatLayout, MDTabsBase):
     '''Class implementing content for a tab.'''
 
+
+class MDTabs_custom(MDTabs):
+    '''Class implementing content for a tab.'''
 
 class AddExerciseContent(BoxLayout):
     pass
