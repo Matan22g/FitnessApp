@@ -1,6 +1,6 @@
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from akivymd.uix.datepicker import AKDatePicker
+
 
 
 class HomeScreen(Screen):
@@ -16,16 +16,7 @@ class HomeScreen(Screen):
     def addworkout(self, *args):
         self.app.change_screen1("workoutsscreen")
 
-    def choose_date(self):
-        new_date = AKDatePicker(callback=self.new_date)
-        new_date.open()
-        print(new_date)
 
-    def new_date(self, date):
-        if not date:
-            return
-        new_date = '%d / %d / %d' % (date.day, date.month, date.year)
-        print(new_date)
     # data = {
     #     'weight-lifter': 'Create Workout',
     #     'weight': 'Workouts'

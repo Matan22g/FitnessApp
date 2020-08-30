@@ -1,17 +1,14 @@
 from datetime import datetime
 import calendar
 
-from akivymd.uix.datepicker import AKDatePicker
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from kivymd.uix.behaviors import TouchBehavior
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import ThreeLineAvatarIconListItem
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.snackbar import Snackbar
 

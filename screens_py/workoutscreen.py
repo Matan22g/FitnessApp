@@ -41,6 +41,8 @@ class WorkoutScreen(Screen):
     tabs_by_split = {}
     create_mode = 0  # used when creating new workout
 
+
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
@@ -232,7 +234,6 @@ class WorkoutScreen(Screen):
 
         tab = Tab(text=f"Split {self.num_of_splits}")
         self.app.root.ids['workoutscreen'].ids["split_tabs"].add_widget(tab)
-
         # in case of new split space for new exercises being saved
         if len(self.temp_workout) < self.num_of_splits:
             self.temp_workout.append([])

@@ -4,17 +4,13 @@ from datetime import datetime
 
 import certifi
 from kivy.network.urlrequest import UrlRequest
-from kivy.properties import NumericProperty, ListProperty
+from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.scrollview import ScrollView
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
 from kivy.core.window import Window
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDTextButton, MDFloatingActionButton, MDRaisedButton, MDFlatButton, MDIconButton
-from kivymd.uix.card import MDCard, MDSeparator
+from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
+from kivymd.uix.card import MDCard
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.list import MDList, OneLineListItem
@@ -22,7 +18,6 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
-
 from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 import kivy.utils as utils
 import requests
@@ -43,7 +38,6 @@ from screens_py.previous_workouts import PreviousWorkoutsScreen
 
 from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
-from customKv.tab import MDTabs, MDTabsBase
 import copy
 
 Window.size = (320, 650)
@@ -77,8 +71,7 @@ class Workout_Session:
         self.exercises = exercises
 
 
-class Tab(FloatLayout, MDTabsBase):
-    '''Class implementing content for a tab.'''
+
 
 
 class MainApp(MDApp):
