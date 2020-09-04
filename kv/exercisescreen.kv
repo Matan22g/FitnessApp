@@ -52,9 +52,21 @@
             text_color: app.theme_cls.primary_color
             opacity: 0
 
+        MDLabel:
+            pos_hint: {"center_x": 0.44, "top": 1.0625}
+            size_hint: (.5, .2)
+            theme_text_color: "Secondary"
+            text: "Inc"
+
+        MDLabel:
+            pos_hint: {"center_x": 0.4, "top": 1.0025}
+            size_hint: (.5, .2)
+            theme_text_color: "Secondary"
+            text: "Barbell"
+
         MDBoxLayout:
             size_hint: (.4, .1)
-            pos_hint: {"center_x": .7, "center_y": .95}
+            pos_hint: {"center_x": .5, "center_y": .985}
 
             MyToggleButton:
                 text: "+1"
@@ -75,14 +87,44 @@
                 size_hint: (.75, .5)
                 on_release: root.change_scale(10)
 
+        MDBoxLayout:
+            size_hint: (.4, .1)
+            pos_hint: {"center_x": .5, "center_y": .925}
+
+            MyToggleButton:
+                text: "None"
+                group: "y"
+                size_hint: (.75, .5)
+                on_release: root.barbell = 0
+
+
+            MyToggleButton:
+                text: "12.5"
+                group: "y"
+                size_hint: (.75, .5)
+                on_release: root.barbell = 12.5
+
+            MyToggleButton:
+                text: "20"
+                group: "y"
+                size_hint: (.75, .5)
+                on_release: root.barbell = 20
+
         MDIconButton:
             icon: 'history'
-            on_release: root.changeInput("w" , 1)
-            pos_hint: {"center_x": 0.1, "top": .98}
+            pos_hint: {"center_x": 0.925, "top": .998}
             user_font_size: "30sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
             on_release: app.show_exc_history(root.exercise)
+
+        MDIconButton:
+            icon: 'help'
+            pos_hint: {"center_x": 0.75, "top": .98}
+            user_font_size: "20sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.open_help_dialog()
 
         MDRoundFlatIconButton:
             pos_hint: {"center_x": 0.2, "top": .1}
@@ -108,14 +150,14 @@
         MDTextField:
             id: reps
             mode: "rectangle"
-            input_filter: 'float'
+            input_filter: 'int'
             helper_text: "Reps"
             helper_text_mode: "persistent"
             pos_hint: {"x": .2, "top": .8}
             size_hint: (.22, .12)
             halign: "center"
             text: "0"
-            font_size: "30sp"
+            font_size: "35sp"
 
         MDTextField:
             id: weight
@@ -123,7 +165,7 @@
             input_filter: 'float'
             helper_text: "Kg"
             helper_text_mode: "persistent"
-            font_size: "30sp"
+            font_size: "35sp"
             pos_hint: {"x": .6, "top": .8}
             size_hint: (.22, .12)
             halign: "center"
@@ -132,7 +174,8 @@
         MDIconButton:
             icon: 'chevron-up'
             on_release: root.changeInput("w" , 1)
-            pos_hint: {"center_x": 0.7, "top": .91}
+            size_hint: (.2, .1)
+            pos_hint: {"center_x": 0.7, "top": .89}
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -140,16 +183,18 @@
         MDIconButton:
             icon: 'chevron-up'
             on_release: root.changeInput("r" , 1)
-            pos_hint: {"center_x": 0.3, "top": .91}
+            pos_hint: {"center_x": 0.3, "top": .89}
             user_font_size: "64sp"
+            size_hint: (.2, .1)
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("w" , 0)
-            pos_hint: {"center_x": 0.7, "top": .72}
+            pos_hint: {"center_x": 0.7, "top": .69}
             user_font_size: "64sp"
+            size_hint: (.2, .1)
             text_color: 0, 0, 1, 1
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -157,7 +202,8 @@
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("r" , 0)
-            pos_hint: {"center_x": 0.3, "top": .72}
+            pos_hint: {"center_x": 0.3, "top": .69}
+            size_hint: (.2, .1)
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color

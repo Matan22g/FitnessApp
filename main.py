@@ -27,8 +27,7 @@ import time
 
 ### screens classes import
 
-from screens_py.create_workout_screen import Create_Workout_Screen, SplitScreensMain, SplitScreen, SplitScreen2, \
-    SplitScreen3
+
 from screens_py.homescreen import HomeScreen
 from screens_py.settingsscreen import SettingsScreen
 from screens_py.workoutsscreen import WorkoutsScreen
@@ -40,7 +39,7 @@ from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 import copy
 
-Window.size = (320, 650)
+Window.size = (375,750)
 
 
 ## msg for new workout name
@@ -124,11 +123,11 @@ class MainApp(MDApp):
         self.load_session_data()
 
         # Initial left menu obj to settings
-        self.root.ids['toolbar'].left_action_items = [["cog-outline", lambda x: self.change_screen1("settingsscreen")]]
+        self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
-        self.change_screen1("previous_workouts_screen")
+        self.change_screen1("exercisescreen")
         # self.get_user_name_data(user_name)
         ### debug:
         # if self.debug == 0:
@@ -244,10 +243,10 @@ class MainApp(MDApp):
                 self.exc_sessions[exc][date] = [workout_name, exercises_list]
 
     def del_session_from_exc_dict(self, date, exc_list):
-        print("trying to del", date)
-
-        print("session_exc_list", exc_list)
-        print("self.exc_sessions", self.exc_sessions)
+        if self.debug:
+            print("trying to del", date)
+            print("session_exc_list", exc_list)
+            print("self.exc_sessions", self.exc_sessions)
 
         for exc in exc_list:
             self.exc_sessions[exc].pop(date)
@@ -256,10 +255,38 @@ class MainApp(MDApp):
                 if record_date == date:
                     self.exc_sessions[exc]["record"][1] = 0
                     self.exc_sessions[exc]["record"][0] = ""
+                if len(self.exc_sessions[exc]) > 1:
+                    self.exc_sessions[exc]["record"][0],self.exc_sessions[exc]["record"][1] = self.find_new_record(exc)
 
-            if len(self.exc_sessions) == 1:
+
+            if len(self.exc_sessions[exc]) == 1:
                 self.exc_sessions.pop(exc)
-        print("self.exc_sessions", self.exc_sessions)
+        if self.debug:
+            print("self.exc_sessions", self.exc_sessions)
+
+    def find_new_record(self, exc):
+        # in case of deleteing sessions with record, finding a new record
+        # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
+        record = ""
+        record_weight = 0
+        maybe_record =""
+        maybe_record_weight=0
+        record_date = ""
+        for date in self.exc_sessions[exc]:
+            if date != "record":
+
+                session_list = self.exc_sessions[exc][date][1]
+
+                maybe_record = self.find_best_set(session_list)
+                maybe_record_weight = maybe_record.split()
+                maybe_record_weight = float(maybe_record_weight[2])
+
+                if maybe_record_weight > record_weight:
+                    record_weight = maybe_record_weight
+                    record = maybe_record
+                    record_date = date
+        return record, record_date
+
 
     def find_best_set(self, exc_session):
         # by weight:
@@ -321,7 +348,7 @@ class MainApp(MDApp):
     def show_create_workout_dialog(self):
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.2),
+            size_hint=(0.9, 0.3),
             title="Enter workout name:",
             type="custom",
             content_cls=AddWorkoutContent(),
@@ -333,7 +360,7 @@ class MainApp(MDApp):
                     on_release=self.create_new_workout
                 ),
                 MDFlatButton(
-                    text="Cancel",
+                    text="CANCEL",
                     text_color=self.theme_cls.primary_color,
                     on_release=self.dismiss_dialog
                 )
@@ -502,18 +529,14 @@ class MainApp(MDApp):
         self.root.ids['sessionscreen'].workout = self.running_session_workout
         self.change_screen1("sessionscreen")
 
-    def start_session_timer(self):
-        self.timer = 0
-        Clock.schedule_interval(self.increment_time, .1)
-        self.increment_time(0)
-        self.start_timer()
+
 
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
         workoutkey = args[0]
         workout_name = list(self.workoutsParsed[workoutkey].keys())[0]
 
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                text="Delete " + workout_name + "?",
                                buttons=[
                                    MDFlatButton(
@@ -596,9 +619,15 @@ class MainApp(MDApp):
                 workoutgrid.remove_widget(child)
 
     # Timer methods.
+    def start_session_timer(self):
+        self.timer = time.time()
+        Clock.schedule_interval(self.increment_time, .1)
+        self.increment_time(0)
+        self.start_timer()
+
     def increment_time(self, interval):
-        self.timer += .1
-        self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(self.timer))))
+        timer = time.time()-self.timer
+        self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(timer))))
         self.root.ids['sessionscreen'].ids["timer"].text = self.timer_format
 
     def start_timer(self):
@@ -670,6 +699,9 @@ class MainApp(MDApp):
         # args is an optional input of which direction the change will occur
         screen_manager = self.root.ids['screen_manager1']
         current_screen = screen_manager.current
+        if self.debug:
+            print("Before change screen, curr screen: ", current_screen)
+
         if self.lastscreens:
             if current_screen != self.lastscreens[-1]:
                 self.lastscreens.append(current_screen)
@@ -692,7 +724,7 @@ class MainApp(MDApp):
 
         if screen_name == "homescreen":
             self.root.ids['toolbar'].left_action_items = [
-                ["cog-outline", lambda x: self.change_screen1("settingsscreen")]]
+                ["settings", lambda x: self.change_screen1("settingsscreen")]]
             self.lastscreens = []
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
@@ -706,7 +738,7 @@ class MainApp(MDApp):
             screen_manager.current = screen_name
 
         if self.debug:
-            print(self.lastscreens)
+            print("self.lastscreens",self.lastscreens,)
             print("currscreen = ", screen_name)
 
     # test username methods
@@ -757,7 +789,7 @@ class MainApp(MDApp):
     def success_upload_workout(self, *args):
         self.hide_loading_screen()
 
-        self.change_screen1("homescreen")
+        self.change_screen1("workoutsscreen")
         self.get_user_data()
         self.load_workout_data()
         Snackbar(text="Workout saved!").show()
@@ -794,5 +826,13 @@ class MainApp(MDApp):
     def hide_loading_screen(self, *args):
         self.popup.dismiss()
 
-
+    def proper_input_filter(self, input_to_check, indicator):
+        if self.debug:
+            print("input_to_check",input_to_check)
+            print("indicator",indicator)
+        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check==' ':
+            return input_to_check
+        else:
+            return ""
+################## fix valid input
 MainApp().run()

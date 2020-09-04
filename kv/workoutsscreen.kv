@@ -11,23 +11,15 @@
             text: "Create New Workout"
             width: dp(200)
             on_release:
-                app.change_screen1("create_workout_screen")
-
-        MDRoundFlatIconButton:
-            icon: "plus"
-            pos_hint: {"center_x": 0.6, "top": .95}
-            text: "Create New Workout 2"
-            width: dp(200)
-            opacity: 0
-            on_release:
                 app.show_create_workout_dialog()
+
 
         MDRoundFlatIconButton:
             icon: "run"
             id: running_session
             pos_hint: {"center_x": 0.8, "top": .95}
             text: "Create"
-            width: dp(50)
+            width: dp(90)
             opacity: 1
             on_release:
                 app.back_to_running_session()
@@ -44,5 +36,5 @@
                 size_hint_y: None
                 height: self.minimum_height
                 row_force_default: True
-                row_default_height: '300dp'
+                row_default_height: '350dp'
 

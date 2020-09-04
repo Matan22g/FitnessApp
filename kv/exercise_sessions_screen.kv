@@ -20,7 +20,7 @@
             text_color: app.theme_cls.primary_color
 
         MDLabel:
-            pos_hint: {"x": -0.105, "y": .805}
+            pos_hint: {"x": -0.125, "y": .805}
             size_hint: (.7, .2)
             halign: "center"
             text: "Exercise history"
@@ -28,7 +28,7 @@
             theme_text_color: "Secondary"
 
         MDLabel:
-            pos_hint: {"x": -0.18, "y": .72}
+            pos_hint: {"x": -0.19, "y": .74}
             size_hint: (.7, .2)
             halign: "center"
             text: "Records"
@@ -39,10 +39,10 @@
 #            text_color: 0, 1, 1, 1
         ScrollView:
             id: records_scroll
-            pos_hint: {"y": .57}
+            pos_hint: {"y": .65}
             size_hint_y: None
             size_hint_x: None
-            size_hint: 1, .24
+            size_hint: 1, .18
             do_scroll_y: False
             do_scroll_x: True
             GridLayout:
@@ -247,7 +247,7 @@
 
         MDLabel:
             id:date_label
-            pos_hint: {"x": -0.04, "y": .43}
+            pos_hint: {"x": -0.06, "y": .515}
             size_hint: (.7, .2)
             halign: "center"
             text: "Previous sessions, Dec"
@@ -255,8 +255,8 @@
             theme_text_color: "Secondary"
 
         MDIconButton:
-            pos_hint: {"center_x": .88, "top": .57}
-            icon: "chart-box-outline"
+            pos_hint: {"center_x": .88, "top": .67}
+            icon: "tune"
             user_font_size: "25sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -264,7 +264,7 @@
 
         ScrollView:
             id: sessions_scroll
-            pos_hint: {"top": 0.49}
+            pos_hint: {"top": 0.59}
             size_hint_y: None
             size_hint: 1, .49
             GridLayout:

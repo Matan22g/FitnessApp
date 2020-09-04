@@ -9,6 +9,7 @@
         required: True
         helper_text_mode: "on_error"
         helper_text: "Enter text"
+        input_filter: app.proper_input_filter
 
 
 
@@ -46,7 +47,7 @@
 
         MDLabel:
             id: workout_name
-            pos_hint: {"center_x": 0.2975, "top": .99}
+            pos_hint: {"center_x": 0.2975, "top": .99+root.inc}
             size_hint: (.5, .15)
             font_size: "45sp"
             halign: "left"
@@ -55,28 +56,45 @@
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
-        MDRectangleFlatIconButton:
-            id: date_picker_label
-            icon: "calendar"
-            pos_hint: {"center_x": 0.8, "top": .958}
-            text: "Date: "
-            line_color: 0, 0, 0, 0
-#            theme_text_color: "Custom"
-#            text_color: app.theme_cls.primary_color
-            on_release: root.show_example_date_picker()
+#        MDRectangleFlatIconButton:
+#            id: date_picker_label
+#            icon: "calendar"
+#            pos_hint: {"center_x": 0.8, "top": .9325+root.inc}
+#            text: "Date: "
+#            line_color: 0, 0, 0, 0
+##            theme_text_color: "Custom"
+##            text_color: app.theme_cls.primary_color
+#            on_release: root.show_example_date_picker()
+#
+#
+#        MDRectangleFlatIconButton:
+#            id: date_picker_label_view
+#            icon: "calendar"
+#            pos_hint: {"center_x": 0.8, "top": .9325+root.inc}
+#            text: "Date: "
+#            line_color: 0, 0, 0, 0
+##            theme_text_color: "Custom"
+##            text_color: app.theme_cls.primary_color
 
-        MDRectangleFlatIconButton:
-            id: date_picker_label_view
+        MDLabel:
+            id: date_picker_label
+            pos_hint: {"center_x": 0.99, "top": .98+root.inc}
+            size_hint: (.5, .15)
+            text: ""
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+
+        MDIconButton:
+            id: date_picker_icon
+            pos_hint: {"center_x": 0.69, "top": .938+root.inc}
             icon: "calendar"
-            pos_hint: {"center_x": 0.8, "top": .958}
-            text: "Date: "
-            line_color: 0, 0, 0, 0
-#            theme_text_color: "Custom"
-#            text_color: app.theme_cls.primary_color
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.show_example_date_picker()
 
         MDLabel:
             id: timer
-            pos_hint: {"center_x": 0.41, "top": .999}
+            pos_hint: {"center_x": 0.41, "top": .98+root.inc}
             size_hint: (.5, .15)
             font_size: "16sp"
             halign: "left"
@@ -86,7 +104,7 @@
 
         MDLabel:
             id: timer_view
-            pos_hint: {"center_x": 0.41, "top": .999}
+            pos_hint: {"center_x": 0.41, "top": .98+root.inc}
             size_hint: (.5, .15)
             font_size: "16sp"
             halign: "left"
@@ -95,7 +113,7 @@
             text_color: app.theme_cls.primary_color
 
         MDIcon:
-            pos_hint: {"center_x": 0.32, "top": .9999}
+            pos_hint: {"center_x": 0.32, "top": .98+root.inc}
             size_hint: (.5, .15)
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -103,7 +121,7 @@
 
         MDIconButton:
             id: show_checkbox
-            pos_hint: {"center_x": .858, "top": .975}
+            pos_hint: {"center_x": .858, "top": .975+root.inc}
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
@@ -121,7 +139,7 @@
 
         MDLabel:
             id: num_to_delete
-            pos_hint: {"center_x": 0.9999, "top": .999}
+            pos_hint: {"center_x": 0.9999, "top": .98+root.inc}
             size_hint: (.47, .15)
             font_size: "16sp"
             halign: "left"
@@ -132,7 +150,7 @@
         MDIconButton:
             id: add_exc
             user_font_size: "38sp"
-            pos_hint: {"center_x": .5, "top": .985}
+            pos_hint: {"center_x": .5, "top": .985+root.inc}
             icon: "plus"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -149,9 +167,9 @@
 
         ScrollView:
             id: scroll
-            pos_hint: {"top": .87}
+            pos_hint: {"top": .91}
             size: self.size
-            size_hint: 1., .87
+            size_hint: 1., .91
             GridLayout:
                 # Banner grid
                 id: exc_cards

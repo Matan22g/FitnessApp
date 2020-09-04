@@ -1,11 +1,7 @@
 #: include kv/homescreen.kv
 #: include kv/settingsscreen.kv
 #: include kv/blankscreen.kv
-#: include kv/create_workout_screen.kv
 #: include kv/workoutsscreen.kv
-#: include kv/splitscreen.kv
-#: include kv/splitscreen2.kv
-#: include kv/splitscreen3.kv
 #: include kv/sessionscreen.kv
 #: include kv/exercisescreen.kv
 #: include kv/workoutscreen.kv
@@ -15,7 +11,17 @@
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
 
-
+<AddWorkoutContent>
+    orientation: "vertical"
+    spacing: "20dp"
+    size_hint_y: None
+    height: "33dp"
+    MDTextField:
+        hint_text: "Workout name"
+        required: True
+        helper_text_mode: "on_error"
+        helper_text: "Enter valid name - English letters"
+        input_filter: app.proper_input_filter
 
 NavigationLayout:
     id: nav_layout
@@ -60,21 +66,6 @@ NavigationLayout:
                         id: workoutsscreen
                         name: "workoutsscreen"
 
-                    Create_Workout_Screen:
-                        id: create_workout_screen
-                        name: "create_workout_screen"
-
-                    SplitScreen:
-                        id: splitscreen
-                        name: "splitscreen"
-
-                    SplitScreen2:
-                        id: splitscreen2
-                        name: "splitscreen2"
-
-                    SplitScreen3:
-                        id: splitscreen3
-                        name: "splitscreen3"
 
                     SessionScreen:
                         id: sessionscreen
@@ -109,7 +100,7 @@ NavigationLayout:
     MDNavigationDrawer:
         id: nav_drawer
         anchor: "right"
-        width: "175dp"
+        size_hint_x: 0.6
 
         BoxLayout:
             orientation: "vertical"
@@ -160,7 +151,7 @@ NavigationLayout:
 #                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
-                            icon: "weight-lifter"
+                            icon: "dumbbell"
 
                     OneLineIconListItem:
                         text: "Log Out"
@@ -184,7 +175,7 @@ NavigationLayout:
 #                            screen_manager1.current = "settingsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
-                            icon: "cog-outline"
+                            icon: "settings"
 
 
 

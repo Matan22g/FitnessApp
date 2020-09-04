@@ -4,22 +4,15 @@
         #backgroung press hides checkboxes
             caller = args[0]
             touch = args[1]
-            if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.show_checkbox("False")
-            if touch.spos[1]>0.875: root.show_checkbox("False")
+            if touch.spos[1]>0.85 and touch.spos[0]<0.75: root.show_checkbox("False")
+            if touch.spos[1]>0.93: root.show_checkbox("False")
 
 
-        MDLabel:
-            pos_hint: {"center_x": 0.57, "top":1.05}
-            size_hint: (1, .2)
-            font_style: "H5"
-            text: "Recent Workouts"
-            theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
 
         MDIconButton:
             id: date_button
-            pos_hint: {"center_x": .88, "top": .94}
-            icon: "chart-box-outline"
+            pos_hint: {"center_x": .83, "top": 1.005}
+            icon: "tune"
             user_font_size: "25sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -27,16 +20,16 @@
 
         MDLabel:
             id: month_to_view
-            pos_hint: {"center_x": 0.57, "top":1.0}
+            pos_hint: {"center_x": 0.57, "top":1.05}
             size_hint: (1, .2)
-            font_style: "H6"
+            font_style: "H5"
             text: "Jul"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
         MDLabel:
             id: num_to_delete
-            pos_hint: {"center_x": 1.04, "top":0.975}
+            pos_hint: {"center_x": 1.0175, "top":1.02}
             size_hint: (.47, .15)
             font_size: "16sp"
             halign: "left"
@@ -46,7 +39,7 @@
 
         MDIconButton:
             id: delete_sessions
-            pos_hint: {"center_x": 0.88, "top":0.95}
+            pos_hint: {"center_x": 0.8525, "top":1.015}
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
@@ -55,14 +48,14 @@
 
         ScrollView:
             id: sessions_scroll
-            pos_hint: {"top": .87}
+            pos_hint: {"top": .92}
             size_hint_y: None
             size_hint: 1, .87
             GridLayout:
                 # sets_grid
                 id: sessions_grid
                 cols: 1
-                spacing: 20,3
+                spacing: 20,10
                 size_hint_y: None
                 height: self.minimum_height
                 row_force_default: True

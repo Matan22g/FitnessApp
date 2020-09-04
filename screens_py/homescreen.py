@@ -10,12 +10,18 @@ class HomeScreen(Screen):
         self.app = MDApp.get_running_app()
         self.sub_title = "Welcome to Home Screen"
 
+    def on_pre_enter(self, *args):
+        try:
+            self.app.change_title("Dashboard")
+        except:
+            pass
+
     def on_enter(self, *args):
         self.app.title = "Home"
 
+
     def addworkout(self, *args):
         self.app.change_screen1("workoutsscreen")
-
 
     # data = {
     #     'weight-lifter': 'Create Workout',

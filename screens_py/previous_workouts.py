@@ -76,6 +76,7 @@ class PreviousWorkoutsScreen(Screen):
         today = datetime.today()
         curr_month = int(today.month)
         curr_year = int(today.year)
+        self.app.change_title("Recent Workouts")
 
         if self.app.sessions_by_month_year:
             if curr_year not in self.app.sessions_by_month_year:
@@ -103,8 +104,9 @@ class PreviousWorkoutsScreen(Screen):
             msg = "No sessions available for " + month_abb + ", " + str(year)
             self.no_sessions_grid(msg, sessions_layout)
             return
-        dict_of_row_height = {0: 100}
-        sessions_layout.rows_minimum = dict_of_row_height
+
+        # dict_of_row_height = {0: 100}
+        # sessions_layout.rows_minimum = dict_of_row_height
 
         total_session_num = len(sessions_dates)
         # for i in range(total_session_num):
@@ -123,11 +125,11 @@ class PreviousWorkoutsScreen(Screen):
         help_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=3)
 
         excCard = LongPressCard(
-            spacing=10,
+            spacing=8,
             radius=[14],
             orientation="vertical",
             size_hint=(0.87, 0.97),
-            padding=[11, 16, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+            padding=[11, 20, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
             elevation=1,
             long_press_time=0.5,
@@ -148,7 +150,7 @@ class PreviousWorkoutsScreen(Screen):
             theme_text_color="Secondary",
         )
         deleteBox = MDCheckbox(
-            size_hint=(0.5, 0.3)
+            size_hint=(0.5, 0.75)
         )
         deleteBox.opacity = 0
         self.session_card_by_checkBox[deleteBox] = excCard
@@ -225,7 +227,7 @@ class PreviousWorkoutsScreen(Screen):
 
     def show_del_exercise_dialog(self):
         num_to_del = self.app.root.ids['previous_workouts_screen'].ids["num_to_delete"].text
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                title="Select session to delete",
                                buttons=[
                                    MDFlatButton(
@@ -239,7 +241,7 @@ class PreviousWorkoutsScreen(Screen):
                 msg = "Delete " + num_to_del + " Session?"
                 warning = "Warning: deleting session record cannot be undone"
 
-                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                        title=msg,
                                        text=warning,
                                        buttons=[
