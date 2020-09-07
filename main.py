@@ -117,7 +117,15 @@ class MainApp(MDApp):
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
     def hook_keyboard(self, window, key, *largs):
+        # bind back button of android to back function
+
         if key == 27:
+            try:
+                if self.root.ids['screen_manager1'].current == "homescreen":
+                    self.stop()
+                    return True
+            except:
+                pass
             self.back_to_last_screen()
         return True
 
