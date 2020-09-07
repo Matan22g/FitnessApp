@@ -122,12 +122,14 @@ class SessionScreen(Screen):
                 self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
                 self.ids["workout_name"].text = self.workout_name
                 self.session_date = now
+                self.session_rec = {}
             # for exc_id in self.ex_reference_by_id:
             #     exc_id.children[0].children[0].opacity = 0
             self.load_session()
             self.hide_edit_buttons(False)
             self.app.change_title(self.workout_name)
 
+            self.ids["load_session"].opacity = 1
         else:
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
@@ -137,16 +139,22 @@ class SessionScreen(Screen):
             self.session_rec_to_view = session_sets_dict
             session_duration = session.duration
             session_date = session.date
-            print("session workout", self.workout)
-            print("session.exercises", session.exercises)
-            print("self.session_key", self.session_key)
-            print(" self.app.sessions[self.session_key]", self.app.sessions[self.session_key])
+            if self.app.debug:
+                print("session workout", self.workout)
+                print("session.exercises", session.exercises)
+                print("self.session_key", self.session_key)
+                print(" self.app.sessions[self.session_key]", self.app.sessions[self.session_key])
 
             self.ids["timer_view"].text = session_duration
             self.ids["date_picker_label"].text = str(session_date)[0:10]
             self.load_session()
             self.hide_edit_buttons(True)
             self.app.change_title(session.workout_name)
+            self.show_checkbox(False)
+            if self.app.reload_for_running_session:
+                self.app.root.ids['toolbar'].right_action_items = [
+                    ['', lambda x: None]]
+                self.ids["load_session"].opacity = 0
 
     def hide_edit_buttons(self, to_hide):
         if to_hide:
@@ -403,11 +411,12 @@ class SessionScreen(Screen):
         self.ids.exc_cards.height = sum(x.height for x in grid.children)
 
     def on_leave(self, *args):
-        self.show_checkbox(False)
-        self.app.root.ids['toolbar'].right_action_items = [
-            ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
-
-
+        # self.app.root.ids['toolbar'].right_action_items = [
+        #     ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
+        if self.app.root.ids['sessionscreen'].view_mode:
+            self.app.root.ids['sessionscreen'].view_mode = 0
+            if self.app.running_session:
+                self.app.root.ids['sessionscreen'].workout = self.app.running_session_workout
 
     def start_exc(self, *args):
         # print(args[0])
@@ -417,16 +426,20 @@ class SessionScreen(Screen):
         ExerciseScreen.exercise = self.ex_reference_by_id[args[0]]
         self.app.change_screen1("exercisescreen")
 
-    def save_session(self):
+    def valid_session(self):
         unfinished_exc = 0
-        msg = "Save your workout?"
-        text = ""
         # Find if the user hasn't completed his workout
         for exc in self.workout:
             if exc not in self.session_rec:
                 unfinished_exc += 1
             elif not self.session_rec[exc]:
                 unfinished_exc += 1
+        return unfinished_exc
+
+    def save_session(self):
+        msg = "Save your workout?"
+        text = ""
+        unfinished_exc = self.valid_session()
         num_of_exc = len(self.workout)
 
         if unfinished_exc == num_of_exc:
@@ -506,6 +519,8 @@ class SessionScreen(Screen):
             to_show = 1
 
         if to_show:
+            self.app.delete_mode = 1
+
             self.ids["num_to_delete"].opacity = 1
             self.ids[date_label_id].opacity = 0
             self.ids[date_icon_id].opacity = 0
@@ -513,6 +528,8 @@ class SessionScreen(Screen):
             self.ids["show_checkbox"].opacity = 1
             self.ids["show_checkbox"].disabled = False
         else:
+            self.app.delete_mode = 0
+
             self.ids["num_to_delete"].opacity = 0
             self.ids[date_label_id].opacity = 1
             if not self.view_mode:
@@ -644,6 +661,9 @@ class SessionScreen(Screen):
         if self.app.debug:
             print(self.ids["date_picker_label"].text)
 
+    def reload_previous_session(self, *args):
+        self.app.reload_for_running_session = self.workout_name
+        self.app.change_screen1("previous_workouts_screen")
 
 class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
     def __init__(self, **kwargs):
@@ -707,8 +727,10 @@ class ExerciseScreen(Screen):
         exc = self.exercise
         self.ids["ex_name"].text = exc
         # if already completed a few sets in this session:
-        if exc in SessionScreen.session_rec:
-            sets = SessionScreen.session_rec[exc]
+        session_rec = self.app.root.ids['sessionscreen'].session_rec
+
+        if exc in session_rec:
+            sets = session_rec[exc]
             for set in sets:
                 set = set.split()
                 reps = set[0]
@@ -718,7 +740,7 @@ class ExerciseScreen(Screen):
                 self.ids["weight"].text = weight
 
         else:
-            SessionScreen.session_rec[exc] = []
+            session_rec[exc] = []
 
     def on_leave(self, *args):
         self.clear_screen()
@@ -821,7 +843,7 @@ class ExerciseScreen(Screen):
         for set in self.sets:
             set_str = f"{set[0]}    X    {set[1]}"
             sets_list.append(set_str)
-        SessionScreen.session_rec[exc] = sets_list
+        self.app.root.ids['sessionscreen'].session_rec[exc] = sets_list
         # SessionScreen.session_rec[exc] = sets_list
         self.sets = []
         self.app.change_screen1("sessionscreen", -1, "right")
@@ -838,9 +860,13 @@ class ExerciseScreen(Screen):
         if sets_layout:
             self.ids["sets_grid"].remove_widget(sets_layout[0])
             self.sets.pop(-1)
-
-        self.ids["weight"].text = "0"
-        self.ids["reps"].text = "0"
+        if self.sets:
+            currReps, currWeight = self.sets[-1][0], self.sets[-1][1]
+            self.ids["weight"].text = str(currWeight)
+            self.ids["reps"].text = str(currReps)
+        else:
+            self.ids["weight"].text = "0"
+            self.ids["reps"].text = "0"
 
     def remove_set(self, instance):
         self.ids["md_list"].remove_widget(instance)

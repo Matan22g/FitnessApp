@@ -107,7 +107,7 @@ class ExerciseSessionsScreen(Screen):
             sessions_keys = self.dates[year][month]  # represents all session dates given a certain month
         else:
             msg = "No sessions available for " + month_abb + ", " + str(year)
-            self.no_sessions_grid(msg,sessions_layout)
+            self.no_sessions_grid(msg, sessions_layout)
             return
 
         # month = sessions_keys[0].ctime()[4:7]
@@ -149,9 +149,12 @@ class ExerciseSessionsScreen(Screen):
 
         excCard.add_widget(workout_name)
         new_card_layout.add_widget(excCard)
-
-        dict_of_row_height = {0: 150}
-        layout.rows_minimum = dict_of_row_height
+        try:
+            if self.ids.sets_grid == layout:
+                dict_of_row_height = {0: 150}
+                layout.rows_minimum = dict_of_row_height
+        except:
+            pass
         layout.clear_widgets()
         layout.add_widget(new_card_layout)
 

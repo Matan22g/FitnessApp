@@ -4,8 +4,8 @@
         #backgroung press hides checkboxes
             caller = args[0]
             touch = args[1]
-            if touch.spos[1]>0.85 and touch.spos[0]<0.75: root.show_checkbox("False")
-            if touch.spos[1]>0.93: root.show_checkbox("False")
+            if touch.spos[1]>0.92 and touch.spos[0]>0.2: root.show_checkbox("False")
+            if touch.spos[1]>0.83 and touch.spos[1]<0.92 and touch.spos[0]<0.77: root.show_checkbox("False")
 
 
 

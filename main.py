@@ -101,6 +101,8 @@ class MainApp(MDApp):
     sessions_by_month_year = {}  # dict of session dates by month by year
     sessions = {}  # dic of sessions obj by dates
     running_session_workout = []
+    reload_for_running_session = ""
+    delete_mode = 0  # help for knowing when checkbox are showed
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -111,9 +113,22 @@ class MainApp(MDApp):
         self.theme_cls.primary_palette = "Indigo"
         self.theme_cls.accent_palette = "Indigo"
         self.root.ids['nav_drawer'].swipe_edge_width = -2
+        from kivy.base import EventLoop
+        EventLoop.window.bind(on_keyboard=self.hook_keyboard)
+
+    def hook_keyboard(self, window, key, *largs):
+        if key == 27:
+            self.back_to_last_screen()
+        return True
 
     def change_title(self, text):
         self.root.ids['toolbar'].title = text
+
+    def on_stop(self):
+        if self.running_session:
+            self.upload_temp_session()
+        else:
+            self.clean_temp_session_data()
 
     def on_login(self):
         # loads data
@@ -121,13 +136,14 @@ class MainApp(MDApp):
         self.change_screen1("homescreen")
         self.load_workout_data()
         self.load_session_data()
-
         # Initial left menu obj to settings
         self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
-        self.change_screen1("exercisescreen")
+
+        if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
+            self.retrieve_paused_session()
         # self.get_user_name_data(user_name)
         ### debug:
         # if self.debug == 0:
@@ -147,6 +163,74 @@ class MainApp(MDApp):
         #                  ca_file=certifi.where(), verify=True)
 
     # Handling user data'
+    def retrieve_paused_session(self):
+        print('self.user_data["temp_session"]', self.user_data["temp_session"])
+        print(type(self.user_data["temp_session"]))
+        session = ast.literal_eval(self.user_data["temp_session"][1:-1])
+        print(type(session))
+        print(session)
+        self.show_resume_session_dialog(session)
+
+    def show_resume_session_dialog(self, session):
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.3),
+            title="Do you wish to resume " + session[3],
+            buttons=[
+
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.resume_session
+                ),
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                )
+            ],
+        )
+        self.dialog.open()
+
+    def resume_session(self, *args):
+        session = ast.literal_eval(self.user_data["temp_session"][1:-1])
+        print(type(session))
+        print(session)
+        print(type(session[4]), "session[4]")
+        self.root.ids['sessionscreen'].ids["date_picker_label"].text = session[0]
+        self.root.ids['sessionscreen'].session_date = session[0] + " 00:00:00"
+        timer = session[1]
+        self.root.ids['sessionscreen'].workout_key = session[2]
+        self.root.ids['sessionscreen'].workout_name = session[3]
+        self.root.ids['sessionscreen'].num_of_split = session[4]
+        self.root.ids['sessionscreen'].session_rec = session[5]
+        self.running_session = 1
+
+        workout_list = list(self.workoutsParsed[session[2]].values())
+
+        chosen_workout = workout_list[0]  # List of exercise to train
+
+        self.root.ids['sessionscreen'].workout = copy.deepcopy(
+            chosen_workout[session[4] - 1])  # Sets the exercise list
+        self.running_session_workout = self.root.ids['sessionscreen'].workout
+
+        if self.debug:
+            print("trying to start old session")
+            print("SessionScreen.workout", SessionScreen.workout)
+            print("SessionScreen.workout_key", SessionScreen.workout_key)
+            print("SessionScreen.num_of_split", SessionScreen.num_of_split)
+
+        self.new_session = 0
+        self.running_session = 1
+        self.root.ids['sessionscreen'].view_mode = 0
+
+        self.root.ids['workoutsscreen'].ids["running_session"].text = session[3]
+
+        # Start workout timer.
+        self.start_session_timer(timer)
+        self.dialog.dismiss()
+        self.change_screen1("sessionscreen")
+
     def show_exc_history(self, exc_name):
         self.root.ids['exercise_sessions_screen'].exercise = exc_name
         self.change_screen1("exercise_sessions_screen")
@@ -477,18 +561,13 @@ class MainApp(MDApp):
         session_grid = self.root.ids['sessionscreen'].ids[
             'exc_cards']
         session_grid.clear_widgets()
-        # SessionScreen.new_workout = 1  # Sets the enitre workout
-        # SessionScreen.workout_splits = chosen_workout  # Sets the enitre workout
-        # SessionScreen.workout = copy.deepcopy(chosen_workout[workout_split - 1]) # Sets the exercise list
-        # SessionScreen.workout_key = workoutkey  # Sets the workout key list
-        # SessionScreen.num_of_split = workout_split  # Sets which split was chosen
 
-        self.root.ids['sessionscreen'].new_workout = 1  # Sets the enitre workout
+        # self.root.ids['sessionscreen'].new_workout = 1  # Sets the enitre workout
         self.root.ids['sessionscreen'].workout = copy.deepcopy(
             chosen_workout[workout_split - 1])  # Sets the exercise list
         self.root.ids['sessionscreen'].workout_key = workoutkey  # Sets the workout key list
         self.root.ids['sessionscreen'].num_of_split = workout_split  # Sets which split was chosen
-        self.running_session_workout = self.root.ids['sessionscreen'].workout
+        self.running_session_workout = copy.deepcopy(chosen_workout[workout_split - 1])
 
         if self.debug:
             print("trying to start new session")
@@ -513,6 +592,7 @@ class MainApp(MDApp):
         self.start_session_timer()
 
         self.change_screen1("sessionscreen")
+
 
     def view_session(self, session_key):
         session_grid = self.root.ids['sessionscreen'].ids[
@@ -619,8 +699,14 @@ class MainApp(MDApp):
                 workoutgrid.remove_widget(child)
 
     # Timer methods.
-    def start_session_timer(self):
+    def start_session_timer(self, *args):
         self.timer = time.time()
+
+        if args:
+            # in case of old session, restatring timer:
+            timer = args[0]
+            self.timer -= timer
+
         Clock.schedule_interval(self.increment_time, .1)
         self.increment_time(0)
         self.start_timer()
@@ -641,36 +727,40 @@ class MainApp(MDApp):
 
     # Back button
     def back_to_last_screen(self, *args):
+        print("back func")
+        print("current_screen", self.root.ids['screen_manager1'].current)
+        print("self.lastscreens", self.lastscreens)
+
+        if self.root.ids['screen_manager1'].current == "homescreen":
+            return
         if self.root.ids['workoutscreen'].edit_mode:
             self.root.ids['workoutscreen'].leave_in_middle_edit_workout()
         else:
-            # if current screen is mainscreen and last screen is main screen. go back to homescreen
-            # if current screen is mainscreen and last screen isnt main screen. go back to lastpage
-            # if current screen isnt main screen go back to lastpage
+            current_screen = self.root.ids['screen_manager1'].current
 
-            # screen_manager = self.root.ids['screen_manager1']
-            # current_screen = screen_manager.current
-            # if self.lastscreens:
-            #     if current_screen in self.mainscreens:
-            #         if self.lastscreens[-1] in self.mainscreens:
-            #             self.change_screen1("homescreen", "right")
-            #         else:
-            #             lastscreen = self.lastscreens.pop(-1)
-            #             # -1 is 'back' indicator for change screen method
-            #             self.change_screen1(lastscreen, -1, "right")
-            # else:
-            #     self.change_screen1("homescreen", "right")
+            # exiting loading previous session
+            if current_screen == "previous_workouts_screen":
+                if self.reload_for_running_session:
+                    self.reload_for_running_session = ""
+                if self.root.ids['previous_workouts_screen'].delete_mode:
+                    self.root.ids['previous_workouts_screen'].show_checkbox(False)
+                    return
+
+            if current_screen == "sessionscreen":
+                if self.delete_mode:
+                    self.root.ids['sessionscreen'].show_checkbox(False)
+                    return
+
             if self.lastscreens:
-                current_screen = self.root.ids['screen_manager1'].current
                 last_screen = self.lastscreens.pop(-1)
                 if last_screen == "blankscreen":
                     last_screen = self.lastscreens.pop(-1)
                     while self.lastscreens and self.lastscreens[-1] == current_screen:
                         last_screen = self.lastscreens.pop(-1)
                     last_screen = self.lastscreens.pop(-1)
-                while self.lastscreens and last_screen == self.lastscreens[-1]:
+                while self.lastscreens and last_screen == self.lastscreens[-1] or last_screen == current_screen:
                     last_screen = self.lastscreens.pop(-1)
-                # lastscreen = self.root.ids['screen_manager1'].previous()
+
                 # -1 is 'back' indicator for change screen method
                 self.change_screen1(last_screen, -1, "right")
             else:
@@ -693,25 +783,26 @@ class MainApp(MDApp):
     # For app screens
 
     def change_screen1(self, screen_name, *args):
-        # if screen_name == "workoutscreen":
-        #     self.test_workout()
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
+
         screen_manager = self.root.ids['screen_manager1']
         current_screen = screen_manager.current
         if self.debug:
             print("Before change screen, curr screen: ", current_screen)
+            print("trying to switch to: ", screen_name)
 
         if self.lastscreens:
-            if current_screen != self.lastscreens[-1]:
-                self.lastscreens.append(current_screen)
+            self.lastscreens.append(current_screen)
         else:
             self.lastscreens.append(current_screen)
 
         if args:
             for item in args:
                 if item == -1:
-                    self.lastscreens.pop(-1)
+                    last_screen = self.lastscreens.pop(-1)
+                    while self.lastscreens and self.lastscreens[-1] == last_screen:
+                        last_screen = self.lastscreens.pop(-1)
                 if item == -2:  # optional no transition
                     screen_manager.transition = NoTransition()
                 if isinstance(item, str):  # optional transition direction
@@ -730,6 +821,9 @@ class MainApp(MDApp):
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
 
         # screen_manager.current = screen_name
+        if screen_name != "sessionscreen":
+            self.root.ids['toolbar'].right_action_items = [
+                ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
 
         if -3 in args:  # recovering transition
             screen_manager.current = screen_name
@@ -738,7 +832,7 @@ class MainApp(MDApp):
             screen_manager.current = screen_name
 
         if self.debug:
-            print("self.lastscreens",self.lastscreens,)
+            print("self.lastscreens", self.lastscreens, )
             print("currscreen = ", screen_name)
 
     # test username methods
@@ -828,11 +922,34 @@ class MainApp(MDApp):
 
     def proper_input_filter(self, input_to_check, indicator):
         if self.debug:
-            print("input_to_check",input_to_check)
-            print("indicator",indicator)
-        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check==' ':
+            print("input_to_check", input_to_check)
+            print("indicator", indicator)
+        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check == ' ':
             return input_to_check
         else:
             return ""
-################## fix valid input
+
+    def upload_temp_session(self, *args):
+        date = self.root.ids['sessionscreen'].ids["date_picker_label"].text
+        session_rec = self.root.ids['sessionscreen'].session_rec
+        for exc in list(session_rec):
+            if not session_rec[exc]:  # if exc is empty (after deletion)
+                session_rec.pop(exc, None)
+        link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
+        session_data = [date, time.time() - self.timer, self.root.ids['sessionscreen'].workout_key,
+                        self.root.ids['sessionscreen'].workout_name, self.root.ids['sessionscreen'].num_of_split,
+                        session_rec]
+        session = "{%s}" % (str(session_data))
+        data = json.dumps(session)
+        # req = UrlRequest(link, req_body=data, on_success=self.on_upload_temp_session_success, on_error=self.on_upload_temp_session_error,
+        #                  on_failure=self.on_upload_temp_session_error, method='POST',ca_file=certifi.where(), verify=True)
+        requests.put(link, data=data)
+
+    def clean_temp_session_data(self, *args):
+        session = "{%s}" % (str([]))
+        data = json.dumps(session)
+        link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
+        requests.put(link, data=data)
+
+
 MainApp().run()

@@ -23,8 +23,9 @@
         #backgroung press hides checkboxes
             caller = args[0]
             touch = args[1]
-            if touch.spos[1]>0.8 and touch.spos[0]<0.79: root.show_checkbox("False")
-            if touch.spos[1]>0.875: root.show_checkbox("False")
+            print(touch.spos)
+            if touch.spos[1]>0.92 and touch.spos[0]>0.2: root.show_checkbox("False")
+            if touch.spos[1]>0.83 and touch.spos[1]<0.92 and touch.spos[0]<0.77: root.show_checkbox("False")
 #            if touch.spos[1]>0.8: root.fix_grid_heights()
 
 #            caller_touched = caller.collide_point(*touch.pos)
@@ -35,14 +36,12 @@
 
 
         MDRoundFlatIconButton:
-            id: save_exc
+            id: load_session
             width: dp(120)
-            pos_hint: {"center_x": .76, "top": .1}
-            text: "Save"
-            width: dp(140)
+            pos_hint: {"center_x": .2, "top": .98}
+            text: "load"
             icon: "content-save"
-            on_release: root.save_session()
-            opacity:0
+            on_release: root.reload_previous_session()
 
 
         MDLabel:
@@ -94,7 +93,7 @@
 
         MDLabel:
             id: timer
-            pos_hint: {"center_x": 0.41, "top": .98+root.inc}
+            pos_hint: {"center_x": 0.99, "top": .93+root.inc}
             size_hint: (.5, .15)
             font_size: "16sp"
             halign: "left"
@@ -104,7 +103,7 @@
 
         MDLabel:
             id: timer_view
-            pos_hint: {"center_x": 0.41, "top": .98+root.inc}
+            pos_hint: {"center_x": 0.98, "top": .93+root.inc}
             size_hint: (.5, .15)
             font_size: "16sp"
             halign: "left"
@@ -113,7 +112,7 @@
             text_color: app.theme_cls.primary_color
 
         MDIcon:
-            pos_hint: {"center_x": 0.32, "top": .98+root.inc}
+            pos_hint: {"center_x": 0.9055, "top": .93+root.inc}
             size_hint: (.5, .15)
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -167,9 +166,9 @@
 
         ScrollView:
             id: scroll
-            pos_hint: {"top": .91}
+            pos_hint: {"top": .84}
             size: self.size
-            size_hint: 1., .91
+            size_hint: 1., .85
             GridLayout:
                 # Banner grid
                 id: exc_cards

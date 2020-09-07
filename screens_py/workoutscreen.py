@@ -124,7 +124,7 @@ class WorkoutScreen(Screen):
         elif not num_of_tabs:
             self.add_split()
         screen_manager = self.app.root.ids['screen_manager1']
-        if screen_manager.current != "workoutscreen":
+        if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen":
             self.app.root.ids['toolbar'].right_action_items = [
                 ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
