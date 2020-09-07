@@ -98,11 +98,11 @@ class MainApp(MDApp):
     popup = Factory.LoadingPopup()
     popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
     exc_sessions = {}
-    sessions_by_month_year = {}  # dict of session dates by month by year
+    sessions_by_month_year = {}  # dict of session dates by month by year.
     sessions = {}  # dic of sessions obj by dates
     running_session_workout = []
     reload_for_running_session = ""
-    delete_mode = 0  # help for knowing when checkbox are showed
+    delete_mode = 0  # help for knowing when checkbox are showed.
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -117,7 +117,15 @@ class MainApp(MDApp):
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
     def hook_keyboard(self, window, key, *largs):
+        # bind back button of android to back function
+
         if key == 27:
+            try:
+                if self.root.ids['screen_manager1'].current == "homescreen":
+                    self.stop()
+                    return True
+            except:
+                pass
             self.back_to_last_screen()
         return True
 
