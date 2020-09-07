@@ -98,11 +98,11 @@ class MainApp(MDApp):
     popup = Factory.LoadingPopup()
     popup.background = folder + "/FirebaseLoginScreen/transparent_image.png"
     exc_sessions = {}
-    sessions_by_month_year = {}  # dict of session dates by month by year
+    sessions_by_month_year = {}  # dict of session dates by month by year.
     sessions = {}  # dic of sessions obj by dates
     running_session_workout = []
     reload_for_running_session = ""
-    delete_mode = 0  # help for knowing when checkbox are showed
+    delete_mode = 0  # help for knowing when checkbox are showed.
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
