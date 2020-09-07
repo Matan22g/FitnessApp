@@ -117,7 +117,7 @@ class MainApp(MDApp):
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
     def hook_keyboard(self, window, key, *largs):
-        # bind back button of android to back function
+        # bind back button of android to back function.
 
         if key == 27:
             try:
