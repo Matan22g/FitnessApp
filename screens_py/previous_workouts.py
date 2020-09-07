@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 import calendar
 
@@ -64,7 +65,6 @@ class PreviousWorkoutsScreen(Screen):
     no_sessions_grid = ExerciseSessionsScreen.no_sessions_grid
     nearest = ExerciseSessionsScreen.nearest
     update_delete_num = SessionScreen.update_delete_num
-
     delete_mode = 0
     num_to_del = 0
 
@@ -76,6 +76,7 @@ class PreviousWorkoutsScreen(Screen):
         today = datetime.today()
         curr_month = int(today.month)
         curr_year = int(today.year)
+        self.app.change_title("Recent Workouts")
 
         if self.app.sessions_by_month_year:
             if curr_year not in self.app.sessions_by_month_year:
@@ -86,6 +87,9 @@ class PreviousWorkoutsScreen(Screen):
         self.show_checkbox(False)
         self.load_sessions(curr_year, curr_month)
         self.fix_grid_heights()
+        if self.app.reload_for_running_session:
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['', lambda x: None]]
 
     def load_sessions(self, year, month):
         if self.app.debug:
@@ -103,8 +107,9 @@ class PreviousWorkoutsScreen(Screen):
             msg = "No sessions available for " + month_abb + ", " + str(year)
             self.no_sessions_grid(msg, sessions_layout)
             return
-        dict_of_row_height = {0: 100}
-        sessions_layout.rows_minimum = dict_of_row_height
+
+        # dict_of_row_height = {0: 100}
+        # sessions_layout.rows_minimum = dict_of_row_height
 
         total_session_num = len(sessions_dates)
         # for i in range(total_session_num):
@@ -113,26 +118,44 @@ class PreviousWorkoutsScreen(Screen):
 
         for i, sessions_date in enumerate(sessions_dates):
             session = self.app.sessions[sessions_date]
-            new_card_layout = self.create_card(i, total_session_num, session.workout_name, session.date,
-                                               session.duration, sessions_date)
-            sessions_layout.add_widget(new_card_layout)
+            if self.app.reload_for_running_session:
+                if session.workout_name == self.app.reload_for_running_session:
+                    new_card_layout = self.create_card(i, total_session_num, session.workout_name, session.date,
+                                                       session.duration, sessions_date)
+                    sessions_layout.add_widget(new_card_layout)
+            else:
+                new_card_layout = self.create_card(i, total_session_num, session.workout_name, session.date,
+                                                   session.duration, sessions_date)
+                sessions_layout.add_widget(new_card_layout)
 
     def create_card(self, num_of_session, total_session_num, session_workout_name, session_date, session_duration,
                     sessions_date_key):
         new_card_layout = MDFloatLayout()  # for centering
         help_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=3)
 
-        excCard = LongPressCard(
-            spacing=10,
-            radius=[14],
-            orientation="vertical",
-            size_hint=(0.87, 0.97),
-            padding=[11, 16, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
-            pos_hint={"center_y": 0.5, "center_x": 0.5},
-            elevation=1,
-            long_press_time=0.5,
-            on_long_press=lambda w: setattr(w, 'text', 'long press!')
-        )
+        if self.app.reload_for_running_session:
+            excCard = MDCard(
+                spacing=8,
+                radius=[14],
+                orientation="vertical",
+                size_hint=(0.87, 0.97),
+                padding=[11, 20, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+                pos_hint={"center_y": 0.5, "center_x": 0.5},
+                elevation=1,
+                on_release=self.view_session,
+            )
+        else:
+            excCard = LongPressCard(
+                spacing=8,
+                radius=[14],
+                orientation="vertical",
+                size_hint=(0.87, 0.97),
+                padding=[11, 20, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+                pos_hint={"center_y": 0.5, "center_x": 0.5},
+                elevation=1,
+                long_press_time=0.5,
+                on_long_press=lambda w: setattr(w, 'text', 'long press!')
+            )
         excCard.card_id = excCard
         # help_layout = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
         # excCard.add_widget(help_layout)
@@ -148,7 +171,7 @@ class PreviousWorkoutsScreen(Screen):
             theme_text_color="Secondary",
         )
         deleteBox = MDCheckbox(
-            size_hint=(0.5, 0.3)
+            size_hint=(0.5, 0.75)
         )
         deleteBox.opacity = 0
         self.session_card_by_checkBox[deleteBox] = excCard
@@ -180,7 +203,17 @@ class PreviousWorkoutsScreen(Screen):
 
         excCard.add_widget(help_layout)
         excCard.add_widget(workout_name_label)
-        excCard.add_widget(workout_duration_label)
+
+        if self.app.reload_for_running_session:
+            bottom_layout = MDGridLayout(rows=1, cols=2)
+            bottom_layout.add_widget(workout_duration_label)
+            bottom_layout.add_widget(MDFlatButton(
+                text="Load",
+                text_color=self.app.theme_cls.primary_color,
+                on_release=self.load_for_running_session))
+            excCard.add_widget(bottom_layout)
+        else:
+            excCard.add_widget(workout_duration_label)
 
         new_card_layout.add_widget(excCard)
         self.session_key_by_card[excCard] = sessions_date_key
@@ -190,6 +223,7 @@ class PreviousWorkoutsScreen(Screen):
         workout_card = args[0]
         sessions_date_key = self.session_key_by_card[workout_card]
         self.app.view_session(sessions_date_key)
+
 
     def show_checkbox(self, to_show):
 
@@ -225,7 +259,7 @@ class PreviousWorkoutsScreen(Screen):
 
     def show_del_exercise_dialog(self):
         num_to_del = self.app.root.ids['previous_workouts_screen'].ids["num_to_delete"].text
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                title="Select session to delete",
                                buttons=[
                                    MDFlatButton(
@@ -239,7 +273,7 @@ class PreviousWorkoutsScreen(Screen):
                 msg = "Delete " + num_to_del + " Session?"
                 warning = "Warning: deleting session record cannot be undone"
 
-                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+                self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                        title=msg,
                                        text=warning,
                                        buttons=[
@@ -277,3 +311,16 @@ class PreviousWorkoutsScreen(Screen):
 
     def cancel_del_exc(self, caller):
         self.dialog.dismiss()
+
+    def load_for_running_session(self, *args):
+        sessions_date_key = self.session_key_by_card[args[0].parent.parent]
+        session = self.app.sessions[sessions_date_key]
+        session_sets_dict = session.exercises
+        self.app.root.ids['sessionscreen'].session_rec = copy.deepcopy(session_sets_dict)
+        workout = self.app.root.ids['sessionscreen'].workout
+        for exc in list(session_sets_dict):
+            if exc not in workout:
+                self.app.root.ids['sessionscreen'].workout.append(exc)
+        self.app.running_session_workout = copy.deepcopy(self.app.root.ids['sessionscreen'].workout)
+        self.app.change_screen1("sessionscreen", -1)
+        self.app.reload_for_running_session = ""

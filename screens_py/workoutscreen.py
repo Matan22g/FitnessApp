@@ -20,6 +20,7 @@ class Tab(FloatLayout, MDTabsBase):
 class MDTabs_custom(MDTabs):
     '''Class implementing content for a tab.'''
 
+
 class AddExerciseContent(BoxLayout):
     pass
 
@@ -74,6 +75,7 @@ class WorkoutScreen(Screen):
             self.temp_workout = [[]]
             self.reset_tabs()
             self.reload_page()
+            self.app.change_title("Building: " + self.workout_name)
 
         else:
             self.switch_mode("view")
@@ -121,6 +123,10 @@ class WorkoutScreen(Screen):
                 num_of_tabs -= 1
         elif not num_of_tabs:
             self.add_split()
+        screen_manager = self.app.root.ids['screen_manager1']
+        if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen":
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
     def switch_mode(self, mode):
         if mode == "view":
@@ -264,7 +270,7 @@ class WorkoutScreen(Screen):
             workout = self.workout
         dict_of_row_height = {}
         for i, exc in enumerate(workout[split - 1]):
-            dict_of_row_height[i] = 125
+            dict_of_row_height[i] = 270
         self.ids.exc_cards.rows_minimum = dict_of_row_height
 
     def load_exc(self, split):
@@ -277,7 +283,7 @@ class WorkoutScreen(Screen):
             num_of_exc_total = len(workout)
             exercises_layout = self.ids.exc_cards
             exercises_layout.clear_widgets()
-            self.calc_exc_row_height(split)
+            # self.calc_exc_row_height(split)
             for num_of_exc, exc_name in enumerate(workout):
                 card_layout = self.create_exc_card(exc_name, num_of_exc, num_of_exc_total)
                 exercises_layout.add_widget(card_layout)
@@ -292,28 +298,24 @@ class WorkoutScreen(Screen):
 
         card_layout = MDFloatLayout()  # for centering
         excCard = MDCard(
-            spacing=5,
-            radius=[14],
+            spacing=2,
+            radius=[18],
             orientation="vertical",
             size_hint=(0.95, 0.8),
-            padding="12dp",
+            padding=[11, 0, 0, 18],
             pos_hint={"center_y": 0.5, "center_x": 0.5}
         )
 
-        help_layout = MDFloatLayout(size_hint_y=0.05)
+        help_layout = MDGridLayout( rows=1, cols=2)
         excnum = str(num_of_exc + 1) + " of " + str(num_of_exc_total)
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            size_hint=(None, 0.1),
-            theme_text_color="Secondary",
-            pos_hint={"center_y": 0.85, "center_x": 0.17}
+            theme_text_color="Secondary"
         )
         del_Button = MDIconButton(
             icon="trash-can-outline",
-            user_font_size="25sp",
             theme_text_color="Custom",
-            pos_hint={"center_y": 0.85, "center_x": 0.95},
             text_color=self.app.theme_cls.primary_color,
             on_release=self.show_del_exercise_dialog
         )
@@ -325,11 +327,10 @@ class WorkoutScreen(Screen):
         help_layout.add_widget(del_Button)
         excCard.add_widget(help_layout)
 
-        name_layout = MDGridLayout(size_hint_y=0.1, rows=1, cols=2)
+        name_layout = MDGridLayout(rows=1, cols=2)
         exc_name = MDLabel(
             text=exc,
             font_style="H5",
-            size_hint=(1, 0.1),
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color
         )
@@ -337,7 +338,6 @@ class WorkoutScreen(Screen):
         # consider hiding option
         sButton = MDIconButton(
             icon="history",
-            user_font_size="25sp",
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color,
             on_release=self.show_exc_history
@@ -419,7 +419,8 @@ class WorkoutScreen(Screen):
         del_button = args[0]
         exc_name = self.exc_by_del_button[del_button]
         self.exc_to_del = exc_name
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+        
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                title="Delete " + exc_name + "?",
                                buttons=[
                                    MDFlatButton(
@@ -467,7 +468,7 @@ class WorkoutScreen(Screen):
 
     def show_del_split_dialog(self, *args):
         if self.num_of_splits > 1:
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Delete " + "Split " + str(self.split_active) + "?",
                                    buttons=[
                                        MDFlatButton(
@@ -481,7 +482,7 @@ class WorkoutScreen(Screen):
                                    ],
                                    )
         else:
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Cant have 0 Splits",
                                    buttons=[
                                        MDFlatButton(
@@ -523,7 +524,7 @@ class WorkoutScreen(Screen):
         self.reload_page()
 
     def leave_in_middle_edit_workout(self):
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, None),
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                title="Are you sure you want to quit?",
                                text= "You will lose all unsaved progress.",
                                buttons=[
@@ -581,7 +582,7 @@ class WorkoutScreen(Screen):
     def show_save_workout_dialog(self):
 
         if self.valid_workout():
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Save " + self.workout_name + "?",
                                    buttons=[
                                        MDFlatButton(
@@ -595,7 +596,7 @@ class WorkoutScreen(Screen):
                                    ],
                                    )
         else:
-            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.7, None),
+            self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Cant save empty workout",
                                    buttons=[
                                        MDFlatButton(

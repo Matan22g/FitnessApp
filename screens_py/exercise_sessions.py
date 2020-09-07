@@ -46,10 +46,8 @@ class ExerciseSessionsScreen(Screen):
 
             self.load_sessions(curr_year, month)
         else:
-            sessions_layout = self.ids.sets_grid
-            sessions_layout.clear_widgets()
             self.set_record(0)
-            self.no_sessions_grid("No records for " + self.exercise, sessions_layout)
+            self.no_sessions_grid("No records for " + self.exercise, self.ids.sets_grid)
 
     def set_record(self, record):
         if record:
@@ -109,15 +107,15 @@ class ExerciseSessionsScreen(Screen):
             sessions_keys = self.dates[year][month]  # represents all session dates given a certain month
         else:
             msg = "No sessions available for " + month_abb + ", " + str(year)
-            self.no_sessions_grid(msg,sessions_layout)
+            self.no_sessions_grid(msg, sessions_layout)
             return
 
         # month = sessions_keys[0].ctime()[4:7]
 
         for i, session_key in enumerate(sessions_keys):
             session = self.sessions[session_key][1]
-            dict_of_row_height[i] = 140
-            row_enlarger = 50 * (len(session) - 1)
+            dict_of_row_height[i] = 250
+            row_enlarger = 125 * (len(session) - 1)
             dict_of_row_height[i] += row_enlarger
         self.ids.sets_grid.rows_minimum = dict_of_row_height
         total_session_num = len(sessions_keys)
@@ -132,11 +130,11 @@ class ExerciseSessionsScreen(Screen):
         new_card_layout = MDFloatLayout()  # for centering
 
         excCard = MDCard(
-            spacing=10,
+            spacing=15,
             radius=[14],
             orientation="vertical",
             size_hint=(0.87, 0.7),
-            padding=[11, 16, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+            padding=[11, 16, 0, 25],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
             elevation=1
 
@@ -151,9 +149,14 @@ class ExerciseSessionsScreen(Screen):
 
         excCard.add_widget(workout_name)
         new_card_layout.add_widget(excCard)
+        try:
+            if self.ids.sets_grid == layout:
+                dict_of_row_height = {0: 150}
+                layout.rows_minimum = dict_of_row_height
+        except:
+            pass
+        layout.clear_widgets()
         layout.add_widget(new_card_layout)
-        dict_of_row_height = {0: 50}
-        layout.rows_minimum = dict_of_row_height
 
     def create_card(self, session, num_of_session, total_session_num, session_workout_name, session_date):
         new_card_layout = MDFloatLayout()  # for centering
@@ -177,26 +180,23 @@ class ExerciseSessionsScreen(Screen):
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            size_hint=(0.3, 0.1),
             theme_text_color="Secondary",
             pos_hint={"center_y": 0.85, "center_x": 0.17}
         )
         # help_layout.add_widget(exc_num)
         # excCard.add_widget(help_layout)
 
-        name_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=3)
+        name_layout = MDGridLayout(rows=1, cols=3)
         workout = session_workout_name
         workout_name = MDLabel(
             text=workout,
             font_style="H5",
-            size_hint=(0.6, 0.1),
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color
         )
         workout_date = MDLabel(
             text=str(session_date),
             font_style="Caption",
-            size_hint=(0.8, 0.1),
             theme_text_color="Custom",
             text_color=self.app.theme_cls.primary_color
         )
@@ -213,8 +213,8 @@ class ExerciseSessionsScreen(Screen):
         for num_of_set, set in enumerate(session):
             set_label, set_number, reps_label = self.create_set_label(set, num_of_set)
 
-            exc_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.08, row_force_default=True, row_default_height=60)
-            units_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.1, row_force_default=True, row_default_height=54)
+            exc_layout = MDGridLayout(rows=1, cols=2)
+            units_layout = MDGridLayout(rows=1, cols=2)
             exc_layout.add_widget(set_label)
             exc_layout.add_widget(set_number)
             units_layout.add_widget(MDLabel(text="", size_hint_x=0.9))
