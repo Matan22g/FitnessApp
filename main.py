@@ -137,7 +137,7 @@ class MainApp(MDApp):
         self.load_workout_data()
         self.load_session_data()
         # Initial left menu obj to settings
-        self.root.ids['toolbar'].left_action_items = [["settings", lambda x: self.change_screen1("settingsscreen")]]
+        self.root.ids['toolbar'].left_action_items = [["cog", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
@@ -815,7 +815,7 @@ class MainApp(MDApp):
 
         if screen_name == "homescreen":
             self.root.ids['toolbar'].left_action_items = [
-                ["settings", lambda x: self.change_screen1("settingsscreen")]]
+                ["cog", lambda x: self.change_screen1("settingsscreen")]]
             self.lastscreens = []
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
