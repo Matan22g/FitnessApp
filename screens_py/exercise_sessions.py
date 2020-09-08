@@ -1,5 +1,8 @@
 import calendar
 from datetime import datetime
+
+from kivy.core.window import Window
+
 from customKv.datepicker import AKDatePicker
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
@@ -101,7 +104,6 @@ class ExerciseSessionsScreen(Screen):
         month_abb = calendar.month_abbr[month]
         self.app.root.ids['exercise_sessions_screen'].ids["date_label"].text = "Previous sessions, " + month_abb
 
-
         dict_of_row_height = {}
         if year in self.dates and month in self.dates[year]:
             sessions_keys = self.dates[year][month]  # represents all session dates given a certain month
@@ -112,11 +114,16 @@ class ExerciseSessionsScreen(Screen):
 
         # month = sessions_keys[0].ctime()[4:7]
 
+        window_height = Window.size[1]
+        row_height = window_height / 8.8
+        row_enlarger_inc = window_height / 17.6
+
         for i, session_key in enumerate(sessions_keys):
             session = self.sessions[session_key][1]
-            dict_of_row_height[i] = 250
-            row_enlarger = 125 * (len(session) - 1)
+            dict_of_row_height[i] = row_height
+            row_enlarger = row_enlarger_inc * (len(session) - 1)
             dict_of_row_height[i] += row_enlarger
+
         self.ids.sets_grid.rows_minimum = dict_of_row_height
         total_session_num = len(sessions_keys)
         for i, session_key in enumerate(sessions_keys):

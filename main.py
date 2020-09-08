@@ -39,7 +39,7 @@ from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 import copy
 
-Window.size = (375,750)
+Window.size = (375, 750)
 
 
 ## msg for new workout name
@@ -68,9 +68,6 @@ class Workout_Session:
         self.workout_name = workout_name
         self.workout_split = workout_split
         self.exercises = exercises
-
-
-
 
 
 class MainApp(MDApp):
@@ -103,6 +100,7 @@ class MainApp(MDApp):
     running_session_workout = []
     reload_for_running_session = ""
     delete_mode = 0  # help for knowing when checkbox are showed.
+    upload_backup = 0
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -115,22 +113,6 @@ class MainApp(MDApp):
         self.root.ids['nav_drawer'].swipe_edge_width = -2
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
-
-    def hook_keyboard(self, window, key, *largs):
-        # bind back button of android to back function.
-
-        if key == 27:
-            try:
-                if self.root.ids['screen_manager1'].current == "homescreen":
-                    self.stop()
-                    return True
-            except:
-                pass
-            self.back_to_last_screen()
-        return True
-
-    def change_title(self, text):
-        self.root.ids['toolbar'].title = text
 
     def on_stop(self):
         if self.running_session:
@@ -170,19 +152,31 @@ class MainApp(MDApp):
         # req = UrlRequest(link, req_body=data,
         #                  ca_file=certifi.where(), verify=True)
 
+    def hook_keyboard(self, window, key, *largs):
+        # bind back button of android to back function.
+
+        if key == 27:
+            try:
+                if self.root.ids['screen_manager1'].current == "homescreen":
+                    self.stop()
+                    return True
+            except:
+                pass
+            self.back_to_last_screen()
+        return True
+
+    def change_title(self, text):
+        self.root.ids['toolbar'].title = text
+
     # Handling user data'
     def retrieve_paused_session(self):
-        print('self.user_data["temp_session"]', self.user_data["temp_session"])
-        print(type(self.user_data["temp_session"]))
         session = ast.literal_eval(self.user_data["temp_session"][1:-1])
-        print(type(session))
-        print(session)
         self.show_resume_session_dialog(session)
 
     def show_resume_session_dialog(self, session):
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.3),
+            size_hint=(0.9, 0.2),
             title="Do you wish to resume " + session[3],
             buttons=[
 
@@ -202,9 +196,6 @@ class MainApp(MDApp):
 
     def resume_session(self, *args):
         session = ast.literal_eval(self.user_data["temp_session"][1:-1])
-        print(type(session))
-        print(session)
-        print(type(session[4]), "session[4]")
         self.root.ids['sessionscreen'].ids["date_picker_label"].text = session[0]
         self.root.ids['sessionscreen'].session_date = session[0] + " 00:00:00"
         timer = session[1]
@@ -348,8 +339,7 @@ class MainApp(MDApp):
                     self.exc_sessions[exc]["record"][1] = 0
                     self.exc_sessions[exc]["record"][0] = ""
                 if len(self.exc_sessions[exc]) > 1:
-                    self.exc_sessions[exc]["record"][0],self.exc_sessions[exc]["record"][1] = self.find_new_record(exc)
-
+                    self.exc_sessions[exc]["record"][0], self.exc_sessions[exc]["record"][1] = self.find_new_record(exc)
 
             if len(self.exc_sessions[exc]) == 1:
                 self.exc_sessions.pop(exc)
@@ -361,8 +351,8 @@ class MainApp(MDApp):
         # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
         record = ""
         record_weight = 0
-        maybe_record =""
-        maybe_record_weight=0
+        maybe_record = ""
+        maybe_record_weight = 0
         record_date = ""
         for date in self.exc_sessions[exc]:
             if date != "record":
@@ -378,7 +368,6 @@ class MainApp(MDApp):
                     record = maybe_record
                     record_date = date
         return record, record_date
-
 
     def find_best_set(self, exc_session):
         # by weight:
@@ -538,14 +527,6 @@ class MainApp(MDApp):
                 newlayout.add_widget(workoutcard)
                 workoutgrid.add_widget(newlayout)
 
-    def on_split_switch(self, *args):
-        split_chosen = args[2]
-        split_chosen = int(split_chosen[6])
-        tab = args[1]
-        workout_key = tab.parent.parent.parent.parent.parent.children[0].children[3].text
-        self.split_Choice_dict[workout_key] = split_chosen
-        print("here", self.split_Choice_dict)
-
     # Methods for when User want to start a new workout session:
     def view_workout(self, *args):
         workout_key = args[0].children[0].children[0].text
@@ -601,7 +582,6 @@ class MainApp(MDApp):
 
         self.change_screen1("sessionscreen")
 
-
     def view_session(self, session_key):
         session_grid = self.root.ids['sessionscreen'].ids[
             'exc_cards']
@@ -616,8 +596,6 @@ class MainApp(MDApp):
         self.root.ids['sessionscreen'].view_mode = 0
         self.root.ids['sessionscreen'].workout = self.running_session_workout
         self.change_screen1("sessionscreen")
-
-
 
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
@@ -720,7 +698,7 @@ class MainApp(MDApp):
         self.start_timer()
 
     def increment_time(self, interval):
-        timer = time.time()-self.timer
+        timer = time.time() - self.timer
         self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(timer))))
         self.root.ids['sessionscreen'].ids["timer"].text = self.timer_format
 
@@ -877,6 +855,16 @@ class MainApp(MDApp):
         else:
             return False
 
+    def proper_input_filter(self, input_to_check, indicator):
+        # TODO  insert filter for english
+        if self.debug:
+            print("input_to_check", input_to_check)
+            print("indicator", indicator)
+        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check == ' ':
+            return input_to_check
+        else:
+            return ""
+
     def upload_new_workout(self, workout_name, workout_exc):
         self.display_loading_screen()
 
@@ -922,29 +910,52 @@ class MainApp(MDApp):
                                       on_failure=self.error_upload_workout,
                                       ca_file=certifi.where(), method='PUT', verify=True)
 
-    def display_loading_screen(self, *args):
-        self.popup.open()
+    def upload_session(self, data, link):
+        self.display_loading_screen()
+        self.upload_backup = ["session_upload", data, link]
+        req = UrlRequest(link, req_body=data, on_success=self.on_session_save_success,
+                         on_error=self.on_session_save_error,
+                         on_failure=self.on_session_save_error, ca_file=certifi.where(), verify=True)
 
-    def hide_loading_screen(self, *args):
-        self.popup.dismiss()
+    def on_session_save_success(self, *args):
+        self.root.ids['sessionscreen'].dialog.dismiss()
+        self.change_screen1("homescreen")
+        self.get_user_data()
+        self.load_session_data()
+        self.running_session = 0
+        Snackbar(text="Session saved!").show()
+        self.upload_backup = 0
+        self.hide_loading_screen()
 
-    def proper_input_filter(self, input_to_check, indicator):
+    def on_session_save_error(self, *args):
+        self.root.ids['sessionscreen'].dialog.dismiss()
+        self.hide_loading_screen()
+        Snackbar(text="Something went wrong!", padding="20dp", button_text="TRY AGAIN", button_color=(1, 0, 1, 1),
+                 duration=10,
+                 button_callback=self.on_upload_error).show()
         if self.debug:
-            print("input_to_check", input_to_check)
-            print("indicator", indicator)
-        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check == ' ':
-            return input_to_check
-        else:
-            return ""
+            print(args)
+            print("error session save")
+
+    def on_upload_error(self, *args):
+        if self.upload_backup:
+            upload_backup = self.upload_backup
+            method = upload_backup[0]
+            data = upload_backup[1]
+            link = upload_backup[2]
+            if method == "session_upload":
+                self.upload_session(data, link)
 
     def upload_temp_session(self, *args):
+        # backup in case of app being closed on running session
+
         date = self.root.ids['sessionscreen'].ids["date_picker_label"].text
         session_rec = self.root.ids['sessionscreen'].session_rec
         for exc in list(session_rec):
             if not session_rec[exc]:  # if exc is empty (after deletion)
                 session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
-        session_data = [date, time.time() - self.timer, self.root.ids['sessionscreen'].workout_key,
+        session_data = [date, self.timer, self.root.ids['sessionscreen'].workout_key,
                         self.root.ids['sessionscreen'].workout_name, self.root.ids['sessionscreen'].num_of_split,
                         session_rec]
         session = "{%s}" % (str(session_data))
@@ -958,6 +969,12 @@ class MainApp(MDApp):
         data = json.dumps(session)
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
         requests.put(link, data=data)
+
+    def display_loading_screen(self, *args):
+        self.popup.open()
+
+    def hide_loading_screen(self, *args):
+        self.popup.dismiss()
 
 
 MainApp().run()

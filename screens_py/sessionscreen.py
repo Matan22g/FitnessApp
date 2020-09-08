@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import certifi
+from kivy.core.window import Window
 from kivy.network.urlrequest import UrlRequest
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.uix.behaviors import ButtonBehavior
@@ -131,6 +132,7 @@ class SessionScreen(Screen):
 
             self.ids["load_session"].opacity = 1
         else:
+            self.ids["load_session"].opacity = 0
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
             session_sets_dict = session.exercises
@@ -154,7 +156,6 @@ class SessionScreen(Screen):
             if self.app.reload_for_running_session:
                 self.app.root.ids['toolbar'].right_action_items = [
                     ['', lambda x: None]]
-                self.ids["load_session"].opacity = 0
 
     def hide_edit_buttons(self, to_hide):
         if to_hide:
@@ -192,14 +193,19 @@ class SessionScreen(Screen):
         dict_of_row_height = {}
         layout = self.ids.exc_cards
         layout.clear_widgets()
+        print("Window.size", Window.size)
+        window_height = Window.size[1]
+        row_height = Window.size[1] / 5.5
+        row_height_view = Window.size[1] / 8.8
+        row_enlarger_inc = Window.size[1] / 17.6
         for i, exc in enumerate(self.workout):
             if not self.view_mode:
-                dict_of_row_height[i] = 400
+                dict_of_row_height[i] = row_height
             else:
-                dict_of_row_height[i] = 250
+                dict_of_row_height[i] = row_height_view
 
             if exc in session_rec:
-                row_enlarger = 125 * len(session_rec[exc])
+                row_enlarger = row_enlarger_inc * len(session_rec[exc])
                 dict_of_row_height[i] += row_enlarger
         self.ids.exc_cards.rows_minimum = dict_of_row_height
         self.check_box_by_card={}
@@ -475,7 +481,6 @@ class SessionScreen(Screen):
     def upload_session(self, *args):
         self.app.display_loading_screen()
 
-        date = self.ids["date_picker_label"].text
         date = self.session_date
         for exc in list(self.session_rec):
             if not self.session_rec[exc]:  # if exc is empty (after deletion)
@@ -485,25 +490,8 @@ class SessionScreen(Screen):
                         self.session_rec]
         Workout = "{%s}" % (str(session_data))
         data = json.dumps(Workout)
-        req = UrlRequest(link, req_body=data, on_success=self.on_save_success, on_error=self.on_save_error,
-                         on_failure=self.on_save_error, ca_file=certifi.where(), verify=True)
-        self.app.running_session = 0
 
-    def on_save_success(self, *args):
-        self.dialog.dismiss()
-        self.app.change_screen1("homescreen")
-        self.app.get_user_data()
-        self.app.load_session_data()
-
-        Snackbar(text="Session saved!").show()
-        self.app.hide_loading_screen()
-
-    def on_save_error(self, *args):
-        self.dialog.dismiss()
-        self.app.hide_loading_screen()
-        if self.app.debug:
-            print(args)
-            print("error session save")
+        self.app.upload_session(data, link)
 
     def cancel_save(self, *args):
         self.dialog.dismiss()
