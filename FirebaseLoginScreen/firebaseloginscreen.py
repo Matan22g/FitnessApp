@@ -19,6 +19,10 @@ from kivymd.uix.dialog import MDDialog
 import requests
 import certifi
 
+# from kivyauth.google_auth import initialize_google, login_google, logout_google
+#
+
+
 # Load the kv files
 folder = os.path.dirname(os.path.realpath(__file__))
 # Builder.load_file(folder + "/themedwidgets.kv")
@@ -33,6 +37,7 @@ from FirebaseLoginScreen.signinscreen import SignInScreen
 from FirebaseLoginScreen.createaccountscreen import CreateAccountScreen
 
 
+##TODO add exception catcher for non internet attempt
 class FirebaseLoginScreen(Screen, EventDispatcher):
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -55,9 +60,23 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     email_exists = BooleanProperty(False)
     email_not_found = BooleanProperty(False)
 
-    debug = False
+    debug = True
     popup = Factory.LoadingPopup()
     popup.background = folder + "/transparent_image.png"
+
+    # def build(self):
+    #     initialize_google(self.after_login, self.error_listener)
+    #
+
+    # def login_with_google(self):
+    #     login_google()
+    #     print("here")
+    #
+    # def after_login(self):
+    #     pass
+    #
+    # def error_listener(self):
+    #     pass
 
     def on_login_success(self, *args):
         self.app.change_screen("main_app_screen")
@@ -130,7 +149,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     def successful_sign_up(self, urlrequest, log_in_data):
         # my_data = '{"avatar": "man.png", "nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
         # my_data = '{"user_name": ' + '"' + self.user_name + '"' + ', ' + '"nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
-        my_data = '{"user_name": ' + '"' + self.user_name.lower() + '"' + ', ' + '"real_user_name": ' + '"' + self.user_name + '"' + ', ' + '"email": ' + '"' + self.email + '"' + ', ' + '"friends": "", "workouts": "", "streak": "0"}'
+        my_data = '{"user_name": ' + '"' + self.user_name.lower() + '"' + ', ' + '"real_user_name": ' + '"' + self.user_name + '"' + ', ' + '"email": ' + '"' + self.email + '"' + ', ' + '"friends": "", "workouts": "", "streak": "0", "temp_session": "", "sessions": ""}'
         print("successful_sign_up")
         post_request = UrlRequest(
             "https://gymbuddy2.firebaseio.com/" + log_in_data['localId'] + ".json?auth=" + log_in_data['idToken'],

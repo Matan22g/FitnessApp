@@ -17,7 +17,14 @@
             text: "Log in"
             on_release: root.parent.current = "sign_in_screen"
 
-
+        MDIconButton:
+            id: log_in_with_google
+            pos_hint: {"x": .45, "y": .55}
+            icon: "google"
+            user_font_size: "30sp"
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            on_release: root.parent.parent.login_with_google()
 
         MDRaisedButton:
             id: create_account_button

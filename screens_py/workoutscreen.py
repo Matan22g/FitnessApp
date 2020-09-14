@@ -1,3 +1,5 @@
+import json
+
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
@@ -612,11 +614,19 @@ class WorkoutScreen(Screen):
         workout_name = self.workout_name
         workout_key = self.workout_key
         workout_exc = self.temp_workout
+        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
+        data = json.dumps(Workout)
+
         if self.create_mode:
             self.create_mode = 0
-            self.app.upload_new_workout(workout_name, workout_exc)
+            link = "https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s" % (self.app.local_id, self.app.id_token)
+            self.app.upload_data(data, link, 1)
+
         else:
-            self.app.update_existing_workout(workout_key, workout_name, workout_exc)
+            link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
+            self.app.local_id, workout_key, self.app.id_token)
+            self.app.upload_data(data, link, 2, workout_key)
+
         self.dismiss_dialog()
         self.workout_key = 0
 

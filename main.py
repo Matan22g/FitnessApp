@@ -1,6 +1,6 @@
 import ast
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 import certifi
 from kivy.network.urlrequest import UrlRequest
@@ -100,17 +100,23 @@ class MainApp(MDApp):
     running_session_workout = []
     reload_for_running_session = ""
     delete_mode = 0  # help for knowing when checkbox are showed.
-    upload_backup = 0
+    upload_backup = 0  # help for backing up, uploading attempts - format: [data, link, target, workout_key]
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
         super().__init__(**kwargs)
+
+    def refresh_auth_token(self):
+        # on error Auth token is expired:
+        self.root.ids.firebase_login_screen.load_saved_account()
 
     def on_start(self):
         # before login, denies access to navigation drawer
         self.theme_cls.primary_palette = "Indigo"
         self.theme_cls.accent_palette = "Indigo"
         self.root.ids['nav_drawer'].swipe_edge_width = -2
+
+        # bind android back button to back function
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
@@ -134,23 +140,6 @@ class MainApp(MDApp):
 
         if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
             self.retrieve_paused_session()
-        # self.get_user_name_data(user_name)
-        ### debug:
-        # if self.debug == 0:
-        #     self.workout_key_to_view = '-MF5efE9OJk4fKyB9LpK'
-        #     self.change_screen1("workoutscreen")
-
-        #
-        # date = "date"
-        # workout_key = "workout_key"
-        # num_of_split = 4
-        # session_rec = {"exc1": "4 X 8", "exc2": "5*9"}
-        # link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.local_id, self.id_token)
-        # Workout = "{%s: %s: %s}" % (
-        #     '"' + workout_key + '"', '"' + str(num_of_split) + '"', '"' + str(session_rec) + '"')
-        # data = json.dumps(Workout)
-        # req = UrlRequest(link, req_body=data,
-        #                  ca_file=certifi.where(), verify=True)
 
     def hook_keyboard(self, window, key, *largs):
         # bind back button of android to back function.
@@ -171,8 +160,13 @@ class MainApp(MDApp):
     # Handling user data'
     def retrieve_paused_session(self):
         session = ast.literal_eval(self.user_data["temp_session"][1:-1])
-        self.show_resume_session_dialog(session)
-
+        session_date = session[0]
+        session_date = datetime.strptime(session_date, "%d/%m/%Y").date()
+        today_date = date.today()
+        if session_date == today_date:
+            self.show_resume_session_dialog(session)
+        else:
+            self.clean_temp_session_data()
     def show_resume_session_dialog(self, session):
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
@@ -222,9 +216,7 @@ class MainApp(MDApp):
         self.new_session = 0
         self.running_session = 1
         self.root.ids['sessionscreen'].view_mode = 0
-
         self.root.ids['workoutsscreen'].ids["running_session"].text = session[3]
-
         # Start workout timer.
         self.start_session_timer(timer)
         self.dialog.dismiss()
@@ -689,9 +681,9 @@ class MainApp(MDApp):
         self.timer = time.time()
 
         if args:
-            # in case of old session, restatring timer:
+            # in case of old session, resetting timer to previous time:
             timer = args[0]
-            self.timer -= timer
+            self.timer = timer
 
         Clock.schedule_interval(self.increment_time, .1)
         self.increment_time(0)
@@ -806,7 +798,6 @@ class MainApp(MDApp):
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
 
-        # screen_manager.current = screen_name
         if screen_name != "sessionscreen":
             self.root.ids['toolbar'].right_action_items = [
                 ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
@@ -825,7 +816,6 @@ class MainApp(MDApp):
     #######################
     def get_user_name_data_success(self, req, result):
         pass
-        # print("FUQ YEA", result)
 
     def on_request_error(self, *args):
         print('failed')
@@ -865,86 +855,154 @@ class MainApp(MDApp):
         else:
             return ""
 
-    def upload_new_workout(self, workout_name, workout_exc):
+    def upload_data(self, *args):
+        """  target can be: 1 - upload new workout ,
+             2 - update an existing workout, 3 - upload new session
+        """
+        data = args[0]
+        link = args[1]
+        target = args[2]
+        try:
+            workout_key = args[3]
+        except:
+            workout_key = 0
         self.display_loading_screen()
+        self.upload_backup = [data, link, target, workout_key]
+        if target == 1 or target == 3:
+            method = 'POST'
+        elif target == 2:
+            method = 'PUT'
 
-        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
-        workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s" % (self.local_id, self.id_token)
-        data = json.dumps(Workout)
-        post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
-                                      on_error=self.error_upload_workout,
-                                      on_failure=self.error_upload_workout,
-                                      ca_file=certifi.where(), method='POST', verify=True)
+        post_workout_req = UrlRequest(link, req_body=data, on_success=self.success_upload,
+                                      on_error=self.error_upload,
+                                      on_failure=self.error_upload,
+                                      ca_file=certifi.where(), method=method, verify=True)
 
-    def success_upload_workout(self, *args):
-        self.hide_loading_screen()
+    def success_upload(self, *args):
 
         self.change_screen1("workoutsscreen")
         self.get_user_data()
+
         self.load_workout_data()
-        Snackbar(text="Workout saved!").show()
         self.root.ids['toolbar'].right_action_items = [
             ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
 
-    def error_upload_workout(self, *args):
-        self.hide_loading_screen()
-        print(args)
-        print("error uploading")
-
-    def update_existing_workout(self, workout_key, workout_name, workout_exc):
-        if self.debug:
-            print("workout_key to update:", workout_key)
-            print("workout_name to update:", workout_name)
-            print("workout_exc to update:", workout_exc)
-            print("real workout details:", self.workoutsParsed[workout_key])
-
-        self.display_loading_screen()
-
-        workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
-            self.local_id, workout_key, self.id_token)
-        print(workout_link)
-        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
-        data = json.dumps(Workout)
-        post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
-                                      on_error=self.error_upload_workout,
-                                      on_failure=self.error_upload_workout,
-                                      ca_file=certifi.where(), method='PUT', verify=True)
-
-    def upload_session(self, data, link):
-        self.display_loading_screen()
-        self.upload_backup = ["session_upload", data, link]
-        req = UrlRequest(link, req_body=data, on_success=self.on_session_save_success,
-                         on_error=self.on_session_save_error,
-                         on_failure=self.on_session_save_error, ca_file=certifi.where(), verify=True)
-
-    def on_session_save_success(self, *args):
-        self.root.ids['sessionscreen'].dialog.dismiss()
-        self.change_screen1("homescreen")
-        self.get_user_data()
         self.load_session_data()
         self.running_session = 0
-        Snackbar(text="Session saved!").show()
+
+        Snackbar(text="Workout saved!").show()
         self.upload_backup = 0
         self.hide_loading_screen()
 
-    def on_session_save_error(self, *args):
-        self.root.ids['sessionscreen'].dialog.dismiss()
+    def error_upload(self, *args):
+        self.refresh_auth_token()
         self.hide_loading_screen()
         Snackbar(text="Something went wrong!", padding="20dp", button_text="TRY AGAIN", button_color=(1, 0, 1, 1),
-                 duration=10,
+                 duration=15,
                  button_callback=self.on_upload_error).show()
         if self.debug:
             print(args)
             print("error session save")
 
     def on_upload_error(self, *args):
+        self.refresh_auth_token()
         if self.upload_backup:
             upload_backup = self.upload_backup
-            method = upload_backup[0]
-            data = upload_backup[1]
-            link = upload_backup[2]
-            if method == "session_upload":
-                self.upload_session(data, link)
+            data = upload_backup[0]
+            link = upload_backup[1]
+            target = upload_backup[2]
+            workout_key = upload_backup[3]
+            if target == 1:
+                link = "https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s" % (self.local_id, self.id_token)
+            if target == 2:
+                link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
+                    self.local_id, workout_key, self.id_token)
+            if target == 3:
+                link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.local_id, self.id_token)
+
+            self.upload_data(data, link, target)
+
+    # def upload_new_workout(self, data, link):
+    #
+    #     self.display_loading_screen()
+    #     self.upload_backup = ["upload_new_workout", data, link]
+    #     post_workout_req = UrlRequest(link, req_body=data, on_success=self.success_upload_workout,
+    #                                   on_error=self.error_upload_workout,
+    #                                   on_failure=self.error_upload_workout,
+    #                                   ca_file=certifi.where(), method='POST', verify=True)
+    #
+    #
+    # def success_upload_workout(self, *args):
+    #     self.hide_loading_screen()
+    #
+    #     self.change_screen1("workoutsscreen")
+    #     self.get_user_data()
+    #     self.load_workout_data()
+    #     Snackbar(text="Workout saved!").show()
+    #     self.root.ids['toolbar'].right_action_items = [
+    #         ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
+    #
+    # def error_upload_workout(self, *args):
+    #     self.hide_loading_screen()
+    #     print(args)
+    #     print(args[0])
+    #     print("error uploading")
+    #
+    # def update_existing_workout(self, workout_key, workout_name, workout_exc):
+    #     if self.debug:
+    #         print("workout_key to update:", workout_key)
+    #         print("workout_name to update:", workout_name)
+    #         print("workout_exc to update:", workout_exc)
+    #         print("real workout details:", self.workoutsParsed[workout_key])
+    #
+    #     self.display_loading_screen()
+    #
+    #     workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
+    #         self.local_id, workout_key, self.id_token)
+    #     print(workout_link)
+    #     Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
+    #     data = json.dumps(Workout)
+    #     post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
+    #                                   on_error=self.error_upload_workout,
+    #                                   on_failure=self.error_upload_workout,
+    #                                   ca_file=certifi.where(), method='PUT', verify=True)
+    #
+    # def upload_session(self, data, link):
+    #     self.display_loading_screen()
+    #     self.upload_backup = ["session_upload", data, link]
+    #     req = UrlRequest(link, req_body=data, on_success=self.on_session_save_success,
+    #                      on_error=self.on_session_save_error,
+    #                      on_failure=self.on_session_save_error, ca_file=certifi.where(), verify=True)
+    #
+    # def on_session_save_success(self, *args):
+    #     self.root.ids['sessionscreen'].dialog.dismiss()
+    #     self.change_screen1("homescreen")
+    #     self.get_user_data()
+    #     self.load_session_data()
+    #     self.running_session = 0
+    #     Snackbar(text="Session saved!").show()
+    #     self.upload_backup = 0
+    #     self.hide_loading_screen()
+    #
+    # def on_session_save_error(self, *args):
+    #     self.root.ids['sessionscreen'].dialog.dismiss()
+    #     self.refresh_auth_token()
+    #     self.hide_loading_screen()
+    #     Snackbar(text="Something went wrong!", padding="20dp", button_text="TRY AGAIN", button_color=(1, 0, 1, 1),
+    #              duration=10,
+    #              button_callback=self.on_upload_error).show()
+    #     if self.debug:
+    #         print(args)
+    #         print("error session save")
+    #
+    # def on_upload_error(self, *args):
+    #     if self.upload_backup:
+    #         upload_backup = self.upload_backup
+    #         method = upload_backup[0]
+    #         data = upload_backup[1]
+    #         link = upload_backup[2]
+    #         if method == "session_upload":
+    #             self.upload_session(data, link)
 
     def upload_temp_session(self, *args):
         # backup in case of app being closed on running session
@@ -955,6 +1013,7 @@ class MainApp(MDApp):
             if not session_rec[exc]:  # if exc is empty (after deletion)
                 session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
+        print("timer to upload", self.timer)
         session_data = [date, self.timer, self.root.ids['sessionscreen'].workout_key,
                         self.root.ids['sessionscreen'].workout_name, self.root.ids['sessionscreen'].num_of_split,
                         session_rec]

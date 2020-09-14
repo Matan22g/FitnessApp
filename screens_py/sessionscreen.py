@@ -491,7 +491,8 @@ class SessionScreen(Screen):
         Workout = "{%s}" % (str(session_data))
         data = json.dumps(Workout)
 
-        self.app.upload_session(data, link)
+        self.app.upload_data(data, link, 3)
+        self.dialog.dismiss()
 
     def cancel_save(self, *args):
         self.dialog.dismiss()
@@ -508,7 +509,6 @@ class SessionScreen(Screen):
 
         if to_show:
             self.app.delete_mode = 1
-
             self.ids["num_to_delete"].opacity = 1
             self.ids[date_label_id].opacity = 0
             self.ids[date_icon_id].opacity = 0
