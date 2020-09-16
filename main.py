@@ -39,7 +39,7 @@ from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 import copy
 
-Window.size = (375, 750)
+Window.size = (330, 650)
 
 
 ## msg for new workout name

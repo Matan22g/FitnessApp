@@ -1,5 +1,3 @@
-import json
-
 from kivy.uix.screenmanager import Screen
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.event import EventDispatcher
@@ -9,12 +7,12 @@ from kivy.lang import Builder
 from kivy.factory import Factory
 # Python imports
 import sys
+from FirebaseLoginScreen import progressspinner
 
 sys.path.append("/".join(x for x in __file__.split("/")[:-1]))
 from json import dumps
 import os.path
 from kivymd.app import MDApp
-from FirebaseLoginScreen import progressspinner
 from kivymd.uix.dialog import MDDialog
 import requests
 import certifi
@@ -26,18 +24,15 @@ import certifi
 # Load the kv files
 folder = os.path.dirname(os.path.realpath(__file__))
 # Builder.load_file(folder + "/themedwidgets.kv")
-Builder.load_file(folder + "/signinscreen.kv")
-Builder.load_file(folder + "/createaccountscreen.kv")
-Builder.load_file(folder + "/welcomescreen.kv")
+Builder.load_file(folder + "/login_screen.kv")
 Builder.load_file(folder + "/loadingpopup.kv")
 
 # Import the screens used to log the user in
-from FirebaseLoginScreen.welcomescreen import WelcomeScreen
-from FirebaseLoginScreen.signinscreen import SignInScreen
-from FirebaseLoginScreen.createaccountscreen import CreateAccountScreen
+from FirebaseLoginScreen.login_screen import LoginScreen
 
 
 ##TODO add exception catcher for non internet attempt
+
 class FirebaseLoginScreen(Screen, EventDispatcher):
     def __init__(self, **kw):
         super().__init__(**kw)

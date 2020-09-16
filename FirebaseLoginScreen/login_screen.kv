@@ -1,0 +1,228 @@
+#:import utils kivy.utils
+
+
+<ClickableTextFieldRound>:
+    size_hint_y: None
+    height: text_field.height
+
+    MDTextFieldRound:
+        id: text_field
+        hint_text: root.hint_text
+        text: root.text
+        password: True
+        color_active: app.theme_cls.primary_light
+        icon_left: "lock"
+        icon_left_color: app.theme_cls.primary_color
+        on_focus: self.icon_left_color = self.theme_cls.primary_color
+        normal_color: 1,1,1,1
+        color_active: 1,1,1,1
+        padding:
+            self._lbl_icon_left.texture_size[1] + dp(10) if self.icon_left else dp(15), (self.height / 2) - (self.line_height / 2), self._lbl_icon_right.texture_size[1] + dp(20),  0
+
+    MDIconButton:
+        icon: "eye-off"
+        theme_text_color: "Custom"
+        text_color: app.theme_cls.primary_color
+        ripple_scale: .5
+        pos_hint: {"center_y": .5}
+        pos: text_field.width - self.width + dp(8), 0
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            text_field.password = False if text_field.password is True else True
+
+
+<MyAKOnboardingItem@AKOnboardingItem>
+    source: ''
+    text: ''
+    title: ''
+
+
+    FloatLayout:
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: root.source
+
+        MDGridLayout:
+            cols:1
+            rows:2
+            orientation: 'vertical'
+            padding: dp(10)
+            pos_hint: {'center_x': .5, 'top': 0.5}
+            row_force_default: True
+            row_default_height: '80dp'
+            size_hint_x: 1
+            size_hint_y: 0.55
+            canvas.before:
+
+                Color:
+                    rgba: 1,1,1,1
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [0,0,0,0]
+
+            MDLabel:
+                text: root.title
+                bold: True
+                pos_y: 0.3
+                theme_text_color: "Custom"
+                text_color: 0.2,0,1,1
+                font_style: 'H4'
+                halign: 'center'
+                valign: 'center'
+
+            MDLabel:
+                size_hint_y: None
+                theme_text_color: "Custom"
+                text_color: 0,0,0,1
+                font_style: 'H6'
+                halign: 'center'
+                valign: 'center'
+                text: root.text
+
+
+
+
+<MyBackdropFrontLayer@Screen>
+    id: Front
+    FloatLayout:
+        MDLabel:
+            id: sign_in_label
+            text: "Sign in"
+            pos_hint: {"center_x": 0.5, "y": .54}
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
+            font_style: 'H4'
+            halign: 'center'
+            valign: 'center'
+
+        MDTabs:
+            id: md_tabs
+            pos_hint: {"center_x": 0.74, "top": 1.05}
+            background_color: 0, 0, 0, 0
+            text_color_normal: 0, 0, 0, 1
+            text_color_active: 1, 1, 1, 1
+            color_indicator: 1, 1, 1, 1
+            allow_stretch: False
+            spacing:100
+            tab_indicator_anim: True
+            on_tab_switch: root.parent.parent.parent.parent.parent.on_tab_switch(*args)
+            opacity:0
+            disabled:True
+            Tab:
+                text: "[size=70]Sign in[/size]"
+
+            Tab:
+                text: "[size=70]Sign up[/size]"
+
+
+        MDTextFieldRound:
+            id: email
+            icon_left: "email"
+            hint_text: "  Email"
+            size_hint_x: 0.7
+#            size_hint_y: 0.1
+            pos_hint: {"center_x": .5, "center_y": .8}
+            normal_color: 1,1,1,1
+            color_active: 1,1,1,1
+            elevation: 10
+            icon_left_color: app.theme_cls.primary_color
+            on_focus: self.icon_left_color = self.theme_cls.primary_color
+
+        MDTextFieldRound:
+            id: username
+            icon_left: "account"
+            hint_text: "  Username"
+            size_hint_x: 0.7
+            pos_hint: {"center_x": .5, "center_y": .65}
+            opacity: 0
+            normal_color: 1,1,1,1
+            color_active: 1,1,1,1
+            elevation: 10
+            icon_left_color: app.theme_cls.primary_color
+            on_focus: self.icon_left_color = self.theme_cls.primary_color
+
+        ClickableTextFieldRound:
+            icon_right_color: app.theme_cls.primary_color
+            size_hint_x: 0.7
+            id: password
+            hint_text: "  Password"
+            pos_hint: {"center_x": .5, "center_y": .65}
+            normal_color: 1,1,1,1
+            color_active: 1,1,1,1
+            elevation: 10
+
+
+        MDRoundFlatButton:
+            id: sign_in_button
+            text: "Sign in"
+            text_color: 1, 1, 1, 1
+            pos_hint: {"center_x": .5, "center_y": .3}
+            size_hint: (.75, .1)
+            font_size: 20
+            md_bg_color: 1, 1, 1, 0.8
+            elevation: 25
+            on_release:
+                root.parent.parent.parent.parent.parent.parent.parent.display_loading_screen()
+                root.parent.parent.parent.parent.parent.parent.parent.sign_in(email.text,password.children[1].text) if self.text =="Sign in" else root.parent.parent.parent.parent.parent.parent.parent.sign_up(email.text, username.text, password.children[1].text)
+
+        MDTextButton:
+            id: forget_pass
+            text: "Forgot password?"
+            custom_color: 1, 1, 1, 1
+            font_style: 'caption'
+            underline: True
+            pos_hint: {"center_x": .5, "center_y": .15}
+            on_release:
+                root.parent.parent.parent.parent.parent.parent.parent.display_loading_screen()
+                root.parent.parent.parent.parent.parent.parent.parent.reset_password(email.text)
+
+<MyBackdropBackLayer@Screen>
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+
+        AKOnboarding:
+            id: boarding
+            circles_size: dp(15)
+            circles_color: 0,0,1,1
+            MyAKOnboardingItem:
+                source: "resources/welcome1.png"
+                text: "Workout Diary, Remember Your workout, helps you get Stronger"
+                title:'Fitness App'
+
+            MyAKOnboardingItem:
+                source: "resources/welcome2.png"
+                text: "Train Harder"
+                title:'Work Together'
+
+            MyAKOnboardingItem:
+                source: "resources/welcome3.png"
+                text: "Get Better Results."
+                title:'Trace Workouts'
+
+
+<LoginScreen>:
+
+    MDBackdrop1:
+        id: backdrop
+        radius:50
+        header_text: ""
+        on_open:
+            root.on_open()
+
+        on_close:
+            root.on_close()
+
+        MDBackdropBackLayer:
+            MyBackdropBackLayer:
+                id: backlayer
+
+        MDBackdropFrontLayer:
+            MyBackdropFrontLayer:
+                id: frontlayer
+                backdrop: backdrop
+                backlayer: backlayer
