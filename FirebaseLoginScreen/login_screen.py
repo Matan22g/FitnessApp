@@ -40,12 +40,12 @@ class LoginScreen(Screen):
         self.ids['frontlayer'].ids['md_tabs'].disabled = True
 
     def on_close(self):
-        anim_sign_in = Animation(duration=0.25, pos_hint={"center_x": .3425, "y": .5})
+        anim_sign_in = Animation(duration=0.25, pos_hint={"center_x": .38, "y": .48})
         anim_sign_in.bind(on_complete=self.on_complete_trans)
         anim_sign_in.start(self.ids['frontlayer'].ids['sign_in_label'])
 
     def on_complete_trans(self, *args):
-        anim_sign_in = Animation(opacity=1, duration=0.1)
+        anim_sign_in = Animation(opacity=1, duration=0.4)
         anim_sign_in.start(self.ids['frontlayer'].ids['md_tabs'])
 
         self.ids['frontlayer'].ids['sign_in_label'].opacity = 0

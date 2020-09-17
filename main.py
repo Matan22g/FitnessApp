@@ -111,6 +111,7 @@ class MainApp(MDApp):
         self.root.ids.firebase_login_screen.load_saved_account()
 
     def on_start(self):
+        self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
         # before login, denies access to navigation drawer
         self.theme_cls.primary_palette = "Indigo"
         self.theme_cls.accent_palette = "Indigo"

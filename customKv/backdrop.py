@@ -325,8 +325,10 @@ class MDBackdrop1(ThemableBehavior, FloatLayout):
             if equal to zero - falls to the bottom of the screen;
         """
         to_reduce = (Window.size[1] * 0.38) - Window.size[1]
-
-        self.animtion_icon_menu()
+        try:
+            self.animtion_icon_menu()
+        except:
+            pass
         if self._front_layer_open:
             self.close()
             return

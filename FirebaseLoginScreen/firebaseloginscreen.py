@@ -72,7 +72,6 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     #
     # def error_listener(self):
     #     pass
-
     def on_login_success(self, *args):
         self.app.change_screen("main_app_screen")
 
@@ -93,6 +92,12 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         if self.debug:
             print("Attempting to create a new account: ", email, password)
 
+        if not user_name:
+            self.app.dialog = MDDialog(title="Error", text="user name cant be empty", radius=[10, 7, 10, 7],
+                                       size_hint=(0.9, None))
+            self.app.dialog.open()
+            self.hide_loading_screen()
+            return
         if not self.is_user_exist(user_name):
             self.user_name = user_name
             signup_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" + self.web_api_key
@@ -133,7 +138,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         # Check if the error msg is the same as the last one
         if msg == self.sign_up_msg:
             msg = " " + msg + " "
-        self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.7, None))
+        self.app.dialog = MDDialog(title="Choose another user name", text=msg, radius=[10, 7, 10, 7],
+                                   size_hint=(0.9, None))
         self.app.dialog.open()
         if self.debug:
             print("user_look_up_msg:", msg)
@@ -189,13 +195,14 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         """
         self.hide_loading_screen()
         self.email_exists = False  # Triggers hiding the sign in button
-        print(failure_data)
+        if self.debug:
+            print(failure_data)
         msg = failure_data['error']['message'].replace("_", " ").capitalize()
         # Check if the error msg is the same as the last one
         if msg == self.sign_up_msg:
             # Need to modify it somehow to make the error popup display
             msg = " " + msg + " "
-        self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.7, None))
+        self.app.dialog = MDDialog(title="Error", text=msg, radius=[10, 7, 10, 7], size_hint=(0.9, None))
         self.app.dialog.open()
         self.sign_up_msg = msg
         if msg == "Email exists":
@@ -278,7 +285,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             # Need to modify it somehow to make the error popup display
             msg = " " + msg + " "
         self.sign_in_msg = msg
-        self.app.dialog = MDDialog(text=msg, radius=[10, 7, 10, 7], size_hint=(0.7, None))
+        self.app.dialog = MDDialog(title="Error", text=msg, radius=[10, 7, 10, 7], size_hint=(0.9, None))
         self.app.dialog.open()
         if msg == "Email not found":
             self.email_not_found = True
@@ -312,8 +319,9 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         if self.debug:
             print("Successfully sent a password reset email", reset_data)
         self.sign_in_msg = "Reset password instructions sent to your email."
-        self.app.dialog = MDDialog(text="Reset password instructions sent to your email.", radius=[10, 7, 10, 7],
-                                   size_hint=(0.7, None))
+        self.app.dialog = MDDialog(title="Reset Passowrd", text="Reset password instructions sent to your email.",
+                                   radius=[10, 7, 10, 7],
+                                   size_hint=(0.9, None))
         self.app.dialog.open()
 
     def save_refresh_token(self, refresh_token):
