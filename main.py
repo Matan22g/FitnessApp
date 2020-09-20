@@ -101,6 +101,7 @@ class MainApp(MDApp):
     reload_for_running_session = ""
     delete_mode = 0  # help for knowing when checkbox are showed.
     upload_backup = 0  # help for backing up, uploading attempts - format: [data, link, target, workout_key]
+    sign_up = 0
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -129,10 +130,16 @@ class MainApp(MDApp):
 
     def on_login(self):
         # loads data
-        self.get_user_data()
-        self.change_screen1("homescreen")
-        self.load_workout_data()
-        self.load_session_data()
+        if not self.sign_up:
+            self.get_user_data()
+            self.change_screen1("homescreen")
+            self.load_workout_data()
+            try:
+                self.load_session_data()
+            except:
+                self.sessions ={}
+        else:
+            self.sign_up = 0
         # Initial left menu obj to settings
         self.root.ids['toolbar'].left_action_items = [["cog", lambda x: self.change_screen1("settingsscreen")]]
         # TEST OF USER NAME
@@ -376,9 +383,11 @@ class MainApp(MDApp):
 
     # Initial workouts dicts, and workouts screen
     def load_workout_data(self):
-        # try:
-        workoutdic = self.user_data["workouts"]  # gets workout data
-        keysToAdd = []
+        try:
+            workoutdic = self.user_data["workouts"]  # gets workout data
+        except:
+            # fix case of empty workouts in database
+            workoutdic = {}
         self.workouts = {}  # solve case of deleted workout. reloads all database workouts
         for workoutkey in workoutdic:
             workout = workoutdic[workoutkey]
