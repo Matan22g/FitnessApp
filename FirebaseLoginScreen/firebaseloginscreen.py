@@ -151,13 +151,15 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         # my_data = '{"avatar": "man.png", "nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
         # my_data = '{"user_name": ' + '"' + self.user_name + '"' + ', ' + '"nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
         my_data = '{"user_name": ' + '"' + self.user_name.lower() + '"' + ', ' + '"real_user_name": ' + '"' + self.user_name + '"' + ', ' + '"email": ' + '"' + self.email + '"' + ', ' + '"friends": "", "workouts": "", "streak": "0", "temp_session": "", "sessions": ""}'
+        self.app.user_data={"user_name": self.user_name.lower(), "real_user_name": self.user_name ,"email": self.email, "friends": "", "workouts": {}, "streak": 0, "temp_session": {}, "sessions": {}}
+        self.app.sign_up = 1
         print("successful_sign_up")
         post_request = UrlRequest(
             "https://gymbuddy2.firebaseio.com/" + log_in_data['localId'] + ".json?auth=" + log_in_data['idToken'],
             ca_file=certifi.where(),
             req_body=my_data, method='PATCH')
         self.successful_login(urlrequest, log_in_data)
-
+        
     # def on_friend_get_req_ok(self, *args):
     #     my_friend_id = self.friend_get_req.result
     #     self.app.set_friend_id(my_friend_id)
