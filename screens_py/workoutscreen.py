@@ -44,8 +44,6 @@ class WorkoutScreen(Screen):
     tabs_by_split = {}
     create_mode = 0  # used when creating new workout
 
-
-
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
@@ -53,12 +51,16 @@ class WorkoutScreen(Screen):
     def on_enter(self, *args):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
 
+    # def on_pre_leave(self, *args):
+    #     self.app.clear_canvas()
+    #     self.app.add_top_canvas()
+
     def on_leave(self, *args):
         # always deleting all splits and remaining with one tab.
         self.reset_tabs()
 
     def on_pre_enter(self, *args):
-
+        self.app.add_bottom_canvas()
 
         if self.app.debug:
             print("entering workout screen")
@@ -197,14 +199,14 @@ class WorkoutScreen(Screen):
 
             self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["add_exc"].disabled = False
-            self.app.root.ids['workoutscreen'].ids["add_exc"].text_color = self.app.theme_cls.primary_color
+            self.app.root.ids['workoutscreen'].ids["add_exc"].text_color = (1, 1, 1, 1)
 
             self.app.root.ids['workoutscreen'].ids["add_split"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["add_split"].disabled = False
 
             self.app.root.ids['workoutscreen'].ids["del_split"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["del_split"].disabled = False
-            self.app.root.ids['workoutscreen'].ids["del_split"].text_color = self.app.theme_cls.primary_color
+            self.app.root.ids['workoutscreen'].ids["del_split"].text_color = (1, 1, 1, 1)
 
         else:
             self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 0

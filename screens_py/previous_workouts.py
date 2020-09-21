@@ -86,7 +86,7 @@ class PreviousWorkoutsScreen(Screen):
 
         self.show_checkbox(False)
         self.load_sessions(curr_year, curr_month)
-        self.fix_grid_heights()
+        # self.fix_grid_heights()
         if self.app.reload_for_running_session:
             self.app.root.ids['toolbar'].right_action_items = [
                 ['', lambda x: None]]
@@ -115,16 +115,27 @@ class PreviousWorkoutsScreen(Screen):
         # for i in range(total_session_num):
         #     dict_of_row_height[i] = 100
         # sessions_layout.rows_minimum = dict_of_row_height
-
-        for i, sessions_date in enumerate(sessions_dates):
+        if self.app.reload_for_running_session:
+            total_session_num = 0
+            for sessions_date in sessions_dates:
+                session = self.app.sessions[sessions_date]
+                if session.workout_name == self.app.reload_for_running_session:
+                    total_session_num += 1
+        num_of_session = 0
+        for sessions_date in sessions_dates:
             session = self.app.sessions[sessions_date]
             if self.app.reload_for_running_session:
                 if session.workout_name == self.app.reload_for_running_session:
-                    new_card_layout = self.create_card(i, total_session_num, session.workout_name, session.date,
+                    num_of_session += 1
+                    new_card_layout = self.create_card(num_of_session, total_session_num, session.workout_name,
+                                                       session.date,
                                                        session.duration, sessions_date)
                     sessions_layout.add_widget(new_card_layout)
+
             else:
-                new_card_layout = self.create_card(i, total_session_num, session.workout_name, session.date,
+                num_of_session += 1
+                new_card_layout = self.create_card(num_of_session, total_session_num, session.workout_name,
+                                                   session.date,
                                                    session.duration, sessions_date)
                 sessions_layout.add_widget(new_card_layout)
 
@@ -160,7 +171,7 @@ class PreviousWorkoutsScreen(Screen):
         # help_layout = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
         # excCard.add_widget(help_layout)
 
-        excnum = str(num_of_session + 1) + " of " + str(total_session_num)
+        excnum = str(num_of_session) + " of " + str(total_session_num)
         # workout_date = "Mon, 15 Jul"
         # workout_name = "ABC"
         # workout_duration = "44 mins"
@@ -223,7 +234,6 @@ class PreviousWorkoutsScreen(Screen):
         workout_card = args[0]
         sessions_date_key = self.session_key_by_card[workout_card]
         self.app.view_session(sessions_date_key)
-
 
     def show_checkbox(self, to_show):
 

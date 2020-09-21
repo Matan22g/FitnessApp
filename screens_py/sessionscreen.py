@@ -102,17 +102,23 @@ class SessionScreen(Screen):
     #             self.add_exc_to_list(exc)  # Loads the screen with the exc
     #     for exc_id in self.ex_reference_by_id:
     #         exc_id.children[0].children[0].opacity = 0
+    # def on_pre_leave(self, *args):
+    #     self.app.clear_canvas()
+    #     self.app.add_top_canvas()
 
     def on_pre_enter(self, *args):
+
         if self.app.debug:
             print("entering session page")
             print("session screen, view mode:", self.view_mode)
             print("session workout", self.workout)
         self.app.title = "Session"
         if not self.view_mode:
+            self.app.add_bottom_canvas()
 
+            # self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+            self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
-            self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
             # First visit: setting date to today's date, and loading all exc to the list.
             self.show_checkbox(False)
             if self.app.new_session == 1:
@@ -122,17 +128,21 @@ class SessionScreen(Screen):
                 self.ids["date_picker_label"].text = now[0:10]
                 self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
                 self.ids["workout_name"].text = self.workout_name
+                inc = (len(self.workout_name.split()) - 1) * 0.02
+                self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .94 + self.inc + inc}
+
                 self.session_date = now
                 self.session_rec = {}
             # for exc_id in self.ex_reference_by_id:
             #     exc_id.children[0].children[0].opacity = 0
             self.load_session()
             self.hide_edit_buttons(False)
-            self.app.change_title(self.workout_name)
+            # self.app.change_title(session.workout_name)
+            self.app.change_title("Push Harder")
 
-            self.ids["load_session"].opacity = 1
         else:
-            self.ids["load_session"].opacity = 0
+            # TODO fix scrollgrid, hide and disable button grid
+
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
             session_sets_dict = session.exercises
@@ -148,10 +158,15 @@ class SessionScreen(Screen):
                 print(" self.app.sessions[self.session_key]", self.app.sessions[self.session_key])
 
             self.ids["timer_view"].text = session_duration
-            self.ids["date_picker_label"].text = str(session_date)[0:10]
+            self.ids["date_view"].text = str(session_date)[0:10]
             self.load_session()
             self.hide_edit_buttons(True)
-            self.app.change_title(session.workout_name)
+            # self.app.change_title(session.workout_name)
+            self.app.change_title("Push Harder")
+            self.ids["workout_name"].text = session.workout_name
+            inc = (len(session.workout_name.split()) - 1) * 0.02
+            self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .94 + self.inc + inc}
+
             self.show_checkbox(False)
             if self.app.reload_for_running_session:
                 self.app.root.ids['toolbar'].right_action_items = [
@@ -159,27 +174,27 @@ class SessionScreen(Screen):
 
     def hide_edit_buttons(self, to_hide):
         if to_hide:
-            self.ids["date_picker_icon"].disabled = True
-            self.ids["date_picker_icon"].opacity = 0
-
-            self.ids["add_exc"].opacity = 0
-            self.ids["add_exc"].disabled = True
+            self.ids["control_grid"].opacity = 0
+            self.ids["control_grid"].disabled = True
 
             self.ids["timer"].opacity = 0
-
             self.ids["timer_view"].opacity = 1
 
-            self.ids["date_picker_label"].opacity = 1
-        else:
-            self.ids["date_picker_icon"].disabled = False
-            self.ids["date_picker_icon"].opacity = 1
+            self.ids["scroll"].size_hint_y = 0.87
 
-            self.ids["add_exc"].opacity = 1
-            self.ids["add_exc"].disabled = False
+            self.ids["date_view"].opacity = 1
+            self.ids["date_icon"].opacity = 1
+
+        else:
+            self.ids["control_grid"].opacity = 1
+            self.ids["control_grid"].disabled = False
 
             self.ids["timer"].opacity = 1
-
             self.ids["timer_view"].opacity = 0
+            self.ids["scroll"].size_hint_y = 0.73
+
+            self.ids["date_view"].opacity = 0
+            self.ids["date_icon"].opacity = 0
 
     def load_session(self):
         if self.app.debug:
@@ -499,8 +514,8 @@ class SessionScreen(Screen):
 
     def show_checkbox(self, to_show):
 
-        date_label_id = "date_picker_label"
-        date_icon_id = "date_picker_icon"
+        # date_label_id = "date_picker_label"
+        # date_icon_id = "date_picker_icon"
         self.app.root.ids['sessionscreen'].ids["num_to_delete"].text = ""
         if to_show == "False" or not to_show:
             to_show = 0
@@ -510,19 +525,19 @@ class SessionScreen(Screen):
         if to_show:
             self.app.delete_mode = 1
             self.ids["num_to_delete"].opacity = 1
-            self.ids[date_label_id].opacity = 0
-            self.ids[date_icon_id].opacity = 0
-            self.ids[date_icon_id].disabled = True
+            # self.ids[date_label_id].opacity = 0
+            # self.ids[date_icon_id].opacity = 0
+            # self.ids[date_icon_id].disabled = True
             self.ids["show_checkbox"].opacity = 1
             self.ids["show_checkbox"].disabled = False
         else:
             self.app.delete_mode = 0
 
             self.ids["num_to_delete"].opacity = 0
-            self.ids[date_label_id].opacity = 1
-            if not self.view_mode:
-                self.ids[date_icon_id].opacity = 1
-                self.ids[date_icon_id].disabled = False
+            # self.ids[date_label_id].opacity = 1
+            # if not self.view_mode:
+            #     self.ids[date_icon_id].opacity = 1
+            #     self.ids[date_icon_id].disabled = False
             self.ids["show_checkbox"].opacity = 0
             self.ids["show_checkbox"].disabled = True
 
@@ -658,7 +673,7 @@ class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
         super().__init__(**kwargs)
         self.background_down = self.theme_cls.primary_light
         self.background_normal = (1, 1, 1, 0)
-
+        self.text_color = (1, 1, 1, 1)
 
 class MDSetsLabel(MDGridLayout):
     cols = 1
@@ -711,6 +726,7 @@ class ExerciseScreen(Screen):
         self.sets = []
         self.app.title = "Home"
         self.app.root.ids['toolbar'].title = self.exercise
+        self.app.add_bottom_canvas()
 
         exc = self.exercise
         self.ids["ex_name"].text = exc

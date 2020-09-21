@@ -4,54 +4,130 @@
 #            pos: self.pos
 #            size: self.size
 #            source: "resources/welcome4.png"
-
     FloatLayout:
+        GridLayout:
+            cols: 3
+            pos_hint: {"center_x": .5, "center_y": 0.94}
+            size_hint_y: 0.125
+            MDLabel:
+                id: sub_title
+                font_style: "H4"
+                halign: "center"
+                text: "12"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+
+            MDLabel:
+                id: sub_title
+                font_style: "H4"
+                halign: "center"
+                text: "3"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+
+            MDLabel:
+                id: sub_title
+                font_style: "H4"
+                halign: "center"
+                text: "80"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+
+            MDLabel:
+                id: sub_title
+                font_style: "Caption"
+                halign: "center"
+                text: "Monthly\nWorkouts"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+#['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button', 'Caption', 'Overline', 'Icon']
+            MDLabel:
+                id: sub_title
+                font_style: "Caption"
+                halign: "center"
+                text: "Weekly\nWorkouts"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
+
+            MDLabel:
+                id: sub_title
+                font_style: "Caption"
+                halign: "center"
+                text: "Weight\n"
+                theme_text_color: "Custom"
+                text_color: 1, 1, 1, 1
 
         MDLabel:
             id: sub_title
-            pos_hint: {"center_x": 0.5, "top": .98}
-            size_hint: (.5, .2)
-            font_style: "H3"
             halign: "center"
-            text: "Fitness App"
-            theme_text_color: "Primary"
-#            theme_text_color: "Custom"
-#            text_color: 0, 1, 1, 1
+            text: "kg"
+            font_style:"Caption"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 1
+            pos_hint: {"center_x": .93, "center_y": .96}
 
         MDCard:
-            orientation: "vertical"
+            orientation: "horizontal"
             padding: "8dp"
-            size_hint: None, None
-            size: "280dp", "140dp"
-            pos_hint: {"center_x": .5, "center_y": .64}
-
-
-            MDLabel:
-                text: "Recent Workouts"
-                theme_text_color: "Secondary"
-                size_hint_y: None
-                height: self.texture_size[1]
-
-            MDSeparator:
-                height: "1dp"
-
-            MDLabel:
-                theme_text_color: "Primary"
-                text: "Workout1\nWorkout2"
-
+            size_hint: 1, 0.15
+            pos_hint: {"center_x": .5, "center_y": .8}
             BoxLayout:
-                orientation: "horizontal"
-                spacing: 90
-                MDTextButton:
-                    text: "Add Workout"
-                    on_release: root.addworkout()
+                orientation:"vertical"
+                size_hint_x:0.3
+                canvas.before:
+                    Rectangle:
+                        pos: self.pos
+                        size: self.size
+                        source: "resources/loginback1.png"
+                MDLabel:
+                    text: "May"
+                    font_style: "H5"
 
-                MDTextButton:
-                    text: "Add Workout"
-                    size_hint_x: None
-                    size: self.texture_size
-                    pos_hint: {'right': 1}
-                    on_release: app.addworkout()
+                    theme_text_color: "Custom"
+                    text_color: 1, 1, 1, 1
+                    halign: "center"
+
+                MDLabel:
+                    text: "22"
+                    font_style: "H6"
+
+                    theme_text_color: "Custom"
+                    text_color: 1, 1, 1, 1
+                    halign: "center"
+            BoxLayout:
+                orientation: "vertical"
+                spacing: 20
+                MDLabel:
+                    text: "Last Workout"
+                    theme_text_color: "Custom"
+                    text_color: 0, 0, 0, 1
+                    halign:"center"
+
+                MDLabel:
+                    text: "ABC"
+                    font_style: "H4"
+                    theme_text_color: "Custom"
+                    text_color: 0, 0, 1, 1
+                    halign: "center"
+
+                MDLabel:
+                    text: "7 exercises completed"
+                    font_style: "Caption"
+                    theme_text_color: "Custom"
+                    text_color: 0, 0, 0, 1
+                    halign: "center"
+
+            MDIconButton:
+                icon: "chevron-right"
+                halign: "right"
+                on_release: print(3)
+                user_font_size: "35sp"
+                theme_text_color: "Custom"
+                text_color: 0, 0, 1, 1
+
+        MDSeparator:
+            height: "1dp"
+
 
 
 

@@ -55,24 +55,28 @@
         MDLabel:
             pos_hint: {"center_x": 0.44, "top": 1.0625}
             size_hint: (.5, .2)
-            theme_text_color: "Secondary"
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
             text: "Inc"
 
         MDLabel:
             pos_hint: {"center_x": 0.4, "top": 1.0025}
             size_hint: (.5, .2)
-            theme_text_color: "Secondary"
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
             text: "Barbell"
 
         MDBoxLayout:
             size_hint: (.4, .1)
-            pos_hint: {"center_x": .5, "center_y": .985}
+            pos_hint: {"center_x": .5, "center_y": .995}
 
             MyToggleButton:
                 text: "+1"
                 group: "x"
                 size_hint: (.75, .5)
                 on_release: root.change_scale(1)
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
 
             MyToggleButton:
@@ -80,22 +84,28 @@
                 group: "x"
                 size_hint: (.75, .5)
                 on_release: root.change_scale(2.5)
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
             MyToggleButton:
                 text: "+10"
                 group: "x"
                 size_hint: (.75, .5)
                 on_release: root.change_scale(10)
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
         MDBoxLayout:
             size_hint: (.4, .1)
-            pos_hint: {"center_x": .5, "center_y": .925}
+            pos_hint: {"center_x": .5, "center_y": .935}
 
             MyToggleButton:
                 text: "None"
                 group: "y"
                 size_hint: (.75, .5)
                 on_release: root.barbell = 0
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
 
             MyToggleButton:
@@ -103,19 +113,23 @@
                 group: "y"
                 size_hint: (.75, .5)
                 on_release: root.barbell = 12.5
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
             MyToggleButton:
                 text: "20"
                 group: "y"
                 size_hint: (.75, .5)
                 on_release: root.barbell = 20
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
 
         MDIconButton:
             icon: 'history'
             pos_hint: {"center_x": 0.925, "top": .998}
             user_font_size: "30sp"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
             on_release: app.show_exc_history(root.exercise)
 
         MDIconButton:
@@ -123,29 +137,10 @@
             pos_hint: {"center_x": 0.75, "top": .98}
             user_font_size: "20sp"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
             on_release: root.open_help_dialog()
 
-        MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.2, "top": .1}
-            icon: "minus"
-            text: "Set"
-            size_hint: (.25, .067)
-            on_release: root.delete_set()
 
-        MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.5, "top": .1}
-            icon: "plus"
-            text: "Set"
-            size_hint: (.25, .067)
-            on_release: root.add_set()
-
-        MDRoundFlatIconButton:
-            pos_hint: {"center_x": 0.8, "top": .1}
-            icon: "content-save"
-            text: "Save"
-            size_hint: (.25, .067)
-            on_release: root.save_exc()
 
         MDTextField:
             id: reps
@@ -215,6 +210,83 @@
                 padding: 0
                 pos_hint: {"top": .9}
 
+#        MDRoundFlatIconButton:
+#            pos_hint: {"center_x": 0.2, "top": .1}
+#            icon: "minus"
+#            text: "Set"
+#            size_hint: (.25, .067)
+#            on_release: root.delete_set()
+#
+#        MDRoundFlatIconButton:
+#            pos_hint: {"center_x": 0.5, "top": .1}
+#            icon: "plus"
+#            text: "Set"
+#            size_hint: (.25, .067)
+#            on_release: root.add_set()
+#
+#        MDRoundFlatIconButton:
+#            pos_hint: {"center_x": 0.8, "top": .1}
+#            icon: "content-save"
+#            text: "Save"
+#            size_hint: (.25, .067)
+#            on_release: root.save_exc()
+
+        GridLayout:
+            id: control_grid
+            cols:3
+            pos_hint: {"center_x": .5, "top": .12}
+            size_hint_y:0.1
+            size_hint_x:0.7
+
+            MDIconButton:
+                id: add_exc
+                icon: "minus"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                on_release: root.delete_set()
+                size_hint: (0.01,2)
+
+            MDIconButton:
+                icon: "plus"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                id: load_session
+                on_release: root.add_set()
+                size_hint: (0.01,2)
+
+            MDIconButton:
+                icon: "content-save"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                on_release: root.save_exc()
+                size_hint: (0.01,2)
+
+            MDLabel:
+                text: "Set"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
+
+            MDLabel:
+                text: "Set"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
+
+            MDLabel:
+                text: "Save"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
         ScrollView:
             id: sets_scroll
             pos_hint: {"top": .6}

@@ -32,7 +32,7 @@ class LoginScreen(Screen):
 
     def on_open(self):
 
-        anim_sign_in = Animation(opacity=1, duration=0.3, pos_hint={"center_x": .5, "y": .57})
+        anim_sign_in = Animation(opacity=1, duration=0.3, pos_hint={"center_x": .5, "y": .54})
         anim_sign_in.start(self.ids['frontlayer'].ids['sign_in_label'])
 
         anim_sign_in = Animation(opacity=0, duration=0.3)
@@ -40,7 +40,7 @@ class LoginScreen(Screen):
         self.ids['frontlayer'].ids['md_tabs'].disabled = True
 
     def on_close(self):
-        anim_sign_in = Animation(duration=0.25, pos_hint={"center_x": .38, "y": .48})
+        anim_sign_in = Animation(duration=0.35, pos_hint={"center_x": .38, "y": .48})
         anim_sign_in.bind(on_complete=self.on_complete_trans)
         anim_sign_in.start(self.ids['frontlayer'].ids['sign_in_label'])
 
@@ -71,6 +71,7 @@ class LoginScreen(Screen):
         self.ids['frontlayer'].ids['sign_in_button'].text = "Sign up"
         anim_pass.start(self.ids['frontlayer'].ids['password'])
 
+        self.ids['frontlayer'].ids['email'].hint_text = " Email"
         self.ids['frontlayer'].ids['forget_pass'].disabled = True
 
     def sign_up_to_sign_in(self):
@@ -87,6 +88,7 @@ class LoginScreen(Screen):
         anim_pass.start(self.ids['frontlayer'].ids['password'])
         anim_username.start(self.ids['frontlayer'].ids['username'])
         self.ids['frontlayer'].ids['sign_in_button'].text = "Sign in"
+        self.ids['frontlayer'].ids['email'].hint_text = " Email or User name"
 
     def sign_in(self, *args):
         method = args[0]

@@ -10,6 +10,9 @@
             pos_hint: {"center_x": 0.3, "top": .95}
             text: "Create New Workout"
             width: dp(200)
+            theme_text_color: "Primary"
+            text_color: 1,1,1,1
+
             on_release:
                 app.show_create_workout_dialog()
 
@@ -20,6 +23,9 @@
             pos_hint: {"center_x": 0.8, "top": .95}
             text: "Create"
             width: dp(90)
+            theme_text_color: "Primary"
+            text_color: 1,1,1,1
+
             opacity: 1
             on_release:
                 app.back_to_running_session()

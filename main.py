@@ -3,6 +3,7 @@ import os
 from datetime import datetime, date
 
 import certifi
+from kivy.graphics.vertex_instructions import Rectangle
 from kivy.network.urlrequest import UrlRequest
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -18,13 +19,14 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
+from customKv.toolbar import CustomMDToolbar
+
 from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 import kivy.utils as utils
 import requests
 import json
 from kivy.clock import Clock
 import time
-
 ### screens classes import
 
 
@@ -85,7 +87,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 1
+    debug = 0
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -102,7 +104,7 @@ class MainApp(MDApp):
     delete_mode = 0  # help for knowing when checkbox are showed.
     upload_backup = 0  # help for backing up, uploading attempts - format: [data, link, target, workout_key]
     sign_up = 0
-
+    window_size = Window.size
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
         super().__init__(**kwargs)
@@ -114,8 +116,6 @@ class MainApp(MDApp):
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
         # before login, denies access to navigation drawer
-        self.theme_cls.primary_palette = "Indigo"
-        self.theme_cls.accent_palette = "Indigo"
         self.root.ids['nav_drawer'].swipe_edge_width = -2
 
         # bind android back button to back function
@@ -130,6 +130,8 @@ class MainApp(MDApp):
 
     def on_login(self):
         # loads data
+        self.add_top_canvas()
+
         if not self.sign_up:
             self.get_user_data()
             self.change_screen1("homescreen")
@@ -137,17 +139,33 @@ class MainApp(MDApp):
             try:
                 self.load_session_data()
             except:
-                self.sessions ={}
+                self.sessions = {}
         else:
             self.sign_up = 0
         # Initial left menu obj to settings
-        self.root.ids['toolbar'].left_action_items = [["cog", lambda x: self.change_screen1("settingsscreen")]]
+        # self.root.ids['toolbar'].left_action_items = [["cog", lambda x: self.change_screen1("settingsscreen")]]
+        self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
+
         # TEST OF USER NAME
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
-
+        self.change_title("Dashboard")
+        self.change_screen1("sessionscreen")
         if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
             self.retrieve_paused_session()
+
+    def add_top_canvas(self):
+        with self.root.ids.main_layout.canvas.before:
+            Rectangle(source='resources/loginback1.png', pos=(0, self.window_size[1] / 1.23), size=(
+            self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))
+
+    def clear_canvas(self):
+        self.root.ids.main_layout.canvas.before.clear()
+
+    def add_bottom_canvas(self):
+        with self.root.ids.main_layout.canvas.before:
+            Rectangle(source='resources/loginback1.png', pos=(0, 0), size=(
+            self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 8))
 
     def hook_keyboard(self, window, key, *largs):
         # bind back button of android to back function.
@@ -281,9 +299,7 @@ class MainApp(MDApp):
 
     def sort_workouts_sessions(self):
         session_dates = [session_date for session_date in self.sessions]
-        print(session_dates)
         session_dates.sort(reverse=True)
-        print(session_dates)
         self.sessions_by_month_year = {}
         for date in session_dates:
             year = int(date.year)
@@ -303,7 +319,6 @@ class MainApp(MDApp):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
         for exc in exercises:
             exercises_list = exercises[exc]
-            print(exc)
             if exc not in self.exc_sessions:
                 self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
                 record = self.find_best_set(exercises_list)
@@ -773,6 +788,9 @@ class MainApp(MDApp):
     def change_screen1(self, screen_name, *args):
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
+        if screen_name != "sessionscreen" and screen_name != "workoutscreen":
+            self.clear_canvas()
+            self.add_top_canvas()
 
         screen_manager = self.root.ids['screen_manager1']
         current_screen = screen_manager.current
@@ -802,8 +820,10 @@ class MainApp(MDApp):
             #     screen_manager.transition = NoTransition()
 
         if screen_name == "homescreen":
-            self.root.ids['toolbar'].left_action_items = [
-                ["cog", lambda x: self.change_screen1("settingsscreen")]]
+            # self.root.ids['toolbar'].left_action_items = [
+            #     ["cog", lambda x: self.change_screen1("settingsscreen")]]
+            self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
+
             self.lastscreens = []
         else:
             self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]

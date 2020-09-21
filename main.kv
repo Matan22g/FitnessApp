@@ -45,20 +45,32 @@ NavigationLayout:
         Screen:
             name: "main_app_screen"
             BoxLayout:
+                id: main_layout
                 orientation: 'vertical'
+#                canvas:
+#                    Rectangle:
+#                        id: top_canvas
+#                        pos: 0,app.window_size[1]/1.23
+#                        size: self.size[0],self.size[1]/5
+#                        source: "resources/loginback1.png"
+#                    Rectangle:
+#                        id: bottom_canvas
+#                        pos: self.pos
+#                        size: self.size[0],self.size[1]/8
+#                        source: "resources/loginback1.png"
 
-                MDToolbar:
+                CustomMDToolbar:
                     id: toolbar
                     title: "Hello Matan"
-                    elevation: 10
+                    elevation: 0
                     right_action_items: [['menu', lambda x: nav_drawer.set_state()]]
                     left_action_items: [["chevron-left", lambda x: app.back_to_last_screen()]]
-                    size_hint_y: 0.085
+                    size_hint_y: 0.075
                     round : "100dp"
+
 
                 ScreenManager:
                     id: screen_manager1
-
 
                     HomeScreen:
                         id: homescreen
@@ -123,6 +135,7 @@ NavigationLayout:
                         text: "Home"
                         on_release:
                             app.change_screen1("homescreen")
+#                            screen_manager1.current = "homescreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "home"
@@ -131,6 +144,7 @@ NavigationLayout:
                         text: "Friends"
                         on_release:
                             app.change_screen1("blankscreen")
+#                            screen_manager1.current = "friendsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "account-group"
@@ -139,6 +153,7 @@ NavigationLayout:
                         text: "Previous Workouts"
                         on_release:
                             app.change_screen1("previous_workouts_screen")
+#                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "calendar-clock"
@@ -147,6 +162,7 @@ NavigationLayout:
                         text: "Workouts"
                         on_release:
                             app.change_screen1("workoutsscreen")
+#                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "dumbbell"
@@ -160,6 +176,7 @@ NavigationLayout:
                             firebase_login_screen.save_refresh_token("")
                             Snackbar(text="Logged out!").show()
                             app.change_screen("loginscreen")
+#                            screen_manager.current = "loginscreen"
                             nav_drawer.set_state()
                             print(nav_drawer.swipe_edge_width)
                         IconLeftWidget:
@@ -172,7 +189,7 @@ NavigationLayout:
 #                            screen_manager1.current = "settingsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
-                            icon: "settings"
+                            icon: "cog"
 
 
 

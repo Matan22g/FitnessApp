@@ -23,7 +23,7 @@
         #backgroung press hides checkboxes
             caller = args[0]
             touch = args[1]
-            print(touch.spos)
+#            print(touch.spos)
             if touch.spos[1]>0.92 and touch.spos[0]>0.2: root.show_checkbox("False")
             if touch.spos[1]>0.83 and touch.spos[1]<0.92 and touch.spos[0]<0.77: root.show_checkbox("False")
 #            if touch.spos[1]>0.8: root.fix_grid_heights()
@@ -35,126 +35,157 @@
 #            if caller_touched and True not in spawn_touched: print('caller -> {0}\ntouch -> {1}'.format(caller, touch))
 
 
-        MDRoundFlatIconButton:
-            id: load_session
-            width: dp(120)
-            pos_hint: {"center_x": .2, "top": .98}
-            text: "load"
-            icon: "content-save"
-            on_release: root.reload_previous_session()
+        GridLayout:
+            id: control_grid
+            cols:4
+            pos_hint: {"center_x": .5, "top": .12}
+            size_hint_y:0.1
 
+
+
+            MDIconButton:
+                id: date_picker_icon
+                icon: "calendar"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                on_release: root.show_example_date_picker()
+                size_hint: (0.01,2)
+
+            MDIconButton:
+                id: add_exc
+                icon: "plus"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                on_release: root.show_add_exercise_dialog()
+                size_hint: (0.01,2)
+
+            MDIconButton:
+                icon: "arrow-down-bold-box-outline"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                id: load_session
+                on_release: root.reload_previous_session()
+                size_hint: (0.01,2)
+
+            MDIconButton:
+                icon: "content-save"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                user_font_size: "44sp"
+                size_hint: (0.01,2)
+                on_release: root.save_session()
+
+            MDLabel:
+                id: date_picker_label
+                text: "12/12/12"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
+
+            MDLabel:
+                text: "Exercise"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
+
+            MDLabel:
+                text: "Load"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
+
+            MDLabel:
+                text: "Save"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
 
         MDLabel:
             id: workout_name
-            pos_hint: {"center_x": 0.2975, "top": .99+root.inc}
+            pos_hint: {"center_x": 0.28, "top": .96+root.inc}
             size_hint: (.5, .15)
             font_size: "45sp"
             halign: "left"
             text: ""
-            opacity:0
+            opacity:1
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-
-#        MDRectangleFlatIconButton:
-#            id: date_picker_label
-#            icon: "calendar"
-#            pos_hint: {"center_x": 0.8, "top": .9325+root.inc}
-#            text: "Date: "
-#            line_color: 0, 0, 0, 0
-##            theme_text_color: "Custom"
-##            text_color: app.theme_cls.primary_color
-#            on_release: root.show_example_date_picker()
-#
-#
-#        MDRectangleFlatIconButton:
-#            id: date_picker_label_view
-#            icon: "calendar"
-#            pos_hint: {"center_x": 0.8, "top": .9325+root.inc}
-#            text: "Date: "
-#            line_color: 0, 0, 0, 0
-##            theme_text_color: "Custom"
-##            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
+        MDIcon:
+            id: date_icon
+            pos_hint: {"center_x": 0.84, "top": .97+root.inc}
+            size_hint: (.5, .15)
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
+            icon: "calendar"
+            user_font_size: "50sp"
 
         MDLabel:
-            id: date_picker_label
-            pos_hint: {"center_x": 0.99, "top": .98+root.inc}
+            id: date_view
+            pos_hint: {"center_x": 0.93, "top": .97+root.inc}
             size_hint: (.5, .15)
+            font_size: "22sp"
+            halign: "left"
             text: ""
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-
-        MDIconButton:
-            id: date_picker_icon
-            pos_hint: {"center_x": 0.69, "top": .938+root.inc}
-            icon: "calendar"
-            theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-            on_release: root.show_example_date_picker()
+            text_color: 1,1,1,1
 
         MDLabel:
             id: timer
-            pos_hint: {"center_x": 0.99, "top": .93+root.inc}
+            pos_hint: {"center_x": 0.93, "top": .93+root.inc}
             size_hint: (.5, .15)
-            font_size: "16sp"
+            font_size: "22sp"
             halign: "left"
             text: app.timer_format
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
 
         MDLabel:
             id: timer_view
-            pos_hint: {"center_x": 0.98, "top": .93+root.inc}
+            pos_hint: {"center_x": 0.93, "top": .93+root.inc}
             size_hint: (.5, .15)
-            font_size: "16sp"
+            font_size: "22sp"
             halign: "left"
             text: ""
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
 
         MDIcon:
-            pos_hint: {"center_x": 0.9055, "top": .93+root.inc}
+            icon: "clock-outline"
+            pos_hint: {"center_x": 0.84, "top": .93+root.inc}
             size_hint: (.5, .15)
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-            icon: "clock-outline"
+            text_color: 1,1,1,1
+            user_font_size: "50sp"
 
         MDIconButton:
             id: show_checkbox
-            pos_hint: {"center_x": .858, "top": .975+root.inc}
+            pos_hint: {"center_x": .92, "top": .975+root.inc}
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
             on_release: root.delete_selected()
-
-#        MDIconButton:
-#            id: delete_selected
-#            user_font_size: "32sp"
-#            pos_hint: {"center_x": .87, "top": .965}
-#            icon: "trash-can"
-#            theme_text_color: "Custom"
-#            text_color: app.theme_cls.primary_color
-#            on_release: root.delete_selected()
 
         MDLabel:
             id: num_to_delete
-            pos_hint: {"center_x": 0.9999, "top": .98+root.inc}
+            pos_hint: {"center_x": 1.075, "top": .98+root.inc}
             size_hint: (.47, .15)
             font_size: "16sp"
             halign: "left"
             text: ""
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-
-        MDIconButton:
-            id: add_exc
-            user_font_size: "38sp"
-            pos_hint: {"center_x": .5, "top": .985+root.inc}
-            icon: "plus"
-            theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
-            on_release: root.show_add_exercise_dialog()
-
+            text_color: 1,1,1,1
 #        MDIconButton:
 #            id: start_exc
 #            user_font_size: "45sp"
@@ -166,9 +197,9 @@
 
         ScrollView:
             id: scroll
-            pos_hint: {"top": .84}
+            pos_hint: {"top": .87}
             size: self.size
-            size_hint: 1., .85
+            size_hint: 1., .73
             GridLayout:
                 # Banner grid
                 id: exc_cards

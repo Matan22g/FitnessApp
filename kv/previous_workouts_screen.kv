@@ -15,7 +15,7 @@
             icon: "tune"
             user_font_size: "25sp"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
             on_release: root.choose_date()
 
         MDLabel:
@@ -25,7 +25,7 @@
             font_style: "H5"
             text: "Jul"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
 
         MDLabel:
             id: num_to_delete
@@ -35,7 +35,7 @@
             halign: "left"
             text: "5"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
 
         MDIconButton:
             id: delete_sessions
@@ -43,14 +43,14 @@
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
-            text_color: app.theme_cls.primary_color
+            text_color: 1,1,1,1
             on_release: root.show_del_exercise_dialog()
 
         ScrollView:
             id: sessions_scroll
             pos_hint: {"top": .92}
             size_hint_y: None
-            size_hint: 1, .87
+            size_hint: 1, .9175
             GridLayout:
                 # sets_grid
                 id: sessions_grid

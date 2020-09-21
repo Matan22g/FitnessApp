@@ -55,7 +55,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     email_exists = BooleanProperty(False)
     email_not_found = BooleanProperty(False)
 
-    debug = True
+    debug = False
     popup = Factory.LoadingPopup()
     popup.background = folder + "/transparent_image.png"
 

@@ -2,6 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 
 
+
 class WorkoutsScreen(Screen):
 
     def __init__(self, **kw):
@@ -17,4 +18,7 @@ class WorkoutsScreen(Screen):
         else:
             self.app.root.ids['workoutsscreen'].ids["running_session"].opacity = 1
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
+            self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
+            self.app.root.ids['workoutsscreen'].ids["running_session"].text_color = (1, 1, 1, 1)
+
         self.app.title = "Workouts"
