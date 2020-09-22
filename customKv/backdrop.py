@@ -175,7 +175,7 @@ Builder.load_string(
         md_bg_color: 0, 0, 0, 0
         orientation: "vertical"
         size_hint_y: None
-        height: Window.size[1]*0.7
+        height: root.height*0.7
         padding: root.padding
 
         canvas:

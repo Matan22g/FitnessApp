@@ -8,7 +8,8 @@
         GridLayout:
             cols: 3
             pos_hint: {"center_x": .5, "center_y": 0.94}
-            size_hint_y: 0.125
+            size_hint_y: 0.1
+
             MDLabel:
                 id: sub_title
                 font_style: "H4"
@@ -60,7 +61,7 @@
         MDLabel:
             id: sub_title
             halign: "center"
-            text: "kg"
+            text: "Kg"
             font_style:"Caption"
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
@@ -71,6 +72,8 @@
             padding: "8dp"
             size_hint: 1, 0.15
             pos_hint: {"center_x": .5, "center_y": .8}
+            on_release: app.view_session(app.last_session_date)
+
             BoxLayout:
                 orientation:"vertical"
                 size_hint_x:0.3
@@ -80,15 +83,16 @@
                         size: self.size
                         source: "resources/loginback1.png"
                 MDLabel:
-                    text: "May"
+                    id: last_session_month
+                    text: ""
                     font_style: "H5"
-
                     theme_text_color: "Custom"
                     text_color: 1, 1, 1, 1
                     halign: "center"
 
                 MDLabel:
-                    text: "22"
+                    id: last_session_day
+                    text: ""
                     font_style: "H6"
 
                     theme_text_color: "Custom"
@@ -104,13 +108,15 @@
                     halign:"center"
 
                 MDLabel:
+                    id: last_session_name
                     text: "ABC"
-                    font_style: "H4"
+                    font_style: "H5"
                     theme_text_color: "Custom"
                     text_color: 0, 0, 1, 1
                     halign: "center"
 
                 MDLabel:
+                    id: session_exc_completed
                     text: "7 exercises completed"
                     font_style: "Caption"
                     theme_text_color: "Custom"
@@ -121,36 +127,42 @@
                 icon: "chevron-right"
                 halign: "right"
                 on_release: print(3)
-                user_font_size: "35sp"
+                user_font_size: "50sp"
                 theme_text_color: "Custom"
                 text_color: 0, 0, 1, 1
+                on_release: app.view_session(app.last_session_date)
+                size_hint: (0.4,1)
 
         MDSeparator:
             height: "1dp"
+            pos_hint: {"center_x": .5, "center_y": 0.6}
+            color: 0,0,0,1
+            size_hint_x:0.7
+        MDLabel:
+            text: "Exercises Statistics:"
+            font_style: "H5"
+            theme_text_color: "Custom"
+            text_color: 0, 0, 1, 1
+            halign: "center"
+            pos_hint: {"center_x": .5, "center_y": 0.63}
 
 
+        ScrollView:
+            pos_hint: {"center_x": .5, "center_y": 0.05}
+            MDBoxLayout:
+                id: chart_box
+                adaptive_height: True
+                spacing: dp(5)
+                padding:dp(5)
+                orientation: 'vertical'
 
+                AKPieChart:
+                    id: piechart
+                    items: app.exc_pie_dic
+                    pos_hint: {'center_x': 0.5, 'center_y': .5}
+                    size_hint:[None,None]
+                    size:(dp(300),dp(300))
 
-
-        MDCard:
-            orientation: "vertical"
-            padding: "8dp"
-            size_hint: None, None
-            size: "280dp", "140dp"
-            pos_hint: {"center_x": .5, "center_y": .34}
-
-            MDLabel:
-                text: "Current Streak"
-                theme_text_color: "Secondary"
-                size_hint_y: None
-                height: self.texture_size[1]
-
-            MDSeparator:
-                height: "1dp"
-
-            MDLabel:
-                theme_text_color: "Primary"
-                text: "Streak1\nLast Streak was number, Do your best to break it!"
 
 #            MDFloatingActionButtonSpeedDial:
 #                id:menu

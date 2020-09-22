@@ -100,7 +100,7 @@
 
         MDTabs:
             id: md_tabs
-            pos_hint: {"center_x": 0.75, "top": 1.025}
+            pos_hint: {"center_x": 0.72, "top": 1.025}
             background_color: 0, 0, 0, 0
             text_color_normal: 0, 0, 0, 1
             text_color_active: 1, 1, 1, 1
@@ -112,10 +112,10 @@
             opacity:0
             disabled:True
             Tab:
-                text: "[size=70]Sign in[/size]"
+                text: '[size=' + str(app.headline_text_size)+']Sign in[/size]'
 
             Tab:
-                text: "[size=70]Sign up[/size]"
+                text: '[size=' + str(app.headline_text_size)+']Sign up[/size]'
 
 
         MDTextFieldRound:

@@ -108,6 +108,7 @@ class SessionScreen(Screen):
 
     def on_pre_enter(self, *args):
 
+
         if self.app.debug:
             print("entering session page")
             print("session screen, view mode:", self.view_mode)
@@ -129,7 +130,7 @@ class SessionScreen(Screen):
                 self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
                 self.ids["workout_name"].text = self.workout_name
                 inc = (len(self.workout_name.split()) - 1) * 0.02
-                self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .94 + self.inc + inc}
+                self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .95 + self.inc + inc}
 
                 self.session_date = now
                 self.session_rec = {}
@@ -142,6 +143,7 @@ class SessionScreen(Screen):
 
         else:
             # TODO fix scrollgrid, hide and disable button grid
+
 
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
@@ -165,7 +167,7 @@ class SessionScreen(Screen):
             self.app.change_title("Push Harder")
             self.ids["workout_name"].text = session.workout_name
             inc = (len(session.workout_name.split()) - 1) * 0.02
-            self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .94 + self.inc + inc}
+            self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .95 + self.inc + inc}
 
             self.show_checkbox(False)
             if self.app.reload_for_running_session:
@@ -210,8 +212,8 @@ class SessionScreen(Screen):
         layout.clear_widgets()
         print("Window.size", Window.size)
         window_height = Window.size[1]
-        row_height = Window.size[1] / 5.5
-        row_height_view = Window.size[1] / 8.8
+        row_height = Window.size[1] / 4
+        row_height_view = Window.size[1] / 5.2
         row_enlarger_inc = Window.size[1] / 17.6
         for i, exc in enumerate(self.workout):
             if not self.view_mode:
@@ -257,36 +259,40 @@ class SessionScreen(Screen):
         if not self.view_mode:
             excCard = MDCard_Custom(
                 spacing=5,
-                radius=[14],
+                radius=[80],
                 orientation="vertical",
                 size_hint=(0.9, 0.85),
-                padding=[12, 12, 12, 12],
+                padding=[25, 25, 0, 20],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
-                on_release = self.active_card_check_box
+                background="resources/card_back.png",
+                on_release=self.active_card_check_box
             )
         else:
             excCard = MDCard(
-                spacing=10,
-                radius=[14],
+                spacing=5,
+                radius=[80],
                 orientation="vertical",
                 size_hint=(0.9, 0.85),
-                padding=[12, 0, 0, 30], # [padding_left, padding_top,padding_right, padding_bottom].
-                pos_hint={"center_y": 0.5, "center_x": 0.5}
+                padding=[25, 25, 0, 45],  # [padding_left, padding_top,padding_right, padding_bottom].
+                pos_hint={"center_y": 0.5, "center_x": 0.5},
+                background="resources/card_back.png",
             )
 
-        help_layout,check_box = self.create_top_card_layout(num_of_exc,num_of_exc_total, exc)
+        help_layout, check_box = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
         self.check_box_by_card[excCard] = check_box
 
         excCard.add_widget(help_layout)
 
-
-        name_layout = MDGridLayout(size_hint_y = 2.5, rows=1, cols=1)
+        name_layout_y_size = 2.5
+        if self.view_mode:
+            name_layout_y_size = 2
+        name_layout = MDGridLayout(size_hint_y=name_layout_y_size, rows=1, cols=1)
 
         exc_name = MDLabel(
             text=exc,
             font_style="H5",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color
         )
         name_layout.add_widget(exc_name)
         excCard.add_widget(name_layout)
@@ -328,8 +334,9 @@ class SessionScreen(Screen):
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            theme_text_color="Secondary",
-            pos_hint={"center_y": 0.85, "center_x": 0.17}
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
+            pos_hint={"center_y": 0.85, "center_x": 0.2}
         )
         deleteBox = MDCheckbox(
             pos_hint={"center_y": 0.85, "center_x": 0.9275}
@@ -344,10 +351,10 @@ class SessionScreen(Screen):
         startButton = MDIconButton(
             icon="arrow-right-drop-circle-outline",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color,
-            user_font_size= "45sp",
+            text_color=(0, 1, 0, 1),
+            user_font_size="45sp",
             size_hint=(0.2, 3.5),
-            pos_hint= {"center_x": 0.5},
+            pos_hint={"center_x": 0.5},
             on_release=self.start_exc
         )
 
@@ -364,31 +371,58 @@ class SessionScreen(Screen):
         set = self.str_to_set(set)
         # units_pos -= space_to_add/10
         reps = set.split()
+        weights = reps[2]
+
         reps = reps[0]
         if len(reps) > 1:
             units_pos = 0.9
         set_label = MDLabel(
             text=num_of_set,
             font_style="H6",
-            size_hint=(units_pos, None),
+            size_hint=(0.9, None),
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color,
         )
         set_number = MDLabel(
             text=set,
             font_style="H5",
-            size_hint=(1, None),
+            size_hint=(1.5, None),
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color,
         )
         reps_label = MDLabel(
-            text=" Reps                  Kg",
+            text="  Reps                        Kg",
             font_style="Caption",
             size_hint=(1, None),
-            theme_text_color="Secondary"
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
         )
-        return set_label , set_number , reps_label
-
+        set_layout = MDGridLayout(rows=1, cols=3)
+        set_layout.add_widget(MDLabel(
+            text=reps,
+            font_style="H6",
+            size_hint=(0.6, None),
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
+            halign='center'
+        ))
+        set_layout.add_widget(MDLabel(
+            text="X",
+            font_style="H6",
+            size_hint=(0.7, None),
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
+            halign='center'
+        ))
+        set_layout.add_widget(MDLabel(
+            text="  " + weights,
+            font_style="H6",
+            size_hint=(1.4, None),
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
+            halign='left'
+        ))
+        return set_label, set_layout, reps_label
 
         # exc_layout.add_widget(set_label)
         # exc_layout.add_widget(set_number)
@@ -407,19 +441,19 @@ class SessionScreen(Screen):
     def str_to_set(self, set):
         # space_before_x = 4
         # space_after_x = 4
-
         set = set.split()
         reps_leng = len(set[0])
         weight_leng = len(set[2])
-
-        new_space_before_x = "   "
+        if weight_leng > 3:
+            weight_leng = 3
+        new_space_before_x = "      "
         if reps_leng - 1 > 0:
             new_space_before_x = new_space_before_x[:-(reps_leng - 1)]
 
         new_space_after_x = "     "
         if weight_leng - 1 > 0:
             new_space_after_x = new_space_after_x[:-(weight_leng - 1)]
-
+        new_space_before_x = new_space_before_x[:-2]
         fixed_set = set[0] + new_space_before_x + "X" + new_space_after_x + set[2]
 
         return fixed_set
@@ -652,7 +686,9 @@ class SessionScreen(Screen):
         self.app.change_screen1("blankscreen", -2)
         self.app.change_screen1("sessionscreen", -3)
         self.load_session()
-        self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+        # self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
+
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
     def show_example_date_picker(self, *args):
         MDDatePicker(self.set_previous_date).open()
@@ -750,13 +786,18 @@ class ExerciseScreen(Screen):
         self.clear_screen()
 
     def add_set(self):
-        currWeight = float(self.ids["weight"].text)
+        weight = self.ids["weight"].text
+        if len(weight) > 6:
+            weight = weight[:6]
+            if weight[-1] == '.':
+                weight = weight[:-1]
+        currWeight = float(weight)
         currReps = int(self.ids["reps"].text)
         if not currReps:
             self.show_invalid_input_msg()
         else:
             if self.barbell:
-                currWeight = currWeight*2 + self.barbell
+                currWeight = currWeight * 2 + self.barbell
             self.add_set_to_grid(currReps, currWeight)
 
     def show_invalid_input_msg(self):
@@ -776,21 +817,27 @@ class ExerciseScreen(Screen):
 
     def open_help_dialog(self):
         self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
-                               text= "[size=70][color=0,0,0,1]Inc[/color][/size]\nCustom increase/decrease in reps and weight value.\n\n[size=70][color=0,0,0,1]Barbell[/color][/size]\nAuto calculate set weight for chosen barbell weight.\nChoose your barbell weight and how much weight has been added to one side."
+                               text="[size=" + str(
+                                   self.app.headline_text_size) + "][color=0,0,0,1]Inc[/color][/size]\nCustom increase/decrease in reps and weight value.\n\n[size=" + str(
+                                   self.app.headline_text_size) + "][color=0,0,0,1]Barbell[/color][/size]\nAuto calculate set weight for chosen barbell weight.\nChoose your barbell weight and how much weight has been added to one side."
                                )
         self.dialog.open()
 
     def add_set_to_grid(self, currReps, currWeight):
         rep_inc = 0
+        weight_inc = 0
         if currReps > 9:
             rep_inc = -0.015
+        if len(str(currWeight)) > 3:
+            weight_inc = -0.004 * len(str(currWeight))
+
         self.sets.append([currReps, currWeight])
         num_of_set = len(self.sets)
         # self.ids["md_list"].add_widget(
         #     SwipeToDeleteItem(text=f"{currReps}    X    {currWeight}", size_hint=(1, 1))
         # )
-        set_add = 0.1
-        x_add = 0.2
+        set_add = 0.05
+        x_add = 0.23
 
         set = f"{currReps}    X    {currWeight}"
         set_layout = MDFloatLayout()
@@ -803,25 +850,25 @@ class ExerciseScreen(Screen):
         )
         set_layout.add_widget(
             MDLabel(text=str(currReps), size_hint=(1, 0.2), font_style="H5",
-                    pos_hint={"center_y": 0.7, "center_x": 0.88 + x_add + rep_inc}, theme_text_color="Custom",
+                    pos_hint={"center_y": 0.7, "center_x": 0.865 + x_add + rep_inc}, theme_text_color="Custom",
                     text_color=self.app.theme_cls.primary_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text="X", size_hint=(1, 0.2), font_style="H5",
-                    pos_hint={"center_y": 0.7, "center_x": 0.981 + x_add}, theme_text_color="Custom",
+                    pos_hint={"center_y": 0.7, "center_x": 0.969 + x_add}, theme_text_color="Custom",
                     text_color=self.app.theme_cls.primary_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text=str(currWeight), size_hint=(1, 0.2), font_style="H5",
-                    pos_hint={"center_y": 0.7, "center_x": 1.07 + x_add}, theme_text_color="Custom",
+                    pos_hint={"center_y": 0.7, "center_x": 1.06 + x_add + weight_inc}, theme_text_color="Custom",
                     text_color=self.app.theme_cls.primary_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text=f"Reps", font_style="Caption",
-                    pos_hint={"center_y": 0.3, "center_x": 0.87 + x_add},
+                    pos_hint={"center_y": 0.3, "center_x": 0.86 + x_add},
                     theme_text_color="Custom",
                     text_color=self.app.theme_cls.primary_color
                     ))

@@ -147,22 +147,24 @@ class PreviousWorkoutsScreen(Screen):
         if self.app.reload_for_running_session:
             excCard = MDCard(
                 spacing=8,
-                radius=[14],
+                radius=[80],
                 orientation="vertical",
                 size_hint=(0.87, 0.97),
-                padding=[11, 20, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+                padding=[40, 40, 0, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
+                background="resources/card_back.png",
                 elevation=1,
                 on_release=self.view_session,
             )
         else:
             excCard = LongPressCard(
                 spacing=8,
-                radius=[14],
+                radius=[80],
                 orientation="vertical",
                 size_hint=(0.87, 0.97),
-                padding=[11, 20, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+                padding=[40, 40, 0, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
+                background="resources/card_back.png",
                 elevation=1,
                 long_press_time=0.5,
                 on_long_press=lambda w: setattr(w, 'text', 'long press!')
@@ -179,7 +181,8 @@ class PreviousWorkoutsScreen(Screen):
             text=excnum,
             font_style="Caption",
             size_hint=(0.3, 0.1),
-            theme_text_color="Secondary",
+            theme_text_color="Custom",
+            text_color=self.app.text_color
         )
         deleteBox = MDCheckbox(
             size_hint=(0.5, 0.75)
@@ -193,19 +196,20 @@ class PreviousWorkoutsScreen(Screen):
             font_style="Subtitle2",
             size_hint=(0.97, 0.1),
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color
         )
         workout_name_label = MDLabel(
             text=session_workout_name,
             font_style="H5",
             theme_text_color="Custom",
-            text_color=[0, 0, 0, 1]
+            text_color=self.app.text_color
         )
         workout_duration_label = MDLabel(
             text=session_duration,
             font_style="Caption",
             size_hint=(0.3, 0.1),
-            theme_text_color="Secondary",
+            theme_text_color="Custom",
+            text_color=self.app.text_color
         )
 
         help_layout.add_widget(date_label)
@@ -220,7 +224,7 @@ class PreviousWorkoutsScreen(Screen):
             bottom_layout.add_widget(workout_duration_label)
             bottom_layout.add_widget(MDFlatButton(
                 text="Load",
-                text_color=self.app.theme_cls.primary_color,
+                text_color=self.app.text_color,
                 on_release=self.load_for_running_session))
             excCard.add_widget(bottom_layout)
         else:

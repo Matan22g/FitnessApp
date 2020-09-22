@@ -95,9 +95,9 @@ class ExerciseSessionsScreen(Screen):
 
     def load_sessions(self, year, month):
         print("loading sessions of", year, month)
-        print("self.dates",self.dates)
-        print("self.sessions",self.sessions)
-        print("self.sessions",self.sessions)
+        print("self.dates", self.dates)
+        print("self.sessions", self.sessions)
+        print("self.sessions", self.sessions)
 
         sessions_layout = self.ids.sets_grid
         sessions_layout.clear_widgets()
@@ -115,13 +115,16 @@ class ExerciseSessionsScreen(Screen):
         # month = sessions_keys[0].ctime()[4:7]
 
         window_height = Window.size[1]
-        row_height = window_height / 8.8
+        row_height = window_height / 5.5
         row_enlarger_inc = window_height / 17.6
 
         for i, session_key in enumerate(sessions_keys):
             session = self.sessions[session_key][1]
             dict_of_row_height[i] = row_height
+            session_workout_name = self.sessions[session_key][0]
             row_enlarger = row_enlarger_inc * (len(session) - 1)
+            if len(session_workout_name) > 9:
+                row_enlarger = row_enlarger * 1.125
             dict_of_row_height[i] += row_enlarger
 
         self.ids.sets_grid.rows_minimum = dict_of_row_height
@@ -130,19 +133,21 @@ class ExerciseSessionsScreen(Screen):
             session_exc = self.sessions[session_key][1]
             session_workout_name = self.sessions[session_key][0]
             session_date = session_key.ctime()[0:10]
+            session_date = session_date[0:3] + "," + session_date[3:]
             new_card_layout = self.create_card(session_exc, i, total_session_num, session_workout_name, session_date)
             sessions_layout.add_widget(new_card_layout)
 
-    def no_sessions_grid(self, msg , layout):
+    def no_sessions_grid(self, msg, layout):
         new_card_layout = MDFloatLayout()  # for centering
 
         excCard = MDCard(
             spacing=15,
-            radius=[14],
+            radius=[80],
             orientation="vertical",
             size_hint=(0.87, 0.7),
             padding=[11, 16, 0, 25],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
+            background="resources/card_back.png",
             elevation=1
 
         )
@@ -151,7 +156,7 @@ class ExerciseSessionsScreen(Screen):
             font_style="Subtitle2",
             size_hint=(1, 0.1),
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color
         )
 
         excCard.add_widget(workout_name)
@@ -169,12 +174,13 @@ class ExerciseSessionsScreen(Screen):
         new_card_layout = MDFloatLayout()  # for centering
 
         excCard = MDCard(
-            spacing=10,
-            radius=[14],
+            spacing=5,
+            radius=[80],
             orientation="vertical",
             size_hint=(0.87, 0.97),
-            padding=[11, 16, 0, 17],  # [padding_left, padding_top,padding_right, padding_bottom].
+            padding=[25, 16, 15, 25],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
+            background="resources/card_back.png",
             elevation=0
 
         )
@@ -187,32 +193,37 @@ class ExerciseSessionsScreen(Screen):
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            theme_text_color="Secondary",
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
             pos_hint={"center_y": 0.85, "center_x": 0.17}
         )
         # help_layout.add_widget(exc_num)
         # excCard.add_widget(help_layout)
-
-        name_layout = MDGridLayout(rows=1, cols=3)
+        name_layout_y_size = 1.5
+        if len(session_workout_name) > 9:
+            name_layout_y_size = 3
+        name_layout = MDGridLayout(rows=1, cols=3, size_hint_y=name_layout_y_size)
         workout = session_workout_name
         workout_name = MDLabel(
             text=workout,
             font_style="H5",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color,
+            size_hint_x=1.5
         )
         workout_date = MDLabel(
             text=str(session_date),
             font_style="Caption",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color
         )
         name_layout.add_widget(workout_name)
         name_layout.add_widget(workout_date)
         name_layout.add_widget(exc_num)
 
         excCard.add_widget(name_layout)
-        seperate = MDSeparator(height="1dp")
+        seperate = MDSeparator(height="1dp", color=self.app.text_color
+                               )
         excCard.add_widget(seperate)
 
         # session = ["3   X   8", "3   X   8", "3   X   8", "3   X   8"]
@@ -221,7 +232,7 @@ class ExerciseSessionsScreen(Screen):
             set_label, set_number, reps_label = self.create_set_label(set, num_of_set)
 
             exc_layout = MDGridLayout(rows=1, cols=2)
-            units_layout = MDGridLayout(rows=1, cols=2)
+            units_layout = MDGridLayout(rows=1, cols=2, size_hint_y=1.5)
             exc_layout.add_widget(set_label)
             exc_layout.add_widget(set_number)
             units_layout.add_widget(MDLabel(text="", size_hint_x=0.9))

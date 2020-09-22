@@ -114,13 +114,17 @@ NavigationLayout:
     MDNavigationDrawer:
         id: nav_drawer
         anchor: "right"
-        size_hint_x: 0.6
+        size_hint_x: 0.45
 
         BoxLayout:
             orientation: "vertical"
             padding: "4dp"
             spacing: "10dp"
-
+            canvas:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: "resources/loginback1.png"
             Image:
                 source: "resources/logo.png"
                 size_hint_y: None
@@ -133,57 +137,72 @@ NavigationLayout:
 
                     OneLineIconListItem:
                         text: "Home"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
                         on_release:
                             app.change_screen1("homescreen")
 #                            screen_manager1.current = "homescreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "home"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
                         text: "Friends"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
+
                         on_release:
                             app.change_screen1("blankscreen")
 #                            screen_manager1.current = "friendsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "account-group"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
-                        text: "Previous Workouts"
+                        text: "Previous"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
                         on_release:
                             app.change_screen1("previous_workouts_screen")
 #                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "calendar-clock"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
                         text: "Workouts"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
                         on_release:
                             app.change_screen1("workoutsscreen")
 #                            screen_manager1.current = "workoutsscreen"
                             nav_drawer.set_state()
                         IconLeftWidget:
                             icon: "dumbbell"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
                         text: "Log Out"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
                         on_release:
-                            nav_drawer.swipe_edge_width=-2
-                            screen_manager.transition.direction = 'right'
-                            firebase_login_screen.login_success = "False"
-                            firebase_login_screen.save_refresh_token("")
-                            Snackbar(text="Logged out!").show()
-                            app.change_screen("loginscreen")
-#                            screen_manager.current = "loginscreen"
-                            nav_drawer.set_state()
-                            print(nav_drawer.swipe_edge_width)
+                            app.on_logout()
                         IconLeftWidget:
                             icon: "login"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
                         text: "Settings"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
                         on_release:
                             app.change_screen1("settingsscreen")
 #                            screen_manager1.current = "settingsscreen"
@@ -191,6 +210,8 @@ NavigationLayout:
                         IconLeftWidget:
                             icon: "cog"
 
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
 
 
 

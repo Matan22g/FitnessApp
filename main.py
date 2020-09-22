@@ -1,4 +1,5 @@
 import ast
+import calendar
 import os
 from datetime import datetime, date
 
@@ -11,15 +12,17 @@ from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
 from kivy.core.window import Window
 from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
-from kivymd.uix.card import MDCard
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import MDList, OneLineListItem
+from kivymd.uix.list import MDList, OneLineListItem, OneLineIconListItem
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
 from customKv.toolbar import CustomMDToolbar
+from kivymd.uix.card import MDCard
+
+# from customKv.card import MDCard
 
 from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 import kivy.utils as utils
@@ -40,8 +43,12 @@ from screens_py.previous_workouts import PreviousWorkoutsScreen
 from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 import copy
+import math
 
-Window.size = (330, 650)
+from kivy.utils import platform
+
+if platform != 'android':
+    Window.size = (330, 650)
 
 
 ## msg for new workout name
@@ -105,6 +112,14 @@ class MainApp(MDApp):
     upload_backup = 0  # help for backing up, uploading attempts - format: [data, link, target, workout_key]
     sign_up = 0
     window_size = Window.size
+    headline_text_size = int(math.sqrt(Window.size[0] * Window.size[0] + Window.size[1] * Window.size[
+        1]) / 32)  # text_size adapted to window size - used for tabs title, and info title
+    last_session_date = 0
+    text_color = (1, 1, 1, 1)
+    workout_edit_mode = 0
+    exc_pie_dic = [{"None": 100}]
+    total_exc_sets = 0
+
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
         super().__init__(**kwargs)
@@ -113,11 +128,19 @@ class MainApp(MDApp):
         # on error Auth token is expired:
         self.root.ids.firebase_login_screen.load_saved_account()
 
+    def update_chart(self):
+        piechart = self.root.ids['homescreen'].ids[
+            'piechart']  # getting the id of where the widgets are coming in
+
+        items = self.exc_pie_dic
+        print(items)
+        piechart.items = items
+
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
         # before login, denies access to navigation drawer
         self.root.ids['nav_drawer'].swipe_edge_width = -2
-
+        print(self.headline_text_size)
         # bind android back button to back function
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
@@ -150,14 +173,24 @@ class MainApp(MDApp):
         user_name = self.user_data["real_user_name"]
         self.change_title("Hello " + user_name)
         self.change_title("Dashboard")
-        self.change_screen1("sessionscreen")
         if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
             self.retrieve_paused_session()
+
+    def on_logout(self):
+        self.root.ids['nav_drawer'].swipe_edge_width = -2
+        self.root.ids['nav_drawer'].set_state()
+
+        self.root.ids.firebase_login_screen.login_success = False
+        self.root.ids.firebase_login_screen.save_refresh_token("")
+
+        Snackbar(text="Logged out!").show()
+        self.change_screen("loginscreen", 'right')
+        self.root.ids['nav_drawer'].swipe_edge_width = -2
 
     def add_top_canvas(self):
         with self.root.ids.main_layout.canvas.before:
             Rectangle(source='resources/loginback1.png', pos=(0, self.window_size[1] / 1.23), size=(
-            self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))
+                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))
 
     def clear_canvas(self):
         self.root.ids.main_layout.canvas.before.clear()
@@ -165,7 +198,7 @@ class MainApp(MDApp):
     def add_bottom_canvas(self):
         with self.root.ids.main_layout.canvas.before:
             Rectangle(source='resources/loginback1.png', pos=(0, 0), size=(
-            self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 8))
+                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 8))
 
     def hook_keyboard(self, window, key, *largs):
         # bind back button of android to back function.
@@ -193,6 +226,7 @@ class MainApp(MDApp):
             self.show_resume_session_dialog(session)
         else:
             self.clean_temp_session_data()
+
     def show_resume_session_dialog(self, session):
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
@@ -280,6 +314,9 @@ class MainApp(MDApp):
         if self.debug:
             print("session dic: ", session_dic)
         temp_session_list = []
+        self.total_exc_sets = 0
+        self.exc_pie_dic = {}
+
         for session_key in session_dic:
             session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
             date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
@@ -294,12 +331,35 @@ class MainApp(MDApp):
             self.sessions[date] = new_session
         self.sort_workouts_sessions()
 
+        self.calc_exc_pie()
         if self.debug:
             print("sessions: ", self.sessions)
+
+    def calc_exc_pie(self):
+        temp_tot = 0
+        for exc in self.exc_pie_dic:
+            new_per = int((self.exc_pie_dic[exc] / self.total_exc_sets) * 100)
+            self.exc_pie_dic[exc] = new_per
+            temp_tot += new_per
+        if temp_tot < 100:
+            to_add = 100 - temp_tot
+            self.exc_pie_dic[exc] += to_add
+        self.exc_pie_dic = [self.exc_pie_dic]
+        self.update_chart()
 
     def sort_workouts_sessions(self):
         session_dates = [session_date for session_date in self.sessions]
         session_dates.sort(reverse=True)
+
+        if session_dates:
+            self.last_session_date = session_dates[0]
+            last_session = self.sessions[session_dates[0]]
+            self.root.ids['homescreen'].ids['last_session_month'].text = calendar.month_abbr[last_session.date.month]
+            self.root.ids['homescreen'].ids['last_session_day'].text = str(last_session.date.day)
+            self.root.ids['homescreen'].ids['last_session_name'].text = last_session.workout_name
+            self.root.ids['homescreen'].ids['session_exc_completed'].text = str(
+                len(last_session.exercises)) + " exercises completed"
+
         self.sessions_by_month_year = {}
         for date in session_dates:
             year = int(date.year)
@@ -319,6 +379,12 @@ class MainApp(MDApp):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
         for exc in exercises:
             exercises_list = exercises[exc]
+
+            if exc in self.exc_pie_dic:
+                self.exc_pie_dic[exc] += len(exercises_list)
+            else:
+                self.exc_pie_dic[exc] = len(exercises_list)
+            self.total_exc_sets += len(exercises_list)
             if exc not in self.exc_sessions:
                 self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
                 record = self.find_best_set(exercises_list)
@@ -482,7 +548,7 @@ class MainApp(MDApp):
                 card_layout = MDFloatLayout()  # for centering
 
                 workoutcard = MDCard(
-                    radius=[14],
+                    radius=[80],
                     orientation="vertical",
                     size_hint=(0.9, 0.9),
                     padding="8dp",
@@ -497,6 +563,7 @@ class MainApp(MDApp):
                 #     theme_text_color="Custom",
                 #     text_color=self.theme_cls.primary_color
                 # ))
+
                 card_layout.add_widget(MDLabel(
                     text=workoutname,
                     font_style="H4",
@@ -909,6 +976,7 @@ class MainApp(MDApp):
                                       ca_file=certifi.where(), method=method, verify=True)
 
     def success_upload(self, *args):
+        self.running_session = 0
 
         self.change_screen1("workoutsscreen")
         self.get_user_data()
@@ -918,7 +986,6 @@ class MainApp(MDApp):
             ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
 
         self.load_session_data()
-        self.running_session = 0
 
         Snackbar(text="Workout saved!").show()
         self.upload_backup = 0

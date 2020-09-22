@@ -232,7 +232,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
 
     def get_user_name_email(self, user_name):
         # Query database and gets username email
-        user_name = '"' + user_name + '"'
+        user_name = '"' + user_name.lower() + '"'
         link = 'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name
         check_req = requests.get(link)
         req = UrlRequest(link, on_success=self.get_user_name_email_success, on_error=self.on_email_request_error,

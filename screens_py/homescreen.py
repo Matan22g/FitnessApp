@@ -1,5 +1,7 @@
+from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
+from customKv.piechart import AKPieChart
 
 
 
@@ -18,7 +20,8 @@ class HomeScreen(Screen):
 
     def on_enter(self, *args):
         self.app.title = "Home"
-
+        if "None" not in self.app.exc_pie_dic[0]:
+            self.app.update_chart()
 
     def addworkout(self, *args):
         self.app.change_screen1("workoutsscreen")

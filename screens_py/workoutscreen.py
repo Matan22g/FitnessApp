@@ -109,6 +109,7 @@ class WorkoutScreen(Screen):
             self.reload_page()
             self.app.root.ids['workoutscreen'].workout_key = self.app.workout_key_to_view
             self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
+        self.app.hide_loading_screen()
 
     def reset_tabs(self):
         # reseting to one tab in case of create workout, or to original workout, in case of exit edit.
@@ -139,6 +140,7 @@ class WorkoutScreen(Screen):
             self.show_edit_buttons(False)
         else:
             self.edit_mode = 1
+
             self.show_view_buttons(False)
             self.show_edit_buttons(True)
 
@@ -156,7 +158,7 @@ class WorkoutScreen(Screen):
             self.temp_workout = copy.deepcopy(self.workout)
 
         # INSERT fix for slider being too short after delete -- try mimic pressing on first one
-        self.app.root.ids['workoutscreen'].ids["del_split"].text = "Split 1"
+        # self.app.root.ids['workoutscreen'].ids["del_split"].text = "Split 1"
 
         self.load_exc(1)  # loading first split as defualt
         self.app.root.ids['workoutscreen'].split_active = 1
@@ -171,7 +173,7 @@ class WorkoutScreen(Screen):
                     ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
             self.show_exc_del_buttons(False)
             self.show_exc_stats_buttons(True)
-            self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (1, .65)
+            self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (0.9, .65)
             self.app.root.ids['workoutscreen'].ids["edit_workout"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["edit_workout"].disabled = False
             self.app.root.ids['workoutscreen'].ids["start_session"].opacity = 1
@@ -179,6 +181,8 @@ class WorkoutScreen(Screen):
             self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = False
 
+            self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 1
+            self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = False
 
         else:
             self.app.root.ids['workoutscreen'].ids["edit_workout"].opacity = 0
@@ -188,35 +192,48 @@ class WorkoutScreen(Screen):
             self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 0
             self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = True
 
+            self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 0
+            self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = True
+
     def show_edit_buttons(self, to_show):
         if to_show:
             # self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (1, .65)
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['content-save', lambda x: self.show_save_workout_dialog()]]
+            # self.app.root.ids['toolbar'].right_action_items = [
+            #     ['content-save', lambda x: self.show_save_workout_dialog()]]
+            self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
+
             self.show_exc_del_buttons(True)
             self.show_exc_stats_buttons(False)
-            self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (0.825, .65)
+            self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (0.82, .65)
 
-            self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 1
-            self.app.root.ids['workoutscreen'].ids["add_exc"].disabled = False
-            self.app.root.ids['workoutscreen'].ids["add_exc"].text_color = (1, 1, 1, 1)
+            # self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 1
+            # self.app.root.ids['workoutscreen'].ids["add_exc"].disabled = False
+            # self.app.root.ids['workoutscreen'].ids["add_exc"].text_color = (1, 1, 1, 1)
 
             self.app.root.ids['workoutscreen'].ids["add_split"].opacity = 1
             self.app.root.ids['workoutscreen'].ids["add_split"].disabled = False
 
-            self.app.root.ids['workoutscreen'].ids["del_split"].opacity = 1
-            self.app.root.ids['workoutscreen'].ids["del_split"].disabled = False
-            self.app.root.ids['workoutscreen'].ids["del_split"].text_color = (1, 1, 1, 1)
+            # self.app.root.ids['workoutscreen'].ids["del_split"].opacity = 1
+            # self.app.root.ids['workoutscreen'].ids["del_split"].disabled = False
+            # self.app.root.ids['workoutscreen'].ids["del_split"].text_color = (1, 1, 1, 1)
+
+            self.ids["edit_grid"].opacity = 1
+            self.ids["edit_grid"].disabled = False
+            self.ids["edit_grid"].pos_hint = {"center_x": .5, "top": .12}
 
         else:
-            self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["add_exc"].disabled = True
+            self.ids["edit_grid"].opacity = 0
+            self.ids["edit_grid"].disabled = True
+            self.ids["edit_grid"].pos_hint = {"center_x": .5, "top": .0}
+
+            # self.app.root.ids['workoutscreen'].ids["add_exc"].opacity = 0
+            # self.app.root.ids['workoutscreen'].ids["add_exc"].disabled = True
 
             self.app.root.ids['workoutscreen'].ids["add_split"].opacity = 0
             self.app.root.ids['workoutscreen'].ids["add_split"].disabled = True
 
-            self.app.root.ids['workoutscreen'].ids["del_split"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["del_split"].disabled = True
+            # self.app.root.ids['workoutscreen'].ids["del_split"].opacity = 0
+            # self.app.root.ids['workoutscreen'].ids["del_split"].disabled = True
 
     def set_split_tabs(self):
         # setting the amount of tabs according to orig_workout_leng
@@ -241,8 +258,9 @@ class WorkoutScreen(Screen):
         if self.app.debug:
             print("trying to add split")
             print("num of split to add:", self.num_of_splits)
+        tab = Tab(text=f"[size=70]Split {self.num_of_splits}[/size]")
+        tab = Tab(text="[size=" + str(self.app.headline_text_size) + f"]Split {self.num_of_splits}[/size]")
 
-        tab = Tab(text=f"Split {self.num_of_splits}")
         self.app.root.ids['workoutscreen'].ids["split_tabs"].add_widget(tab)
         # in case of new split space for new exercises being saved
         if len(self.temp_workout) < self.num_of_splits:
@@ -252,11 +270,10 @@ class WorkoutScreen(Screen):
     def on_tab_switch(self, *args):
 
         split_chosen = args[3]
-        split_chosen = int(split_chosen[6])
+        split_chosen = int(split_chosen[15])
         self.load_exc(split_chosen)
         self.split_active = split_chosen
-        self.app.root.ids['workoutscreen'].ids["del_split"].text = "Split " + str(split_chosen)
-
+        # self.app.root.ids['workoutscreen'].ids["del_split"].text = "Split " + str(split_chosen)
         if self.app.debug:
             print("switched to:", self.split_active)
             print("num of splits: ", self.num_of_splits)
@@ -303,25 +320,28 @@ class WorkoutScreen(Screen):
         card_layout = MDFloatLayout()  # for centering
         excCard = MDCard(
             spacing=2,
-            radius=[18],
+            radius=[80],
             orientation="vertical",
             size_hint=(0.95, 0.8),
-            padding=[11, 0, 0, 18],
-            pos_hint={"center_y": 0.5, "center_x": 0.5}
+            padding=[20, 0, 0, 20],  # [padding_left, padding_top,padding_right, padding_bottom].
+            pos_hint={"center_y": 0.5, "center_x": 0.5},
+            background="resources/card_back.png",
+
         )
 
-        help_layout = MDGridLayout( rows=1, cols=2)
+        help_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.4)
         excnum = str(num_of_exc + 1) + " of " + str(num_of_exc_total)
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            theme_text_color="Secondary"
+            theme_text_color="Custom",
+            text_color=self.app.text_color,
         )
         del_Button = MDIconButton(
             icon="trash-can-outline",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color,
-            on_release=self.show_del_exercise_dialog
+            text_color=self.app.text_color,
+            on_release=self.show_del_exercise_dialog,
         )
 
         self.del_button_id_by_exc[exc] = del_Button
@@ -336,15 +356,15 @@ class WorkoutScreen(Screen):
             text=exc,
             font_style="H5",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color
+            text_color=self.app.text_color
         )
 
         # consider hiding option
         sButton = MDIconButton(
             icon="history",
             theme_text_color="Custom",
-            text_color=self.app.theme_cls.primary_color,
-            on_release=self.show_exc_history
+            text_color=self.app.text_color,
+            on_release=self.show_exc_history,
         )
 
         self.stats_button_id_by_exc[exc] = sButton
@@ -471,9 +491,12 @@ class WorkoutScreen(Screen):
         self.load_exc(split_active)
 
     def show_del_split_dialog(self, *args):
+        # split_to_del = self.split_active
+        split_to_del = self.num_of_splits
+
         if self.num_of_splits > 1:
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
-                                   title="Delete " + "Split " + str(self.split_active) + "?",
+                                   title="Delete " + "Split " + str(split_to_del) + "?",
                                    buttons=[
                                        MDFlatButton(
                                            text="DELETE", text_color=self.app.theme_cls.primary_color,
@@ -498,7 +521,8 @@ class WorkoutScreen(Screen):
         self.dialog.open()
 
     def del_active_split(self, *args):
-        self.del_split(self.app.root.ids['workoutscreen'].split_active)
+        # self.del_split(self.app.root.ids['workoutscreen'].split_active)
+        self.del_split(self.app.root.ids['workoutscreen'].num_of_splits)
 
     def del_split(self, split_to_del):
         if self.app.debug:
@@ -522,7 +546,7 @@ class WorkoutScreen(Screen):
             self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list()[ind_of_split_to_del])
 
         for split_num, tab in enumerate(reversed(self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list())):
-            tab.text = "Split " + str(split_num + 1)
+            tab.text = "[size=" + str(self.app.headline_text_size) + "]Split " + str(split_num + 1) + "[/size]"
 
         self.num_of_splits = len(self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list())
         self.reload_page()
@@ -545,6 +569,7 @@ class WorkoutScreen(Screen):
         self.dialog.open()
 
     def cancel_edit_mode(self, *args):
+        self.app.display_loading_screen()
         self.dismiss_dialog()
         if self.app.root.ids['workoutscreen'].create_mode:
             self.app.root.ids['toolbar'].right_action_items = [
