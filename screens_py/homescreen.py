@@ -18,14 +18,13 @@ class HomeScreen(Screen):
         except:
             pass
 
+
     def on_enter(self, *args):
         self.app.title = "Home"
-        if "None" not in self.app.exc_pie_dic[0]:
+        try:
             self.app.update_chart()
-
-    def addworkout(self, *args):
-        self.app.change_screen1("workoutsscreen")
-
+        except:
+            print("error in self.app.exc_pie_dic:", self.app.exc_pie_dic)
     # data = {
     #     'weight-lifter': 'Create Workout',
     #     'weight': 'Workouts'

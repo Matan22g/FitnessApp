@@ -94,7 +94,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 0
+    debug = 1
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -117,25 +117,54 @@ class MainApp(MDApp):
     last_session_date = 0
     text_color = (1, 1, 1, 1)
     workout_edit_mode = 0
-    exc_pie_dic = [{"None": 100}]
+    exc_pie_dic = {"None": 100}
     total_exc_sets = 0
+    monthly_session_amount = 0
+    weekly_session_amount = 0
+    workouts_trained_amount = {}
+    today_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
         super().__init__(**kwargs)
 
+    # refresh Auth token if expired:
     def refresh_auth_token(self):
-        # on error Auth token is expired:
         self.root.ids.firebase_login_screen.load_saved_account()
 
+    # update exercise pie chart stats on homescreen.
     def update_chart(self):
         piechart = self.root.ids['homescreen'].ids[
             'piechart']  # getting the id of where the widgets are coming in
 
-        items = self.exc_pie_dic
+        items = [self.calc_exc_pie()]
         print(items)
-        piechart.items = items
 
+        self.root.ids['homescreen'].ids[
+            'piechart']._clear_canvas()
+
+        self.root.ids['homescreen'].ids[
+            'piechart']._make_chart(items)
+
+        self.root.ids['homescreen'].ids[
+            'piechart'].items = items
+        print(self.root.ids['homescreen'].ids[
+                  'piechart'].items)
+
+    # bind back button of android to back function.
+    def hook_keyboard(self, window, key, *largs):
+
+        if key == 27:
+            try:
+                if self.root.ids['screen_manager1'].current == "homescreen":
+                    self.stop()
+                    return True
+            except:
+                pass
+            self.back_to_last_screen()
+        return True
+
+    # App Main Functions
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
         # before login, denies access to navigation drawer
@@ -158,25 +187,32 @@ class MainApp(MDApp):
         if not self.sign_up:
             self.get_user_data()
             self.change_screen1("homescreen")
-            self.load_workout_data()
             try:
                 self.load_session_data()
+                self.update_chart()
             except:
                 self.sessions = {}
+            self.load_workout_data()
         else:
-            self.sign_up = 0
+            self.clear_user_app_data()
+            self.update_dashboard_stats()
+            self.update_last_date_card(0)
         # Initial left menu obj to settings
         # self.root.ids['toolbar'].left_action_items = [["cog", lambda x: self.change_screen1("settingsscreen")]]
         self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
 
         # TEST OF USER NAME
-        user_name = self.user_data["real_user_name"]
-        self.change_title("Hello " + user_name)
+        # user_name = self.user_data["real_user_name"]
+        # self.change_title("Hello " + user_name)
         self.change_title("Dashboard")
-        if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
-            self.retrieve_paused_session()
+        try:
+            if len(self.user_data["temp_session"]) > 4:  # not empty list {[]}
+                self.retrieve_paused_session()
+        except:
+            print("key error: temp_session")
 
     def on_logout(self):
+        self.clear_user_app_data()
         self.root.ids['nav_drawer'].swipe_edge_width = -2
         self.root.ids['nav_drawer'].set_state()
 
@@ -187,6 +223,41 @@ class MainApp(MDApp):
         self.change_screen("loginscreen", 'right')
         self.root.ids['nav_drawer'].swipe_edge_width = -2
 
+    def clear_user_app_data(self):
+        self.workouts = {}
+        self.workoutsParsed = {}
+        self.sessions = {}
+        self.sessions_by_key = {}
+        self.friends_list = {}
+        self.dialog = 0
+        self.workout_to_delete = 0
+        self.new_session = 0
+        self.running_session = 0
+        self.toTrainWorkout = {}
+        self.workout_key_to_view = 0
+        self.exc_sessions = {}
+        self.sessions_by_month_year = {}
+        self.sessions = {}
+        self.running_session_workout = []
+        self.reload_for_running_session = ""
+        self.delete_mode = 0
+        self.upload_backup = 0
+        self.last_session_date = 0
+        self.sign_up = 0
+        self.workout_edit_mode = 0
+        self.exc_pie_dic = {"None": 100}
+        self.total_exc_sets = 0
+        self.delete_workout_grid()
+        self.update_chart()
+        self.update_last_date_card(0)
+        self.monthly_session_amount = 0
+        self.weekly_session_amount = 0
+        self.workouts_trained_amount = {}
+
+    def change_title(self, text):
+        self.root.ids['toolbar'].title = text
+
+    # top and bottom background for the app methods
     def add_top_canvas(self):
         with self.root.ids.main_layout.canvas.before:
             Rectangle(source='resources/loginback1.png', pos=(0, self.window_size[1] / 1.23), size=(
@@ -200,23 +271,330 @@ class MainApp(MDApp):
             Rectangle(source='resources/loginback1.png', pos=(0, 0), size=(
                 self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 8))
 
-    def hook_keyboard(self, window, key, *largs):
-        # bind back button of android to back function.
+    #
 
-        if key == 27:
+    # Handling user data
+
+    def get_user_data(self):
+        try:
+            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            data = json.loads(result.content.decode())
+            self.user_data = data
+            if self.debug:
+                print(data)
+                print("user email:", self.user_data["email"])
+                print("user friends:", self.user_data["friends"])
+                print("user real_user_name:", self.user_data["real_user_name"])
+                print("user user_name:", self.user_data["user_name"])
+                print("user sessions:", self.user_data["sessions"])
+                print("user workouts:", self.user_data["workouts"])
+                print("user streak:", self.user_data["streak"])
+
+        except Exception:
+            print("no data")
+
+    def calc_exc_pie(self):
+        temp_tot = 0
+        items = {}
+        if self.debug:
+            print("self.exc_pie_dic", self.exc_pie_dic)
+        if not self.exc_pie_dic:
+            self.exc_pie_dic = {"None": 100}
+            items = {"None": 100}
+        for exc in self.exc_pie_dic:
+            if exc == "None":
+                items = {"None": 100}
+                return items
+            new_per = int(round((self.exc_pie_dic[exc] / self.total_exc_sets) * 100))
+            items[exc] = new_per
+            temp_tot += new_per
+        if temp_tot < 100:
+            to_add = 100 - temp_tot
+            items[exc] += to_add
+        elif temp_tot > 100:
+            to_sub = 100 - temp_tot
             try:
-                if self.root.ids['screen_manager1'].current == "homescreen":
-                    self.stop()
-                    return True
+                items[exc] += to_sub
             except:
-                pass
-            self.back_to_last_screen()
-        return True
+                for exc in items:
+                    if self.items[exc] + to_sub > 0:
+                        self.items[exc] += to_sub
+        return items
+        print("self.exc_pie_dic", self.exc_pie_dic)
 
-    def change_title(self, text):
-        self.root.ids['toolbar'].title = text
+    # Find for Exercise the best Set for all sessions
 
-    # Handling user data'
+    def find_new_record(self, exc):
+        # in case of deleteing sessions with record, finding a new record
+        # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
+        record = ""
+        record_weight = 0
+        maybe_record = ""
+        maybe_record_weight = 0
+        record_date = ""
+        for date in self.exc_sessions[exc]:
+            if date != "record":
+
+                session_list = self.exc_sessions[exc][date][1]
+
+                maybe_record = self.find_best_set(session_list)
+                maybe_record_weight = maybe_record.split()
+                maybe_record_weight = float(maybe_record_weight[2])
+
+                if maybe_record_weight > record_weight:
+                    record_weight = maybe_record_weight
+                    record = maybe_record
+                    record_date = date
+
+        return record, record_date
+
+    # Returns the index of the best set in a given Session
+    def find_best_set(self, exc_session):
+        # by weight:
+        best_weight = 0
+        best_weight_ind = 0
+        for i, set in enumerate(exc_session):
+            set = set.split()
+            weight = float(set[2])
+            if weight > best_weight:
+                best_weight = weight
+                best_weight_ind = i
+        return exc_session[best_weight_ind]
+
+    # Initial workouts dicts, and workouts screen
+    def load_workout_data(self):
+        try:
+            workoutdic = self.user_data["workouts"]  # gets workout data
+        except:
+            # fix case of empty workouts in database
+            workoutdic = {}
+        self.workouts = {}  # solve case of deleted workout. reloads all database workouts
+        for workoutkey in workoutdic:
+            workout = workoutdic[workoutkey]
+            if self.debug:
+                print("workout:", workout)
+            workout = json.loads(workout)  # turning str to dic
+            self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
+
+        self.workoutsParsed = self.parse_workout(
+            self.workouts)  # Need to reconsider this depending on workout analysis.
+        self.add_workouts(self.workoutsParsed)
+
+        # except Exception:
+        # print("no workouts")
+
+    def parse_workout(self, workoutIdDic):
+        print(workoutIdDic)
+        # json data to iterable list, return dict of workout dicts {key: {workout name :[[split 1],[split2]]}}
+        workoutdicReadAble = {}
+        for workoutkey in workoutIdDic:
+            workoutTemp = {}
+
+            workoutdic = workoutIdDic[workoutkey][0]
+            workout_date = workoutIdDic[workoutkey][1]
+            workout_date = workout_date[:10]
+
+            for workoutName in workoutdic:
+                exercises = workoutdic[workoutName]  # getting the the exercises of the workout
+                exercises = ast.literal_eval(exercises)  # turning the str to list
+                workoutTemp[workoutName] = exercises
+            workoutdicReadAble[workoutkey] = [workoutTemp, workout_date]
+        return workoutdicReadAble
+
+    def add_workouts(self, workoutDic):
+        self.delete_workout_grid()
+        workoutgrid = self.root.ids['workoutsscreen'].ids[
+            'banner_grid']  # getting the id of where the widgets are coming in
+        for workoutkey in workoutDic:
+            workoutdic = workoutDic[workoutkey][0]  # argument 0 is the dict, and 1 is the date
+            workout_date = workoutDic[workoutkey][1]  # argument 0 is the dict, and 1 is the date
+
+            for workoutname in workoutdic:
+                exercises = workoutdic[workoutname]  # getting the the exercises of the workout
+
+                newlayout = MDFloatLayout()  # for centering
+                card_layout = MDFloatLayout()  # for centering
+
+                workoutcard = MDCard(
+                    radius=[80],
+                    orientation="vertical",
+                    size_hint=(0.9, 0.9),
+                    padding="8dp",
+                    pos_hint={"center_y": 0.5, "center_x": 0.5},
+                    background="resources/card_1.jpeg",
+                    on_release=self.view_workout
+                )
+                # workoutcard.add_widget(MDLabel(
+                #     text=workoutname,
+                #     font_style="H4",
+                #     size_hint=(None, 0.1),
+                #     theme_text_color="Custom",
+                #     text_color=self.theme_cls.primary_color
+                # ))
+
+                card_layout.add_widget(MDLabel(
+                    text=workoutname,
+                    font_style="H4",
+                    pos_hint={"center_y": 0.195, "center_x": 0.5},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color=(0, 0, 1, 1)
+                ))
+
+                card_layout.add_widget(MDLabel(
+                    text="Created: " + workout_date,
+                    font_style="Subtitle1",
+                    pos_hint={"center_y": 0.06, "center_x": 0.5},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color=(0, 0, 1, 1)
+                ))
+                # ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button',
+                #  'Caption', 'Overline', 'Icon']
+                # card_layout.add_widget(MDLabel(
+                #     text="Times Completed:",
+                #     font_style="Subtitle1",
+                #     pos_hint={"center_y": 0.07, "x": 0.45},
+                #     # theme_text_="Custom",
+                #     # text_color=selfcolor.theme_cls.primary_color
+                #     text_color=(0, 0, 1, 1)
+                # ))
+                amount_trained = 0
+                if workoutname in self.workouts_trained_amount:
+                    amount_trained = self.workouts_trained_amount[workoutname]
+                card_layout.add_widget(MDLabel(
+                    text="Times trained: " + str(amount_trained),
+                    font_style="Subtitle1",
+                    pos_hint={"center_y": 0.06, "x": 0.65},
+                    # theme_text_color="Custom",
+                    # text_color=self.theme_cls.primary_color
+                    text_color=(0, 0, 1, 1)
+                ))
+                keybutton = MDRaisedButton(
+                    opacity=0,
+                    size_hint=(.01, .2 / 3),
+                    text=workoutkey
+                )
+                self.split_Choice_dict[workoutkey] = 1
+
+                card_layout.add_widget(keybutton)
+                workoutcard.add_widget(card_layout)
+                newlayout.add_widget(workoutcard)
+                workoutgrid.add_widget(newlayout)
+
+    # Session Methods:
+    def load_session_data(self):
+        # Creates a sessions obj list sorted by dates
+        try:
+            session_dic = self.user_data["sessions"]
+        except KeyError:
+            session_dic = {}
+
+        if self.debug:
+            print("session dic: ", session_dic)
+        temp_session_list = []
+
+        self.total_exc_sets = 0
+        self.exc_pie_dic = {}
+
+        self.monthly_session_amount = 0
+        self.weekly_session_amount = 0
+        self.workouts_trained_amount = {}
+
+        today_date = datetime.today()
+        curr_month = today_date.month
+        curr_year = today_date.year
+        curr_week = today_date.isocalendar()[1]
+
+        for session_key in session_dic:
+            session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
+            date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
+
+            if date.month == curr_month and date.year == curr_year:
+                self.monthly_session_amount += 1
+                if date.isocalendar()[1] == curr_week:
+                    self.weekly_session_amount += 1
+
+            duration = session[1]
+            workout_key = session[2]
+            workout_name = session[3]
+            workout_split = session[4]
+            exercises = session[5]
+            self.add_session_to_excs_stats(exercises, date, workout_name)
+            new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
+                                          exercises)
+            self.sessions[date] = new_session
+
+            if workout_name in self.workouts_trained_amount:
+                self.workouts_trained_amount[workout_name] += 1
+            else:
+                self.workouts_trained_amount[workout_name] = 1
+
+        self.sort_workouts_sessions()
+        self.update_dashboard_stats()
+
+        if self.debug:
+            print("sessions: ", self.sessions)
+
+    def sort_workouts_sessions(self):
+        session_dates = [session_date for session_date in self.sessions]
+        session_dates.sort(reverse=True)
+
+        if session_dates:
+            self.last_session_date = session_dates[0]
+            self.update_last_date_card(session_dates[0])
+
+        self.sessions_by_month_year = {}
+        for date in session_dates:
+            year = int(date.year)
+            month = int(date.month)
+            if year not in self.sessions_by_month_year:
+                self.sessions_by_month_year[year] = {}
+
+            if month not in self.sessions_by_month_year[year]:
+                self.sessions_by_month_year[year][month] = [date]
+            else:
+                self.sessions_by_month_year[year][month].append(date)
+
+        if self.debug:
+            print("sessions_by_month_year: ", self.sessions_by_month_year)
+
+    def update_last_date_card(self, session_date):
+
+        last_session_month = ""
+        last_session_day = ""
+        last_session_name = "N/A"
+        session_exc_completed = "Go Train"
+
+        if session_date:
+            self.last_session_date = session_date
+            last_session = self.sessions[session_date]
+            last_session_month = calendar.month_abbr[last_session.date.month]
+            last_session_day = str(last_session.date.day)
+            last_session_name = last_session.workout_name
+            session_exc_completed = str(len(last_session.exercises)) + " exercises completed"
+
+        self.root.ids['homescreen'].ids['last_session_month'].text = last_session_month
+        self.root.ids['homescreen'].ids['last_session_day'].text = last_session_day
+        self.root.ids['homescreen'].ids['last_session_name'].text = last_session_name
+        self.root.ids['homescreen'].ids['session_exc_completed'].text = session_exc_completed
+
+    def update_dashboard_stats(self):
+
+        self.root.ids['homescreen'].ids['monthly_sessions'].text = str(self.monthly_session_amount)
+        self.root.ids['homescreen'].ids['weekly_sessions'].text = str(self.weekly_session_amount)
+
+    def view_session(self, session_key):
+        if session_key:
+            session_grid = self.root.ids['sessionscreen'].ids[
+                'exc_cards']
+            session_grid.clear_widgets()
+
+            SessionScreen.session_key = session_key
+            self.root.ids['sessionscreen'].view_mode = 1
+
+            self.change_screen1("sessionscreen")
+
     def retrieve_paused_session(self):
         session = ast.literal_eval(self.user_data["temp_session"][1:-1])
         session_date = session[0]
@@ -259,7 +637,7 @@ class MainApp(MDApp):
         self.root.ids['sessionscreen'].session_rec = session[5]
         self.running_session = 1
 
-        workout_list = list(self.workoutsParsed[session[2]].values())
+        workout_list = list(self.workoutsParsed[session[2]][0].values())
 
         chosen_workout = workout_list[0]  # List of exercise to train
 
@@ -282,98 +660,14 @@ class MainApp(MDApp):
         self.dialog.dismiss()
         self.change_screen1("sessionscreen")
 
+    def back_to_running_session(self):
+        self.root.ids['sessionscreen'].view_mode = 0
+        self.root.ids['sessionscreen'].workout = self.running_session_workout
+        self.change_screen1("sessionscreen")
+
     def show_exc_history(self, exc_name):
         self.root.ids['exercise_sessions_screen'].exercise = exc_name
         self.change_screen1("exercise_sessions_screen")
-
-    def get_user_data(self):
-        try:
-            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
-            data = json.loads(result.content.decode())
-            self.user_data = data
-            if self.debug:
-                print(data)
-                print("user email:", self.user_data["email"])
-                print("user friends:", self.user_data["friends"])
-                print("user real_user_name:", self.user_data["real_user_name"])
-                print("user user_name:", self.user_data["user_name"])
-                print("user sessions:", self.user_data["sessions"])
-                print("user workouts:", self.user_data["workouts"])
-                print("user streak:", self.user_data["streak"])
-
-        except Exception:
-            print("no data")
-
-    def load_session_data(self):
-        # Creates a sessions obj list sorted by dates
-        try:
-            session_dic = self.user_data["sessions"]
-        except KeyError:
-            session_dic = {}
-
-        if self.debug:
-            print("session dic: ", session_dic)
-        temp_session_list = []
-        self.total_exc_sets = 0
-        self.exc_pie_dic = {}
-
-        for session_key in session_dic:
-            session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
-            date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
-            duration = session[1]
-            workout_key = session[2]
-            workout_name = session[3]
-            workout_split = session[4]
-            exercises = session[5]
-            self.add_session_to_excs_stats(exercises, date, workout_name)
-            new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
-                                          exercises)
-            self.sessions[date] = new_session
-        self.sort_workouts_sessions()
-
-        self.calc_exc_pie()
-        if self.debug:
-            print("sessions: ", self.sessions)
-
-    def calc_exc_pie(self):
-        temp_tot = 0
-        for exc in self.exc_pie_dic:
-            new_per = int((self.exc_pie_dic[exc] / self.total_exc_sets) * 100)
-            self.exc_pie_dic[exc] = new_per
-            temp_tot += new_per
-        if temp_tot < 100:
-            to_add = 100 - temp_tot
-            self.exc_pie_dic[exc] += to_add
-        self.exc_pie_dic = [self.exc_pie_dic]
-        self.update_chart()
-
-    def sort_workouts_sessions(self):
-        session_dates = [session_date for session_date in self.sessions]
-        session_dates.sort(reverse=True)
-
-        if session_dates:
-            self.last_session_date = session_dates[0]
-            last_session = self.sessions[session_dates[0]]
-            self.root.ids['homescreen'].ids['last_session_month'].text = calendar.month_abbr[last_session.date.month]
-            self.root.ids['homescreen'].ids['last_session_day'].text = str(last_session.date.day)
-            self.root.ids['homescreen'].ids['last_session_name'].text = last_session.workout_name
-            self.root.ids['homescreen'].ids['session_exc_completed'].text = str(
-                len(last_session.exercises)) + " exercises completed"
-
-        self.sessions_by_month_year = {}
-        for date in session_dates:
-            year = int(date.year)
-            month = int(date.month)
-            if year not in self.sessions_by_month_year:
-                self.sessions_by_month_year[year] = {}
-
-            if month not in self.sessions_by_month_year[year]:
-                self.sessions_by_month_year[year][month] = [date]
-            else:
-                self.sessions_by_month_year[year][month].append(date)
-
-        if self.debug:
-            print("sessions_by_month_year: ", self.sessions_by_month_year)
 
     def add_session_to_excs_stats(self, exercises, date, workout_name):
         # gets a session exc list, and add it to a dict: {exc_name:{ record:.. , date: [workout_name ,[session]]
@@ -413,7 +707,11 @@ class MainApp(MDApp):
             print("self.exc_sessions", self.exc_sessions)
 
         for exc in exc_list:
-            self.exc_sessions[exc].pop(date)
+
+            exc_session = self.exc_sessions[exc].pop(date)
+            exc_session_len = len(exc_session[1])
+            self.exc_pie_dic[exc] -= exc_session_len
+            self.total_exc_sets -= exc_session_len
             if "record" in self.exc_sessions[exc]:
                 record_date = self.exc_sessions[exc]["record"][1]
                 if record_date == date:
@@ -426,77 +724,85 @@ class MainApp(MDApp):
                 self.exc_sessions.pop(exc)
         if self.debug:
             print("self.exc_sessions", self.exc_sessions)
+        self.sort_workouts_sessions()
 
-    def find_new_record(self, exc):
-        # in case of deleteing sessions with record, finding a new record
-        # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
-        record = ""
-        record_weight = 0
-        maybe_record = ""
-        maybe_record_weight = 0
-        record_date = ""
-        for date in self.exc_sessions[exc]:
-            if date != "record":
+        today_date = datetime.today()
+        curr_month = today_date.month
+        curr_year = today_date.year
+        curr_week = today_date.isocalendar()[1]
 
-                session_list = self.exc_sessions[exc][date][1]
+        if date.month == curr_month and date.year == curr_year:
+            self.monthly_session_amount -= 1
+            if date.isocalendar()[1] == curr_week:
+                self.weekly_session_amount -= 1
+            self.update_dashboard_stats()
 
-                maybe_record = self.find_best_set(session_list)
-                maybe_record_weight = maybe_record.split()
-                maybe_record_weight = float(maybe_record_weight[2])
+    # Session deletion Methods
+    def del_session(self, session_date_key):
+        # self.display_loading_screen()
+        session = self.sessions.pop(session_date_key)
+        print("session_date_key", session_date_key)
+        session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
+            self.local_id, session.session_key, self.id_token)
+        del_req = UrlRequest(session_link, on_success=self.success_del_session, on_error=self.error_del_session,
+                             on_failure=self.error_del_session,
+                             ca_file=certifi.where(), method='DELETE', verify=True)
 
-                if maybe_record_weight > record_weight:
-                    record_weight = maybe_record_weight
-                    record = maybe_record
-                    record_date = date
-        return record, record_date
+        sessions_list_ref = self.sessions_by_month_year[session_date_key.year][session_date_key.month]
+        ind_to_pop = sessions_list_ref.index(session_date_key)
+        sessions_list_ref.pop(ind_to_pop)
 
-    def find_best_set(self, exc_session):
-        # by weight:
-        best_weight = 0
-        best_weight_ind = 0
-        for i, set in enumerate(exc_session):
-            set = set.split()
-            weight = float(set[2])
-            if weight > best_weight:
-                best_weight = weight
-                best_weight_ind = i
-        return exc_session[best_weight_ind]
+        workout_name = session.workout_name
+        if workout_name in self.workouts_trained_amount:
+            if self.workouts_trained_amount[workout_name] > 0:
+                self.workouts_trained_amount[workout_name] -= 1
+                self.add_workouts(self.workoutsParsed)
 
-    # Initial workouts dicts, and workouts screen
-    def load_workout_data(self):
-        try:
-            workoutdic = self.user_data["workouts"]  # gets workout data
-        except:
-            # fix case of empty workouts in database
-            workoutdic = {}
-        self.workouts = {}  # solve case of deleted workout. reloads all database workouts
-        for workoutkey in workoutdic:
-            workout = workoutdic[workoutkey]
-            if self.debug:
-                print("workout:", workout)
-            workout = json.loads(workout)  # turning str to dic
-            self.workouts[workoutkey] = workout  # creating an object of list of keys and workouts
+        self.del_session_from_exc_dict(session_date_key, session.exercises)
+        ########################### delete data from exc_sessions!!!
 
-        self.workoutsParsed = self.parse_workout(
-            self.workouts)  # Need to reconsider this depending on workout analysis.
-        self.add_workouts(self.workoutsParsed)
+    def success_del_session(self, req, result):
+        pass
+        # self.hide_loading_screen()
+        # self.root.ids['previous_workouts_screen'].on_pre_enter()
+        # Snackbar(text="Session Deleted!").show()
+        # self.load_workout_data()
 
-        # except Exception:
-        # print("no workouts")
+    def error_del_session(self, *args):
+        self.hide_loading_screen()
+        # show proper msg
+        print('failed')
 
-    def parse_workout(self, workoutIdDic):
-        # json data to iterable list, return dict of workout dicts {key: {workout name :[[split 1],[split2]]}}
-        workoutdicReadAble = {}
-        for workoutkey in workoutIdDic:
-            workoutTemp = {}
-            workoutdic = workoutIdDic[workoutkey]  # argument 0 is the workout id, and 1 is the dict
-            for workoutName in workoutdic:
-                exercises = workoutdic[workoutName]  # getting the the exercises of the workout
-                exercises = ast.literal_eval(exercises)  # turning the str to list
-                workoutTemp[workoutName] = exercises
-            workoutdicReadAble[workoutkey] = workoutTemp
-        return workoutdicReadAble
+    ###
 
+    # Timer methods.
+    def start_session_timer(self, *args):
+        self.timer = time.time()
+
+        if args:
+            # in case of old session, resetting timer to previous time:
+            timer = args[0]
+            self.timer = timer
+
+        Clock.schedule_interval(self.increment_time, .1)
+        self.increment_time(0)
+        self.start_timer()
+
+    def increment_time(self, interval):
+        timer = time.time() - self.timer
+        self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(timer))))
+        self.root.ids['sessionscreen'].ids["timer"].text = self.timer_format
+
+    def start_timer(self):
+        Clock.unschedule(self.increment_time)
+        Clock.schedule_interval(self.increment_time, .1)
+
+        # To stop the count / time
+
+    def stop_timer(self):
+        Clock.unschedule(self.increment_time)
+
+    # Workout Methods:
     def create_new_workout(self, *args):
         new_workout = args[0].parent.parent.parent.children[2].children[0].children[0].text
         # If the user hasnt written any name, do nothing.
@@ -535,88 +841,6 @@ class MainApp(MDApp):
     def dismiss_dialog(self, *args):
         self.dialog.dismiss()
 
-    def add_workouts(self, workoutDic):
-        self.delete_workout_grid()
-        workoutgrid = self.root.ids['workoutsscreen'].ids[
-            'banner_grid']  # getting the id of where the widgets are coming in
-        for workoutkey in workoutDic:
-            workoutdic = workoutDic[workoutkey]  # argument 0 its the workout key, and 1 is the dict
-            for workoutname in workoutdic:
-                exercises = workoutdic[workoutname]  # getting the the exercises of the workout
-
-                newlayout = MDFloatLayout()  # for centering
-                card_layout = MDFloatLayout()  # for centering
-
-                workoutcard = MDCard(
-                    radius=[80],
-                    orientation="vertical",
-                    size_hint=(0.9, 0.9),
-                    padding="8dp",
-                    pos_hint={"center_y": 0.5, "center_x": 0.5},
-                    background="resources/card_1.jpeg",
-                    on_release=self.view_workout
-                )
-                # workoutcard.add_widget(MDLabel(
-                #     text=workoutname,
-                #     font_style="H4",
-                #     size_hint=(None, 0.1),
-                #     theme_text_color="Custom",
-                #     text_color=self.theme_cls.primary_color
-                # ))
-
-                card_layout.add_widget(MDLabel(
-                    text=workoutname,
-                    font_style="H4",
-                    pos_hint={"center_y": 0.195, "center_x": 0.5},
-                    # theme_text_color="Custom",
-                    # text_color=self.theme_cls.primary_color
-                    text_color=(0, 0, 1, 1)
-                ))
-
-                card_layout.add_widget(MDLabel(
-                    text="12/08/20",
-                    font_style="Subtitle1",
-                    pos_hint={"center_y": 0.07, "center_x": 0.5},
-                    # theme_text_color="Custom",
-                    # text_color=self.theme_cls.primary_color
-                    text_color=(0, 0, 1, 1)
-                ))
-                # ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button',
-                #  'Caption', 'Overline', 'Icon']
-                card_layout.add_widget(MDLabel(
-                    text="Times Completed:",
-                    font_style="Subtitle1",
-                    pos_hint={"center_y": 0.07, "x": 0.45},
-                    # theme_text_="Custom",
-                    # text_color=selfcolor.theme_cls.primary_color
-                    text_color=(0, 0, 1, 1)
-                ))
-                card_layout.add_widget(MDLabel(
-                    text="7",
-                    font_style="Subtitle1",
-                    pos_hint={"center_y": 0.07, "x": 0.95},
-                    # theme_text_color="Custom",
-                    # text_color=self.theme_cls.primary_color
-                    text_color=(0, 0, 1, 1)
-                ))
-                keybutton = MDRaisedButton(
-                    opacity=0,
-                    size_hint=(.01, .2 / 3),
-                    text=workoutkey
-                )
-                self.split_Choice_dict[workoutkey] = 1
-
-                card_layout.add_widget(keybutton)
-                workoutcard.add_widget(card_layout)
-                newlayout.add_widget(workoutcard)
-                workoutgrid.add_widget(newlayout)
-
-    # Methods for when User want to start a new workout session:
-    def view_workout(self, *args):
-        workout_key = args[0].children[0].children[0].text
-        self.workout_key_to_view = workout_key
-        self.change_screen1("workoutscreen")
-
     def start_workout(self, *args):
         # start new session of workout
 
@@ -625,8 +849,8 @@ class MainApp(MDApp):
 
         # workout_split = self.split_Choice_dict[workoutkey]
         workout_split = args[1]
-        workout_list = list(self.workoutsParsed[workoutkey].values())
-        workout_name = list(self.workoutsParsed[workoutkey].keys())[0]
+        workout_list = list(self.workoutsParsed[workoutkey][0].values())
+        workout_name = list(self.workoutsParsed[workoutkey][0].keys())[0]
         num_splits = len(workout_list[0])
         chosen_workout = workout_list[0]  # List of exercise to train
 
@@ -666,28 +890,20 @@ class MainApp(MDApp):
 
         self.change_screen1("sessionscreen")
 
-    def view_session(self, session_key):
-        session_grid = self.root.ids['sessionscreen'].ids[
-            'exc_cards']
-        session_grid.clear_widgets()
+    def view_workout(self, *args):
+        workout_key = args[0].children[0].children[0].text
+        self.workout_key_to_view = workout_key
+        self.change_screen1("workoutscreen")
 
-        SessionScreen.session_key = session_key
-        self.root.ids['sessionscreen'].view_mode = 1
-
-        self.change_screen1("sessionscreen")
-
-    def back_to_running_session(self):
-        self.root.ids['sessionscreen'].view_mode = 0
-        self.root.ids['sessionscreen'].workout = self.running_session_workout
-        self.change_screen1("sessionscreen")
-
+    # Workout deletion Methods
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
         workoutkey = args[0]
-        workout_name = list(self.workoutsParsed[workoutkey].keys())[0]
+        workout_name = list(self.workoutsParsed[workoutkey][0].keys())[0]
 
         self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
-                               text="Delete " + workout_name + "?",
+                               title="Delete " + workout_name + "?",
+                               text="Warning: Deleting " + workout_name + " cannot be undone\nYour workout history however wont be deleted",
                                buttons=[
                                    MDFlatButton(
                                        text="DELETE", text_color=self.theme_cls.primary_color,
@@ -733,67 +949,12 @@ class MainApp(MDApp):
         # show proper msg
         print('failed')
 
-    def del_session(self, session_date_key):
-        # self.display_loading_screen()
-        session = self.sessions.pop(session_date_key)
-        print("session_date_key", session_date_key)
-        session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
-            self.local_id, session.session_key, self.id_token)
-        del_req = UrlRequest(session_link, on_success=self.success_del_session, on_error=self.error_del_session,
-                             on_failure=self.error_del_session,
-                             ca_file=certifi.where(), method='DELETE', verify=True)
-
-        sessions_list_ref = self.sessions_by_month_year[session_date_key.year][session_date_key.month]
-        ind_to_pop = sessions_list_ref.index(session_date_key)
-        sessions_list_ref.pop(ind_to_pop)
-        self.del_session_from_exc_dict(session_date_key, session.exercises)
-        ########################### delete data from exc_sessions!!!
-
-    def success_del_session(self, req, result):
-        pass
-        # self.hide_loading_screen()
-        # self.root.ids['previous_workouts_screen'].on_pre_enter()
-        # Snackbar(text="Session Deleted!").show()
-        # self.load_workout_data()
-
-    def error_del_session(self, *args):
-        self.hide_loading_screen()
-        # show proper msg
-        print('failed')
-
     def delete_workout_grid(self):
         workoutgrid = self.root.ids['workoutsscreen'].ids[
             'banner_grid']  # getting the id of where the widgets are coming in
         if workoutgrid.children:
             for child in workoutgrid.children[:]:
                 workoutgrid.remove_widget(child)
-
-    # Timer methods.
-    def start_session_timer(self, *args):
-        self.timer = time.time()
-
-        if args:
-            # in case of old session, resetting timer to previous time:
-            timer = args[0]
-            self.timer = timer
-
-        Clock.schedule_interval(self.increment_time, .1)
-        self.increment_time(0)
-        self.start_timer()
-
-    def increment_time(self, interval):
-        timer = time.time() - self.timer
-        self.timer_format = str(time.strftime('%H:%M:%S', time.gmtime(round(timer))))
-        self.root.ids['sessionscreen'].ids["timer"].text = self.timer_format
-
-    def start_timer(self):
-        Clock.unschedule(self.increment_time)
-        Clock.schedule_interval(self.increment_time, .1)
-
-        # To stop the count / time
-
-    def stop_timer(self):
-        Clock.unschedule(self.increment_time)
 
     # Back button
     def back_to_last_screen(self, *args):
@@ -911,11 +1072,6 @@ class MainApp(MDApp):
 
     # test username methods
     #######################
-    def get_user_name_data_success(self, req, result):
-        pass
-
-    def on_request_error(self, *args):
-        print('failed')
 
     def get_user_name_data(self, user_name):
         # Query database and make sure friend_id exists
@@ -932,6 +1088,12 @@ class MainApp(MDApp):
         #     print(False)
         # print(user_name[1:-1] + " data is: ", data)
 
+    def on_request_error(self, *args):
+        print('failed')
+
+    def get_user_name_data_success(self, req, result):
+        pass
+
     def is_user_exist(self, user_name):
         user_name = '"' + user_name + '"'
         check_req = requests.get(
@@ -943,15 +1105,24 @@ class MainApp(MDApp):
             return False
 
     def proper_input_filter(self, input_to_check, indicator):
-        # TODO  insert filter for english
+
         if self.debug:
             print("input_to_check", input_to_check)
             print("indicator", indicator)
-        if input_to_check.isalpha() or input_to_check.isdigit() or input_to_check == ' ':
+        asci_val = ord(input_to_check)
+        if asci_val > 64 and asci_val < 90:
             return input_to_check
+        if asci_val > 96 and asci_val < 123:
+            return input_to_check
+        if asci_val > 47 and asci_val < 57:
+            return input_to_check
+        if input_to_check == ' ':
+            return input_to_check
+
         else:
             return ""
 
+    # Uploads all kind of Data Methods - Session / Workout
     def upload_data(self, *args):
         """  target can be: 1 - upload new workout ,
              2 - update an existing workout, 3 - upload new session
@@ -980,12 +1151,12 @@ class MainApp(MDApp):
 
         self.change_screen1("workoutsscreen")
         self.get_user_data()
+        self.load_session_data()
 
         self.load_workout_data()
         self.root.ids['toolbar'].right_action_items = [
             ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
 
-        self.load_session_data()
 
         Snackbar(text="Workout saved!").show()
         self.upload_backup = 0
@@ -1101,8 +1272,8 @@ class MainApp(MDApp):
     #         if method == "session_upload":
     #             self.upload_session(data, link)
 
+    # Backup in case of app being closed on running session
     def upload_temp_session(self, *args):
-        # backup in case of app being closed on running session
 
         date = self.root.ids['sessionscreen'].ids["date_picker_label"].text
         session_rec = self.root.ids['sessionscreen'].session_rec
@@ -1126,6 +1297,7 @@ class MainApp(MDApp):
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
         requests.put(link, data=data)
 
+    # Loading Spinner Methods
     def display_loading_screen(self, *args):
         self.popup.open()
 

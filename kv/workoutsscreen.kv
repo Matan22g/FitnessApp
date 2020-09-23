@@ -5,16 +5,16 @@
 <WorkoutsScreen>:
     FloatLayout:
 
-        MDRoundFlatIconButton:
-            icon: "plus"
-            pos_hint: {"center_x": 0.3, "top": .95}
-            text: "Create New Workout"
-            width: dp(200)
-            theme_text_color: "Primary"
-            text_color: 1,1,1,1
-
-            on_release:
-                app.show_create_workout_dialog()
+#        MDRoundFlatIconButton:
+#            icon: "plus"
+#            pos_hint: {"center_x": 0.3, "top": .95}
+#            text: "Create New Workout"
+#            width: dp(200)
+#            theme_text_color: "Primary"
+#            text_color: 1,1,1,1
+#
+#            on_release:
+#                app.show_create_workout_dialog()
 
 
         MDRoundFlatIconButton:
@@ -29,6 +29,31 @@
             opacity: 1
             on_release:
                 app.back_to_running_session()
+
+        GridLayout:
+            id: edit_grid
+            cols:1
+            pos_hint: {"center_x": .5, "top": .98}
+            size_hint_y:0.1
+            size_hint_x:0.3
+
+            MDIconButton:
+                icon: "plus"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                user_font_size: "44sp"
+                halign: "center"
+                id: load_session
+                size_hint: (0.0001,2)
+                on_release:
+                    app.show_create_workout_dialog()
+            MDLabel:
+                text: "New Workout"
+
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                font_style: "Caption"
+                halign: "center"
 
         ScrollView:
             pos_hint: {"top": .875}

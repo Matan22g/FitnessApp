@@ -11,7 +11,7 @@
             size_hint_y: 0.1
 
             MDLabel:
-                id: sub_title
+                id: monthly_sessions
                 font_style: "H4"
                 halign: "center"
                 text: "12"
@@ -19,7 +19,7 @@
                 text_color: 1, 1, 1, 1
 
             MDLabel:
-                id: sub_title
+                id: weekly_sessions
                 font_style: "H4"
                 halign: "center"
                 text: "3"
@@ -65,7 +65,7 @@
             font_style:"Caption"
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
-            pos_hint: {"center_x": .93, "center_y": .96}
+            pos_hint: {"center_x": .91, "center_y": .96}
 
         MDCard:
             orientation: "horizontal"
@@ -109,7 +109,7 @@
 
                 MDLabel:
                     id: last_session_name
-                    text: "ABC"
+                    text: "N/A"
                     font_style: "H5"
                     theme_text_color: "Custom"
                     text_color: 0, 0, 1, 1
@@ -117,7 +117,7 @@
 
                 MDLabel:
                     id: session_exc_completed
-                    text: "7 exercises completed"
+                    text: "Go Train"
                     font_style: "Caption"
                     theme_text_color: "Custom"
                     text_color: 0, 0, 0, 1
@@ -158,7 +158,7 @@
 
                 AKPieChart:
                     id: piechart
-                    items: app.exc_pie_dic
+                    items: [{"None": 100}]
                     pos_hint: {'center_x': 0.5, 'center_y': .5}
                     size_hint:[None,None]
                     size:(dp(300),dp(300))

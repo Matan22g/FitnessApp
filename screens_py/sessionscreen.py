@@ -213,7 +213,7 @@ class SessionScreen(Screen):
         print("Window.size", Window.size)
         window_height = Window.size[1]
         row_height = Window.size[1] / 4
-        row_height_view = Window.size[1] / 5.2
+        row_height_view = Window.size[1] / 6.25
         row_enlarger_inc = Window.size[1] / 17.6
         for i, exc in enumerate(self.workout):
             if not self.view_mode:
@@ -928,4 +928,3 @@ class ExerciseScreen(Screen):
             self.repScale = new_scale
         else:
             self.repScale = 1
-

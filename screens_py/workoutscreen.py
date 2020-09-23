@@ -85,8 +85,8 @@ class WorkoutScreen(Screen):
             self.switch_mode("view")
 
             workout_key_to_view = self.app.workout_key_to_view
-            workout_to_view = list(self.app.workoutsParsed[workout_key_to_view].values())
-            workout_name = list(self.app.workoutsParsed[workout_key_to_view].keys())[0]
+            workout_to_view = list(self.app.workoutsParsed[workout_key_to_view][0].values())
+            workout_name = list(self.app.workoutsParsed[workout_key_to_view][0].keys())[0]
 
             self.workout_name = workout_name
             self.workout_key = workout_key_to_view
@@ -109,7 +109,6 @@ class WorkoutScreen(Screen):
             self.reload_page()
             self.app.root.ids['workoutscreen'].workout_key = self.app.workout_key_to_view
             self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
-        self.app.hide_loading_screen()
 
     def reset_tabs(self):
         # reseting to one tab in case of create workout, or to original workout, in case of exit edit.
@@ -569,7 +568,6 @@ class WorkoutScreen(Screen):
         self.dialog.open()
 
     def cancel_edit_mode(self, *args):
-        self.app.display_loading_screen()
         self.dismiss_dialog()
         if self.app.root.ids['workoutscreen'].create_mode:
             self.app.root.ids['toolbar'].right_action_items = [
@@ -641,7 +639,8 @@ class WorkoutScreen(Screen):
         workout_name = self.workout_name
         workout_key = self.workout_key
         workout_exc = self.temp_workout
-        Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
+        Workout = "[{%s: %s},%s]" % (
+        '"' + workout_name + '"', '"' + str(workout_exc) + '"', '"' + str(self.app.today_date) + '"')
         data = json.dumps(Workout)
 
         if self.create_mode:

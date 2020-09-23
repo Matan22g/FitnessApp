@@ -325,7 +325,7 @@ Builder.load_string(
     
             MDLabel:
                 id: label_title
-                font_style: 'H6'
+                font_style: 'H5'
                 opposite_colors: root.opposite_colors
                 theme_text_color: 'Custom'
                 text_color: root.specific_text_color

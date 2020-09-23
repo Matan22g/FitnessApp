@@ -37,6 +37,7 @@ class ExerciseSessionsScreen(Screen):
                 self.set_record(record)
             else:
                 self.set_record(0)
+
             self.sessions = self.app.exc_sessions[self.exercise]
             self.sort_sessions()
             today = datetime.today()
@@ -62,6 +63,21 @@ class ExerciseSessionsScreen(Screen):
         else:
             self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = "0"
             self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = "0"
+
+    def set_month_record(self, record, month):
+        if record:
+            record = record.split()
+            best_reps = record[0]
+            best_weight = record[2]
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "Best of " + month
+
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = best_reps
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = best_weight
+        else:
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "N/A"
+
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = "0"
+            self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = "0"
 
     def nearest(self, items, pivot):
         return min(items, key=lambda x: abs(x - pivot))
@@ -105,6 +121,7 @@ class ExerciseSessionsScreen(Screen):
         self.app.root.ids['exercise_sessions_screen'].ids["date_label"].text = "Previous sessions, " + month_abb
 
         dict_of_row_height = {}
+
         if year in self.dates and month in self.dates[year]:
             sessions_keys = self.dates[year][month]  # represents all session dates given a certain month
         else:
@@ -115,7 +132,7 @@ class ExerciseSessionsScreen(Screen):
         # month = sessions_keys[0].ctime()[4:7]
 
         window_height = Window.size[1]
-        row_height = window_height / 5.5
+        row_height = window_height / 6.2
         row_enlarger_inc = window_height / 17.6
 
         for i, session_key in enumerate(sessions_keys):
@@ -129,13 +146,26 @@ class ExerciseSessionsScreen(Screen):
 
         self.ids.sets_grid.rows_minimum = dict_of_row_height
         total_session_num = len(sessions_keys)
+
+        best_weight = 0
+        best_set = 0
         for i, session_key in enumerate(sessions_keys):
             session_exc = self.sessions[session_key][1]
             session_workout_name = self.sessions[session_key][0]
             session_date = session_key.ctime()[0:10]
             session_date = session_date[0:3] + "," + session_date[3:]
             new_card_layout = self.create_card(session_exc, i, total_session_num, session_workout_name, session_date)
+
             sessions_layout.add_widget(new_card_layout)
+
+            maybe_best_set = self.app.find_best_set(session_exc)
+            set = maybe_best_set.split()
+            maybe_best_weight = float(set[2])
+            if maybe_best_weight > best_weight:
+                best_set = maybe_best_set
+                best_weight = maybe_best_weight
+
+        self.set_month_record(best_set, month_abb)
 
     def no_sessions_grid(self, msg, layout):
         new_card_layout = MDFloatLayout()  # for centering
@@ -163,7 +193,7 @@ class ExerciseSessionsScreen(Screen):
         new_card_layout.add_widget(excCard)
         try:
             if self.ids.sets_grid == layout:
-                dict_of_row_height = {0: 150}
+                dict_of_row_height = {0: 250}
                 layout.rows_minimum = dict_of_row_height
         except:
             pass

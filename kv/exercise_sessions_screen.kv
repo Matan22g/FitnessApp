@@ -49,7 +49,7 @@
             GridLayout:
                 # sets_grid
                 id: records_grid
-                cols: 3
+                cols: 2
                 rows: 1
                 padding: 30,0
                 spacing: 20,20
@@ -140,6 +140,7 @@
 
                     MDLabel:
                         text: "Overall Best"
+                        id: best_month_title
                         theme_text_color: "Custom"
                         text_color: app.text_color
                         size_hint_y: None
@@ -153,6 +154,7 @@
                         cols:3
                         rows:2
                         MDLabel:
+                            id: best_month_reps
                             text: "12"
                             theme_text_color: "Custom"
                             text_color: app.text_color
@@ -164,6 +166,7 @@
                             font_style:"H4"
 
                         MDLabel:
+                            id: best_month_weight
                             text: "120.78"
                             size_hint_x: 2
                             theme_text_color: "Custom"
@@ -190,66 +193,66 @@
                             user_font_size: "20sp"
                             size_hint_y:None
                             height:20
-                MDCard:
-                    elevation: 1
-                    radius:[80]
-                    orientation: "vertical"
-                    padding: "16dp"
-                    size_hint: None, None
-                    size: "240dp", "110dp"
-                    pos_hint: {"center_x": .5, "center_y": .34}
-                    background : "resources/card_back.png"
-
-                    MDLabel:
-                        text: "Overall Best"
-                        theme_text_color: "Custom"
-                        text_color: app.text_color
-                        size_hint_y: None
-                        height: self.texture_size[1]
-                        font_style:"H6"
-
-                    MDSeparator:
-                        height: "1dp"
-                        color:app.text_color
-                    GridLayout:
-                        cols:3
-                        rows:2
-                        MDLabel:
-                            text: "12"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-                        MDLabel:
-                            text: "X"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-
-                        MDLabel:
-                            text: "120"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-
-                        MDLabel:
-                            text: " Reps"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            theme_text_color: "Primary"
-                            text: ""
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            text: " Kg"
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
+#                MDCard:
+#                    elevation: 1
+#                    radius:[80]
+#                    orientation: "vertical"
+#                    padding: "16dp"
+#                    size_hint: None, None
+#                    size: "240dp", "110dp"
+#                    pos_hint: {"center_x": .5, "center_y": .34}
+#                    background : "resources/card_back.png"
+#
+#                    MDLabel:
+#                        text: "Overall Best"
+#                        theme_text_color: "Custom"
+#                        text_color: app.text_color
+#                        size_hint_y: None
+#                        height: self.texture_size[1]
+#                        font_style:"H6"
+#
+#                    MDSeparator:
+#                        height: "1dp"
+#                        color:app.text_color
+#                    GridLayout:
+#                        cols:3
+#                        rows:2
+#                        MDLabel:
+#                            text: "12"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#                        MDLabel:
+#                            text: "X"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#
+#                        MDLabel:
+#                            text: "120"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#
+#                        MDLabel:
+#                            text: " Reps"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            user_font_size: "20sp"
+#                            size_hint_y:None
+#                            height:20
+#                        MDLabel:
+#                            theme_text_color: "Primary"
+#                            text: ""
+#                            size_hint_y:None
+#                            height:20
+#                        MDLabel:
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            text: " Kg"
+#                            user_font_size: "20sp"
+#                            size_hint_y:None
+#                            height:20
 
 
         MDLabel:
