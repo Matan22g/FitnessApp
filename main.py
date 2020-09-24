@@ -192,9 +192,11 @@ class MainApp(MDApp):
             try:
                 self.load_session_data()
                 self.update_chart()
+
             except:
                 self.sessions = {}
             self.load_workout_data()
+
         else:
             self.clear_user_app_data()
             self.update_dashboard_stats()
@@ -316,12 +318,13 @@ class MainApp(MDApp):
             items[exc] += to_add
         elif temp_tot > 100:
             to_sub = 100 - temp_tot
-            try:
+            if items[exc] + to_sub > 0:
                 items[exc] += to_sub
-            except:
+            else:
                 for exc in items:
-                    if self.items[exc] + to_sub > 0:
-                        self.items[exc] += to_sub
+                    if items[exc] + to_sub > 0:
+                        items[exc] += to_sub
+                        break
         return items
         print("self.exc_pie_dic", self.exc_pie_dic)
 

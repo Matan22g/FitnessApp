@@ -41,7 +41,7 @@ class ExerciseSessionsScreen(Screen):
                 self.set_record(record, record_date)
 
             else:
-                self.set_record(0)
+                self.set_record(0, 0)
 
             self.sessions = self.app.exc_sessions[self.exercise]
             self.app.root.ids['exercise_stats_screen'].sessions = self.sessions
@@ -58,8 +58,10 @@ class ExerciseSessionsScreen(Screen):
 
             self.load_sessions(curr_year, month)
         else:
-            self.set_record(0)
+            self.set_record(0, 0)
             self.no_sessions_grid("No records for " + self.exercise, self.ids.sets_grid)
+            self.app.root.ids['exercise_stats_screen'].sessions = {}
+            self.app.root.ids['exercise_stats_screen'].exericse_name = self.exercise
 
     def set_record(self, record, date):
         if record:

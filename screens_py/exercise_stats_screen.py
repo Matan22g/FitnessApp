@@ -174,8 +174,8 @@ class ExerciseStatsScreen(Screen):
     stats_dict = {}
     by_year_dict = {}
     sessions = {}
-    curr_month = ''
-    curr_year = ''
+    curr_month = 0
+    curr_year = 0
     curr_mode = ''
     today_date = datetime.today()
     curr_month_best = ''
@@ -187,14 +187,25 @@ class ExerciseStatsScreen(Screen):
         self.app = MDApp.get_running_app()
         self.sub_title = "Welcome to Home Screen"
 
+    def on_leave(self, *args):
+        try:
+            self.ids.stats_layout.remove_widget(self.curr_graph)
+        except:
+            pass
+
     def on_pre_enter(self, *args):
+        self.curr_graph = 0
+        self.month_graph = 0
+        self.year_graph = 0
+        self.curr_month_best = ''
+        self.curr_year_best = ''
+
         self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
         self.stats_dict = {}
         self.by_year_dict = {}
 
-        self.calc_month_best()
-
-        if self.session_date:
+        if self.sessions:
+            self.calc_month_best()
             max_year = max(list(self.session_date.keys()))
             max_month = max(list(self.session_date[max_year].keys()))
             self.add_month_plot(max_year, max_month)
@@ -202,6 +213,14 @@ class ExerciseStatsScreen(Screen):
             self.curr_year = max_year
             self.curr_month = [max_year, max_month]
             self.ids.curr_label.text = str(max_year)
+        else:
+            self.session_date = {}
+
+            self.curr_month = [self.today_date.year, self.today_date.month]
+            self.curr_year = self.today_date.year
+            self.ids.curr_label.text = str(self.today_date.year)
+            self.set_record(0, 0)
+            self.ids.no_data.opacity = 1
 
         self.app.root.ids['exercise_stats_screen'].ids["md_tabs"].switch_tab(
             '[size=' + str(self.app.headline_text_size) + ']Year[/size]')
@@ -330,15 +349,17 @@ class ExerciseStatsScreen(Screen):
         except:
             pass
         if period == 'Month':
-            self.ids.stats_layout.add_widget(self.month_graph)
-            self.curr_graph = self.month_graph
+            if self.month_graph:
+                self.ids.stats_layout.add_widget(self.month_graph)
+                self.curr_graph = self.month_graph
             month_abb = calendar.month_abbr[self.curr_month[1]]
             new_label = month_abb + " ," + str(self.curr_month[0])
             self.ids.curr_label.text = new_label
             self.set_record(self.curr_month_best, new_label)
 
         else:
-            self.ids.stats_layout.add_widget(self.year_graph)
+            if self.year_graph:
+                self.ids.stats_layout.add_widget(self.year_graph)
             self.curr_graph = self.year_graph
             new_label = str(self.curr_year)
             self.ids.curr_label.text = new_label
@@ -378,7 +399,6 @@ class ExerciseStatsScreen(Screen):
                 self.add_month_plot(curr_year, new_month)
 
         else:
-
             new_label = self.curr_year + to_add
             if self.is_date_future(self.today_date.month, new_label):
                 return
