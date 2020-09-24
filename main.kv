@@ -7,6 +7,7 @@
 #: include kv/workoutscreen.kv
 #: include kv/exercise_sessions_screen.kv
 #: include kv/previous_workouts_screen.kv
+#: include kv/exercise_stats_screen.kv
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
@@ -80,6 +81,9 @@ NavigationLayout:
                         id: workoutsscreen
                         name: "workoutsscreen"
 
+                    ExerciseStatsScreen:
+                        id: exercise_stats_screen
+                        name: "exercise_stats_screen"
 
                     SessionScreen:
                         id: sessionscreen

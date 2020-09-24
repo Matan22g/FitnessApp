@@ -16,6 +16,8 @@
         on_focus: self.icon_left_color = self.theme_cls.primary_color
         normal_color: 1,1,1,1
         color_active: 1,1,1,1
+        input_filter: app.proper_input_filter
+
         padding:
             self._lbl_icon_left.texture_size[1] + dp(10) if self.icon_left else dp(15), (self.height / 2) - (self.line_height / 2), self._lbl_icon_right.texture_size[1] + dp(20),  0
 
@@ -130,6 +132,7 @@
             elevation: 10
             icon_left_color: app.theme_cls.primary_color
             on_focus: self.icon_left_color = self.theme_cls.primary_color
+            input_filter: app.proper_input_filter
 
         MDTextFieldRound:
             id: username
@@ -143,6 +146,7 @@
             elevation: 10
             icon_left_color: app.theme_cls.primary_color
             on_focus: self.icon_left_color = self.theme_cls.primary_color
+            input_filter: app.proper_input_filter
 
         ClickableTextFieldRound:
             icon_right_color: app.theme_cls.primary_color

@@ -4,7 +4,7 @@ import os
 from datetime import datetime, date
 
 import certifi
-from kivy.graphics.vertex_instructions import Rectangle
+from kivy.graphics.vertex_instructions import Rectangle, RoundedRectangle
 from kivy.network.urlrequest import UrlRequest
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
@@ -39,6 +39,8 @@ from screens_py.workoutsscreen import WorkoutsScreen
 from screens_py.workoutscreen import WorkoutScreen
 from screens_py.exercise_sessions import ExerciseSessionsScreen
 from screens_py.previous_workouts import PreviousWorkoutsScreen
+
+from screens_py.exercise_stats_screen import ExerciseStatsScreen
 
 from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
@@ -210,6 +212,7 @@ class MainApp(MDApp):
                 self.retrieve_paused_session()
         except:
             print("key error: temp_session")
+        # self.change_screen1("exercise_stats_screen")
 
     def on_logout(self):
         self.clear_user_app_data()

@@ -4,7 +4,7 @@ import calendar
 
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.button import MDFlatButton, MDTextButton
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
@@ -212,23 +212,36 @@ class PreviousWorkoutsScreen(Screen):
             text_color=self.app.text_color
         )
 
+
         help_layout.add_widget(date_label)
         help_layout.add_widget(deleteBox)
         help_layout.add_widget(exc_num)
 
         excCard.add_widget(help_layout)
-        excCard.add_widget(workout_name_label)
 
         if self.app.reload_for_running_session:
-            bottom_layout = MDGridLayout(rows=1, cols=2)
-            bottom_layout.add_widget(workout_duration_label)
-            bottom_layout.add_widget(MDFlatButton(
+            middle_layout = MDGridLayout(rows=1, cols=2, size_hint_x=0.95)
+            middle_layout.add_widget(workout_name_label)
+            middle_layout.add_widget(MDTextButton(
                 text="Load",
-                text_color=self.app.text_color,
+                font_size=str(self.app.headline_text_size * 0.9),
+                custom_color=self.app.text_color,
+                halign='center',
                 on_release=self.load_for_running_session))
-            excCard.add_widget(bottom_layout)
+
+            nothing_label = MDLabel(
+                text="",
+                font_style="H5",
+                theme_text_color="Custom",
+                text_color=self.app.text_color
+            )
+            # middle_layout.add_widget(nothing_label)
+
+            excCard.add_widget(middle_layout)
         else:
-            excCard.add_widget(workout_duration_label)
+            excCard.add_widget(workout_name_label)
+
+        excCard.add_widget(workout_duration_label)
 
         new_card_layout.add_widget(excCard)
         self.session_key_by_card[excCard] = sessions_date_key

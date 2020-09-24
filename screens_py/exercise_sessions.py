@@ -39,6 +39,8 @@ class ExerciseSessionsScreen(Screen):
                 self.set_record(0)
 
             self.sessions = self.app.exc_sessions[self.exercise]
+            self.app.root.ids['exercise_stats_screen'].sessions = self.sessions
+
             self.sort_sessions()
             today = datetime.today()
             curr_month = int(today.month)
@@ -84,9 +86,7 @@ class ExerciseSessionsScreen(Screen):
 
     def sort_sessions(self):
         dates = [date for date in self.sessions if date != "record"]
-        print(dates)
         dates.sort(reverse=True)
-        print(dates)
         for date in dates:
             year = int(date.year)
             month = int(date.month)
@@ -99,6 +99,7 @@ class ExerciseSessionsScreen(Screen):
 
             else:
                 self.dates[year][month].append(date)
+        self.app.root.ids['exercise_stats_screen'].session_date = self.dates
 
         print(self.dates)
 
