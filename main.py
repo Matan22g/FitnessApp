@@ -357,12 +357,21 @@ class MainApp(MDApp):
         best_weight = 0
         best_weight_ind = 0
         for i, set in enumerate(exc_session):
+            if not set:
+                continue
             set = set.split()
             weight = float(set[2])
+            maybe_best_reps = int(set[0])
             if weight > best_weight:
                 best_weight = weight
                 best_weight_ind = i
+            elif weight == best_weight:
+                if maybe_best_reps > int(exc_session[best_weight_ind].split()[0]):
+                    best_weight = weight
+                    best_weight_ind = i
+
         return exc_session[best_weight_ind]
+
 
     # Initial workouts dicts, and workouts screen
     def load_workout_data(self):
@@ -692,14 +701,22 @@ class MainApp(MDApp):
 
                 record = self.exc_sessions[exc]["record"][0]
                 record_weight = record.split()
-                record_weight = float(record_weight[2])
+                record_list = record.split()
+                record_weight = float(record_list[2])
+                record_reps = int(record_list[0])
+
                 maybe_record = self.find_best_set(exercises_list)
-                maybe_record_weight = maybe_record.split()
-                maybe_record_weight = float(maybe_record_weight[2])
+                maybe_record_list = maybe_record.split()
+                maybe_record_weight = float(maybe_record_list[2])
+                maybe_record_reps = float(maybe_record_list[0])
 
                 if maybe_record_weight > record_weight:
                     self.exc_sessions[exc]["record"][0] = maybe_record
                     self.exc_sessions[exc]["record"][1] = date
+                elif maybe_record_weight == record_weight:
+                    if maybe_record_reps > record_reps:
+                        self.exc_sessions[exc]["record"][0] = maybe_record
+                        self.exc_sessions[exc]["record"][1] = date
 
                 self.exc_sessions[exc][date] = [workout_name, exercises_list]
 

@@ -178,6 +178,9 @@ class ExerciseStatsScreen(Screen):
     curr_year = ''
     curr_mode = ''
     today_date = datetime.today()
+    curr_month_best = ''
+    curr_year_best = ''
+    exericse_name = ' '
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -204,7 +207,7 @@ class ExerciseStatsScreen(Screen):
             '[size=' + str(self.app.headline_text_size) + ']Year[/size]')
 
         try:
-            self.app.change_title("Stats")
+            self.app.change_title(self.exericse_name + " Stats")
         except:
             pass
 
@@ -230,17 +233,21 @@ class ExerciseStatsScreen(Screen):
             maybe_best_set = self.app.find_best_set(session_exc)
             set = maybe_best_set.split()
             maybe_best_weight = float(set[2])
-
+            maybe_best_reps = int(set[0])
             month_set_list[session_day - 1] = maybe_best_weight
             if maybe_best_weight > best_weight:
                 best_set = maybe_best_set
                 best_weight = maybe_best_weight
-
+            elif maybe_best_weight == best_weight:
+                if maybe_best_reps > int(best_set.split()[0]):
+                    best_set = maybe_best_set
+                    best_weight = maybe_best_weight
+        best_set_of_the_month = best_set
         best_weight_of_the_month = best_weight
 
         if year not in self.stats_dict:
             self.stats_dict[year] = {}
-        self.stats_dict[year][month] = [list_of_days, month_set_list, best_weight_of_the_month]
+        self.stats_dict[year][month] = [list_of_days, month_set_list, best_set_of_the_month]
 
         self.by_year_dict[year] = {}
 
@@ -257,41 +264,63 @@ class ExerciseStatsScreen(Screen):
             if month in self.stats_dict[year]:
                 month_days_list = self.stats_dict[year][month][0]
                 month_sets_lits = self.stats_dict[year][month][1]
-
                 Month_Plot.days = month_days_list
                 Month_Plot.weights = month_sets_lits
                 month_graph = Month_Plot(size_hint_y=None, height=self.app.window_size[1] / 2,
-                                         pos_hint={"center_y": 0.5, "center_x": 0.5})
+                                         pos_hint={"center_y": 0.3, "center_x": 0.5})
+
+                month_best_set = self.stats_dict[year][month][2]
+                new_label = calendar.month_abbr[month] + " ," + str(year)
+                self.set_record(month_best_set, new_label)
+                self.curr_month_best = month_best_set
 
                 self.curr_graph = month_graph
                 self.curr_month = [year, month]
                 self.curr_mode = 'Month'
                 self.month_graph = month_graph
                 self.ids.stats_layout.add_widget(month_graph)
+                self.ids.no_data.opacity = 0
+
+            else:
+                self.ids.no_data.opacity = 1
+                self.set_record(0, 0)
+
+        else:
+            self.ids.no_data.opacity = 1
+            self.set_record(0, 0)
 
     def add_year_plot(self, year):
         try:
             self.ids.stats_layout.remove_widget(self.curr_graph)
         except:
             pass
-
         if year in self.stats_dict:
-            if year in self.stats_dict:
-                best_set = [0 for i in range(12)]
-                for month in self.stats_dict[year]:
-                    best_month_set = self.stats_dict[year][month][2]
-                    best_set[month - 1] = best_month_set
+            best_set = [0 for i in range(12)]
+            best_month_set_list = []
+            for month in self.stats_dict[year]:
+                best_month_set = self.stats_dict[year][month][2]
+                best_set[month - 1] = float(best_month_set.split()[2])
+                best_month_set_list.append(best_month_set)
 
-                Year_Plot.weights = best_set
-                year_graph = Year_Plot(size_hint_y=None, height=self.app.window_size[1] / 2,
-                                       pos_hint={"center_y": 0.5, "center_x": 0.5})
+            best_set_of_the_year = self.app.find_best_set(best_month_set_list)
+            self.set_record(best_set_of_the_year, str(year))
+            self.curr_year_best = best_set_of_the_year
 
-                self.curr_graph = year_graph
-                self.curr_year = year
-                self.curr_mode = 'Year'
+            Year_Plot.weights = best_set
+            year_graph = Year_Plot(size_hint_y=None, height=self.app.window_size[1] / 2,
+                                   pos_hint={"center_y": 0.3, "center_x": 0.5})
 
-                self.year_graph = year_graph
-                self.ids.stats_layout.add_widget(year_graph)
+            self.curr_graph = year_graph
+            self.curr_year = year
+            self.curr_mode = 'Year'
+
+            self.year_graph = year_graph
+            self.ids.stats_layout.add_widget(year_graph)
+            self.ids.no_data.opacity = 0
+
+        else:
+            self.ids.no_data.opacity = 1
+            self.set_record(0, 0)
 
     def on_tab_switch(self, *args):
         period = args[3][9:14]
@@ -304,12 +333,16 @@ class ExerciseStatsScreen(Screen):
             self.ids.stats_layout.add_widget(self.month_graph)
             self.curr_graph = self.month_graph
             month_abb = calendar.month_abbr[self.curr_month[1]]
-            self.ids.curr_label.text = month_abb + " ," + str(self.curr_month[0])
+            new_label = month_abb + " ," + str(self.curr_month[0])
+            self.ids.curr_label.text = new_label
+            self.set_record(self.curr_month_best, new_label)
 
         else:
             self.ids.stats_layout.add_widget(self.year_graph)
             self.curr_graph = self.year_graph
-            self.ids.curr_label.text = str(self.curr_year)
+            new_label = str(self.curr_year)
+            self.ids.curr_label.text = new_label
+            self.set_record(self.curr_year_best, new_label)
 
     def switch_left(self, *args):
         print(args[0].icon[8:])
@@ -365,3 +398,18 @@ class ExerciseStatsScreen(Screen):
         if int(month) > curr_month:
             return True
         return False
+
+    def set_record(self, record, period):
+        if record:
+            record = record.split()
+            best_reps = record[0]
+            best_weight = record[2]
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "Best of " + period
+
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_reps"].text = best_reps
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_weight"].text = best_weight
+        else:
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "N/A"
+
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_reps"].text = "0"
+            self.app.root.ids['exercise_stats_screen'].ids["best_month_weight"].text = "0"

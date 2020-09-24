@@ -58,4 +58,183 @@
             Tab:
                 text: '[size=' + str(app.headline_text_size)+']Month[/size]'
 
+        MDLabel:
+            id: no_data
+            text: "No data available"
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: 0, 0, 1, 1
+            halign: "center"
+            pos_hint: {"center_x": .5, "center_y": 0.3}
+            opacity:0
 
+        ScrollView:
+            id: records_scroll
+            pos_hint: {"y": .58}
+            size_hint_y: None
+            size_hint_x: None
+            size_hint: 1, .18
+            do_scroll_y: False
+            do_scroll_x: True
+            scroll_type:['content']
+            bar_color: [0,0,0,0]
+            bar_inactive_color:[0,0,0,0]
+            GridLayout:
+                # sets_grid
+                id: records_grid
+                cols: 2
+                rows: 1
+                padding: 30,0
+                spacing: 20,20
+                size_hint_y: None
+                size_hint_x: None
+                height: self.minimum_height
+                width: self.minimum_width
+                row_force_default: True
+                row_default_height: '125dp'
+
+                MDCard:
+                    elevation: 1
+                    radius:[80]
+                    orientation: "vertical"
+                    padding: "16dp"
+                    size_hint: None, None
+                    size: "240dp", "110dp"
+                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
+                    background : "resources/card_back.png"
+                    BoxLayout:
+                        orientation:'horizontal'
+                        size_hint_y: 0.4
+                        MDLabel:
+                            id: record
+                            text: "Overall Best"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H6"
+                            size_hint_y: None
+                            height: self.texture_size[1]
+
+                        MDLabel:
+                            id: record_date
+                            text: "Overall Best"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"Caption"
+                            size_hint_y: None
+                            size_hint_x: 0.4
+                            height: self.texture_size[1]
+
+                    MDSeparator:
+                        height: "1dp"
+                        color:app.text_color
+
+                    GridLayout:
+                        cols:3
+                        rows:2
+                        MDLabel:
+                            id: best_reps
+                            theme_text_color: "Primary"
+                            text: "12"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: "X"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            id: best_weight
+                            text: "120.78"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+                            size_hint_x: 2
+
+                        MDLabel:
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            text: " Reps"
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            text: ""
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            text: " Kg"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                MDCard:
+                    elevation: 1
+                    radius:[80]
+                    orientation: "vertical"
+                    padding: "16dp"
+                    size_hint: None, None
+                    size: "240dp", "110dp"
+                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
+                    background : "resources/card_back.png"
+
+                    MDLabel:
+                        text: "Overall Best"
+                        id: best_month_title
+                        theme_text_color: "Custom"
+                        text_color: app.text_color
+                        size_hint_y: None
+                        height: self.texture_size[1]
+                        font_style:"H6"
+
+                    MDSeparator:
+                        height: "1dp"
+                        color:app.text_color
+                    GridLayout:
+                        cols:3
+                        rows:2
+                        MDLabel:
+                            id: best_month_reps
+                            text: "12"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+                        MDLabel:
+                            text: "X"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+
+                        MDLabel:
+                            id: best_month_weight
+                            text: "120.78"
+                            size_hint_x: 2
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            font_style:"H4"
+                            size_hint_x: 2
+
+                        MDLabel:
+                            text: " Reps"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            theme_text_color: "Primary"
+                            text: ""
+                            size_hint_y:None
+                            height:20
+                        MDLabel:
+                            text: " Kg"
+                            theme_text_color: "Custom"
+                            text_color: app.text_color
+                            user_font_size: "20sp"
+                            size_hint_y:None
+                            height:20

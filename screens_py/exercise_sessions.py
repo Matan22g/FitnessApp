@@ -34,12 +34,18 @@ class ExerciseSessionsScreen(Screen):
         if self.exercise in self.app.exc_sessions:
             if "record" in self.app.exc_sessions[self.exercise]:
                 record = self.app.exc_sessions[self.exercise]["record"][0]
-                self.set_record(record)
+                record_date = self.app.exc_sessions[self.exercise]["record"][1]
+
+                month_abb = calendar.month_abbr[record_date.month]
+                record_date = month_abb + ", " + str(record_date.year)
+                self.set_record(record, record_date)
+
             else:
                 self.set_record(0)
 
             self.sessions = self.app.exc_sessions[self.exercise]
             self.app.root.ids['exercise_stats_screen'].sessions = self.sessions
+            self.app.root.ids['exercise_stats_screen'].exericse_name = self.exercise
 
             self.sort_sessions()
             today = datetime.today()
@@ -55,18 +61,23 @@ class ExerciseSessionsScreen(Screen):
             self.set_record(0)
             self.no_sessions_grid("No records for " + self.exercise, self.ids.sets_grid)
 
-    def set_record(self, record):
+    def set_record(self, record, date):
         if record:
             record = record.split()
             best_reps = record[0]
             best_weight = record[2]
-            self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = best_reps
-            self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = best_weight
+
+            self.app.root.ids['exercise_stats_screen'].ids["record"].text = "Overall Best"
+            self.app.root.ids['exercise_stats_screen'].ids["record_date"].text = date
+
+            self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = best_reps
+            self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = best_weight
         else:
-            self.app.root.ids['exercise_sessions_screen'].ids["best_reps"].text = "0"
-            self.app.root.ids['exercise_sessions_screen'].ids["best_weight"].text = "0"
+            self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = "0"
+            self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = "0"
 
     def set_month_record(self, record, month):
+        return
         if record:
             record = record.split()
             best_reps = record[0]

@@ -1,7 +1,7 @@
 <ExerciseSessionsScreen>:
     FloatLayout:
         AnchorLayout:
-            pos_hint: {"center_x": 0.58, "center_y": .558}
+            pos_hint: {"center_x": 0.572, "center_y": .525}
             anchor_x:'left'
             anchor_y:'top'
             MDLabel:
@@ -13,187 +13,55 @@
                 text_color: 1,1,1,1
 
         MDIconButton:
-            pos_hint: {"center_x": .88, "top": .96}
+            pos_hint: {"center_x": .88, "top": .97}
             icon: "chart-line"
             user_font_size: "25sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
             on_release: app.change_screen1("exercise_stats_screen")
 
-        MDLabel:
-            pos_hint: {"x": -0.125, "y": .805}
-            size_hint: (.7, .2)
-            halign: "center"
-            text: "Exercise history"
-            user_font_size: "30sp"
-            theme_text_color: "Custom"
-            text_color: 1,1,1,0.8
-
-        MDLabel:
-            pos_hint: {"x": -0.19, "y": .74}
-            size_hint: (.7, .2)
-            halign: "center"
-            text: "Records"
-            user_font_size: "30sp"
-            theme_text_color: "Secondary"
+#        MDLabel:
+#            pos_hint: {"x": -0.125, "y": .805}
+#            size_hint: (.7, .2)
+#            halign: "center"
+#            text: "Exercise history"
+#            user_font_size: "30sp"
+#            theme_text_color: "Custom"
+#            text_color: 1,1,1,0.8
+#
+#        MDLabel:
+#            pos_hint: {"x": -0.19, "y": .74}
+#            size_hint: (.7, .2)
+#            halign: "center"
+#            text: "Records"
+#            user_font_size: "30sp"
+#            theme_text_color: "Secondary"
 
 #            theme_text_color: "Custom"
 #            text_color: 0, 1, 1, 1
-        ScrollView:
-            id: records_scroll
-            pos_hint: {"y": .65}
-            size_hint_y: None
-            size_hint_x: None
-            size_hint: 1, .18
-            do_scroll_y: False
-            do_scroll_x: True
-            GridLayout:
-                # sets_grid
-                id: records_grid
-                cols: 2
-                rows: 1
-                padding: 30,0
-                spacing: 20,20
-                size_hint_y: None
-                size_hint_x: None
-                height: self.minimum_height
-                width: self.minimum_width
-                row_force_default: True
-                row_default_height: '125dp'
-
-
-                MDCard:
-                    elevation: 1
-                    radius:[80]
-                    orientation: "vertical"
-                    padding: "16dp"
-                    size_hint: None, None
-                    size: "240dp", "110dp"
-                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
-                    background : "resources/card_back.png"
-
-                    MDLabel:
-                        text: "Overall Best"
-                        theme_text_color: "Custom"
-                        text_color: app.text_color
-                        font_style:"H6"
-                        size_hint_y: None
-                        height: self.texture_size[1]
-
-                    MDSeparator:
-                        height: "1dp"
-                        color:app.text_color
-
-                    GridLayout:
-                        cols:3
-                        rows:2
-                        MDLabel:
-                            id: best_reps
-                            theme_text_color: "Primary"
-                            text: "12"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-                        MDLabel:
-                            theme_text_color: "Primary"
-                            text: "X"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-
-                        MDLabel:
-                            id: best_weight
-                            text: "120.78"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-                            size_hint_x: 2
-
-                        MDLabel:
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            text: " Reps"
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            text: ""
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            text: " Kg"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
-                MDCard:
-                    elevation: 1
-                    radius:[80]
-                    orientation: "vertical"
-                    padding: "16dp"
-                    size_hint: None, None
-                    size: "240dp", "110dp"
-                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
-                    background : "resources/card_back.png"
-
-                    MDLabel:
-                        text: "Overall Best"
-                        id: best_month_title
-                        theme_text_color: "Custom"
-                        text_color: app.text_color
-                        size_hint_y: None
-                        height: self.texture_size[1]
-                        font_style:"H6"
-
-                    MDSeparator:
-                        height: "1dp"
-                        color:app.text_color
-                    GridLayout:
-                        cols:3
-                        rows:2
-                        MDLabel:
-                            id: best_month_reps
-                            text: "12"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-                        MDLabel:
-                            text: "X"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-
-                        MDLabel:
-                            id: best_month_weight
-                            text: "120.78"
-                            size_hint_x: 2
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            font_style:"H4"
-                            size_hint_x: 2
-
-                        MDLabel:
-                            text: " Reps"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            theme_text_color: "Primary"
-                            text: ""
-                            size_hint_y:None
-                            height:20
-                        MDLabel:
-                            text: " Kg"
-                            theme_text_color: "Custom"
-                            text_color: app.text_color
-                            user_font_size: "20sp"
-                            size_hint_y:None
-                            height:20
+#        ScrollView:
+#            id: records_scroll
+#            pos_hint: {"y": .65}
+#            size_hint_y: None
+#            size_hint_x: None
+#            size_hint: 1, .18
+#            do_scroll_y: False
+#            do_scroll_x: True
+#            GridLayout:
+#                # sets_grid
+#                id: records_grid
+#                cols: 2
+#                rows: 1
+#                padding: 30,0
+#                spacing: 20,20
+#                size_hint_y: None
+#                size_hint_x: None
+#                height: self.minimum_height
+#                width: self.minimum_width
+#                row_force_default: True
+#                row_default_height: '125dp'
+#
+#
 #                MDCard:
 #                    elevation: 1
 #                    radius:[80]
@@ -201,11 +69,79 @@
 #                    padding: "16dp"
 #                    size_hint: None, None
 #                    size: "240dp", "110dp"
-#                    pos_hint: {"center_x": .5, "center_y": .34}
+#                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
 #                    background : "resources/card_back.png"
 #
 #                    MDLabel:
 #                        text: "Overall Best"
+#                        theme_text_color: "Custom"
+#                        text_color: app.text_color
+#                        font_style:"H6"
+#                        size_hint_y: None
+#                        height: self.texture_size[1]
+#
+#                    MDSeparator:
+#                        height: "1dp"
+#                        color:app.text_color
+#
+#                    GridLayout:
+#                        cols:3
+#                        rows:2
+#                        MDLabel:
+#                            id: best_reps
+#                            theme_text_color: "Primary"
+#                            text: "12"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#                        MDLabel:
+#                            theme_text_color: "Primary"
+#                            text: "X"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#
+#                        MDLabel:
+#                            id: best_weight
+#                            text: "120.78"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            font_style:"H4"
+#                            size_hint_x: 2
+#
+#                        MDLabel:
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            text: " Reps"
+#                            user_font_size: "20sp"
+#                            size_hint_y:None
+#                            height:20
+#                        MDLabel:
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            text: ""
+#                            size_hint_y:None
+#                            height:20
+#                        MDLabel:
+#                            text: " Kg"
+#                            theme_text_color: "Custom"
+#                            text_color: app.text_color
+#                            user_font_size: "20sp"
+#                            size_hint_y:None
+#                            height:20
+#                MDCard:
+#                    elevation: 1
+#                    radius:[80]
+#                    orientation: "vertical"
+#                    padding: "16dp"
+#                    size_hint: None, None
+#                    size: "240dp", "110dp"
+#                    pos_hint:{"center_y": 0.5, "center_x": 0.5}
+#                    background : "resources/card_back.png"
+#
+#                    MDLabel:
+#                        text: "Overall Best"
+#                        id: best_month_title
 #                        theme_text_color: "Custom"
 #                        text_color: app.text_color
 #                        size_hint_y: None
@@ -219,6 +155,7 @@
 #                        cols:3
 #                        rows:2
 #                        MDLabel:
+#                            id: best_month_reps
 #                            text: "12"
 #                            theme_text_color: "Custom"
 #                            text_color: app.text_color
@@ -230,10 +167,13 @@
 #                            font_style:"H4"
 #
 #                        MDLabel:
-#                            text: "120"
+#                            id: best_month_weight
+#                            text: "120.78"
+#                            size_hint_x: 2
 #                            theme_text_color: "Custom"
 #                            text_color: app.text_color
 #                            font_style:"H4"
+#                            size_hint_x: 2
 #
 #                        MDLabel:
 #                            text: " Reps"
@@ -248,17 +188,16 @@
 #                            size_hint_y:None
 #                            height:20
 #                        MDLabel:
+#                            text: " Kg"
 #                            theme_text_color: "Custom"
 #                            text_color: app.text_color
-#                            text: " Kg"
 #                            user_font_size: "20sp"
 #                            size_hint_y:None
 #                            height:20
 
-
         MDLabel:
             id:date_label
-            pos_hint: {"x": -0.06, "y": .515}
+            pos_hint: {"x": -0.03, "y": .74}
             size_hint: (.7, .2)
             halign: "center"
             text: "Previous sessions, Dec"
@@ -266,7 +205,7 @@
             theme_text_color: "Secondary"
 
         MDIconButton:
-            pos_hint: {"center_x": .88, "top": .67}
+            pos_hint: {"center_x": .875, "top": .9}
             icon: "tune"
             user_font_size: "25sp"
             theme_text_color: "Custom"
@@ -275,9 +214,9 @@
 
         ScrollView:
             id: sessions_scroll
-            pos_hint: {"top": 0.59}
+            pos_hint: {"top": 0.82}
             size_hint_y: None
-            size_hint: 1, .585
+            size_hint: 1, .82
             GridLayout:
                 # sets_grid
                 id: sets_grid
