@@ -311,8 +311,9 @@ class MainApp(MDApp):
                 items = {"None": 100}
                 return items
             new_per = int(round((self.exc_pie_dic[exc] / self.total_exc_sets) * 100))
-            items[exc] = new_per
-            temp_tot += new_per
+            if new_per:
+                items[exc] = new_per
+                temp_tot += new_per
         if temp_tot < 100:
             to_add = 100 - temp_tot
             items[exc] += to_add
@@ -689,11 +690,13 @@ class MainApp(MDApp):
         for exc in exercises:
             exercises_list = exercises[exc]
 
-            if exc in self.exc_pie_dic:
-                self.exc_pie_dic[exc] += len(exercises_list)
-            else:
-                self.exc_pie_dic[exc] = len(exercises_list)
-            self.total_exc_sets += len(exercises_list)
+            if self.is_in_past_month(date):
+                if exc in self.exc_pie_dic:
+                    self.exc_pie_dic[exc] += len(exercises_list)
+                else:
+                    self.exc_pie_dic[exc] = len(exercises_list)
+                self.total_exc_sets += len(exercises_list)
+
             if exc not in self.exc_sessions:
                 self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
                 record = self.find_best_set(exercises_list)
@@ -722,6 +725,12 @@ class MainApp(MDApp):
                         self.exc_sessions[exc]["record"][1] = date
 
                 self.exc_sessions[exc][date] = [workout_name, exercises_list]
+
+    def is_in_past_month(self, date):
+        today = date.today()
+        if (today - date).days <= 30:
+            return True
+        return False
 
     def del_session_from_exc_dict(self, date, exc_list):
         if self.debug:
