@@ -68,6 +68,9 @@ class PreviousWorkoutsScreen(Screen):
     delete_mode = 0
     num_to_del = 0
 
+    curr_year = 0
+    curr_month = 0
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
@@ -85,7 +88,10 @@ class PreviousWorkoutsScreen(Screen):
                 curr_month = self.nearest(self.app.sessions_by_month_year[curr_year], curr_month)
 
         self.show_checkbox(False)
-        self.load_sessions(curr_year, curr_month)
+        if not self.curr_month and not self.curr_year:
+            self.curr_month = curr_month
+            self.curr_year = curr_year
+        self.load_sessions(self.curr_year, self.curr_month)
         # self.fix_grid_heights()
         if self.app.reload_for_running_session:
             self.app.root.ids['toolbar'].right_action_items = [
@@ -94,7 +100,8 @@ class PreviousWorkoutsScreen(Screen):
     def load_sessions(self, year, month):
         if self.app.debug:
             print("loading sessions of", year, month)
-
+        self.curr_year = year
+        self.curr_month = month
         sessions_layout = self.ids.sessions_grid
         sessions_layout.clear_widgets()
 
