@@ -77,6 +77,8 @@ class ExerciseSessionsScreen(Screen):
         else:
             self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = "0"
+            self.app.root.ids['exercise_stats_screen'].ids["record"].text = "N/A"
+            self.app.root.ids['exercise_stats_screen'].ids["record_date"].text = ""
 
     def set_month_record(self, record, month):
         return
@@ -197,6 +199,7 @@ class ExerciseSessionsScreen(Screen):
         )
         workout_name = MDLabel(
             text=msg,
+            halign='center',
             font_style="Subtitle2",
             size_hint=(1, 0.1),
             theme_text_color="Custom",
