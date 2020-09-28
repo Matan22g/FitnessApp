@@ -35,7 +35,7 @@ improvements, and analyzing statistics.
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-![](example_app_gif.gif)
+![](example_gif.gif)
 
 
 <!-- CONTACT -->
