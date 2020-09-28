@@ -1,7 +1,7 @@
 <ExerciseStatsScreen>:
     FloatLayout:
-        id: stats_layout
 
+        id: stats_layout
         GridLayout:
             id: buttons_layout
             cols: 3
@@ -17,7 +17,7 @@
                 theme_text_color: "Custom"
                 text_color: 0.5,0.5,0.5,1
                 size_hint: (0.5,0.075)
-                on_release: root.switch_left(*args)
+                on_release: root.switch_date(*args)
 
             MDLabel:
                 id: curr_label
@@ -34,7 +34,7 @@
                 user_font_size: "40sp"
                 theme_text_color: "Custom"
                 text_color: 0.5,0.5,0.5,1
-                on_release: root.switch_left(*args)
+                on_release: root.switch_date(*args)
                 size_hint: (0.5,0.075)
 
         MDTabs:
@@ -58,15 +58,27 @@
             Tab:
                 text: '[size=' + str(app.headline_text_size)+']Month[/size]'
 
-        MDLabel:
+        MDCard:
             id: no_data
-            text: "No data available"
-            font_style: "H4"
-            theme_text_color: "Custom"
-            text_color: 0, 0, 1, 1
-            halign: "center"
+            elevation: 1
+            radius:[80]
+            orientation: "vertical"
+            padding: "16dp"
+            size_hint: None, None
+            size: "240dp", "110dp"
             pos_hint: {"center_x": .5, "center_y": 0.3}
+            background : "resources/card_back.png"
             opacity:0
+
+            MDLabel:
+                text: "No data available"
+                theme_text_color: "Custom"
+                text_color: app.text_color
+                size_hint_y: None
+                font_style:"H5"
+                halign:'center'
+                pos_hint: {"center_x": .5, "center_y": 0.5}
+                size_hint_y: 0.75
 
         ScrollView:
             id: records_scroll
@@ -167,6 +179,7 @@
                             size_hint_y:None
                             height:20
                         MDLabel:
+                            id: weight_unit
                             text: " Kg"
                             theme_text_color: "Custom"
                             text_color: app.text_color
@@ -232,6 +245,7 @@
                             size_hint_y:None
                             height:20
                         MDLabel:
+                            id: best_month_weight_unit
                             text: " Kg"
                             theme_text_color: "Custom"
                             text_color: app.text_color

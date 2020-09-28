@@ -143,6 +143,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         self.app.dialog.open()
         if self.debug:
             print("user_look_up_msg:", msg)
+
         self.sign_up_msg = msg
         if msg == "Email exists":
             self.email_exists = True
@@ -150,14 +151,17 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     def successful_sign_up(self, urlrequest, log_in_data):
         # my_data = '{"avatar": "man.png", "nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
         # my_data = '{"user_name": ' + '"' + self.user_name + '"' + ', ' + '"nicknames": {}, "friends": "", "workouts": "", "streak": "0", "my_friend_id": ""}'
-        my_data = '{"user_name": ' + '"' + self.user_name.lower() + '"' + ', ' + '"real_user_name": ' + '"' + self.user_name + '"' + ', ' + '"email": ' + '"' + self.email + '"' + ', ' + '"friends": "", "workouts": "", "streak": "0", "temp_session": "", "sessions": ""}'
-        self.app.user_data={"user_name": self.user_name.lower(), "real_user_name": self.user_name ,"email": self.email, "friends": "", "workouts": {}, "streak": 0, "temp_session": {}, "sessions": {}}
+        my_data = '{"user_name": ' + '"' + self.user_name.lower() + '"' + ', ' + '"real_user_name": ' + '"' + self.user_name + '"' + ', ' + '"email": ' + '"' + self.email + '"' + ', ' + '"friends": "", "workouts": "", "streak": "0", "temp_session": "", "sessions":"", "settings": {"units":"metric"}}'
+        self.app.user_data = {"user_name": self.user_name.lower(), "real_user_name": self.user_name,
+                              "email": self.email, "friends": "", "workouts": {}, "streak": 0, "temp_session": {},
+                              "sessions": {}, "settings": {"units": "metric"}}
         self.app.sign_up = 1
         print("successful_sign_up")
         post_request = UrlRequest(
             "https://gymbuddy2.firebaseio.com/" + log_in_data['localId'] + ".json?auth=" + log_in_data['idToken'],
             ca_file=certifi.where(),
             req_body=my_data, method='PATCH')
+        print(post_request)
         self.successful_login(urlrequest, log_in_data)
         
     # def on_friend_get_req_ok(self, *args):

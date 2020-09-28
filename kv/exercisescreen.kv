@@ -158,7 +158,7 @@
             id: weight
             mode: "rectangle"
             input_filter: 'float'
-            helper_text: "Kg"
+            helper_text: "Kg" if app.units == "metric" else "Lbs"
             helper_text_mode: "persistent"
 
             font_size: "32.5sp"

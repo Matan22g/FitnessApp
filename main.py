@@ -20,7 +20,7 @@ from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
 from customKv.toolbar import CustomMDToolbar
-from kivymd.uix.card import MDCard
+from kivymd.uix.card import MDCard, MDSeparator
 
 # from customKv.card import MDCard
 
@@ -96,7 +96,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 1
+    debug = 0
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -125,6 +125,9 @@ class MainApp(MDApp):
     weekly_session_amount = 0
     workouts_trained_amount = {}
     today_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    units = "Imperial"  # kg to lbs 1 to 2.20462262
+    kg_to_pounds = 2.20462262
+    user_name = ''
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -196,7 +199,7 @@ class MainApp(MDApp):
             except:
                 self.sessions = {}
             self.load_workout_data()
-
+            self.load_settings_data()
         else:
             self.clear_user_app_data()
             self.update_dashboard_stats()
@@ -206,7 +209,10 @@ class MainApp(MDApp):
         self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
 
         # TEST OF USER NAME
-        # user_name = self.user_data["real_user_name"]
+        try:
+            self.user_name = self.user_data["real_user_name"]
+        except:
+            print("cant load username")
         # self.change_title("Hello " + user_name)
         self.change_title("Dashboard")
         try:
@@ -215,6 +221,18 @@ class MainApp(MDApp):
         except:
             print("key error: temp_session")
         # self.change_screen1("exercise_stats_screen")
+
+        ## for home screen first load
+        if self.units == "metric":
+            self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
+        else:
+            self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
+
+    def load_settings_data(self):
+        settings_dict = self.user_data['settings']
+        if "units" in settings_dict:
+            units = settings_dict["units"]
+            self.units = units
 
     def on_logout(self):
         self.clear_user_app_data()
@@ -1154,10 +1172,20 @@ class MainApp(MDApp):
         else:
             return ""
 
+    def proper_email_filter(self, input_to_check, indicator):
+
+        if self.debug:
+            print("input_to_check", input_to_check)
+            print("indicator", indicator)
+        asci_val = ord(input_to_check)
+        if asci_val > 20 and asci_val < 177:
+            return input_to_check
+            return ""
+
     # Uploads all kind of Data Methods - Session / Workout
     def upload_data(self, *args):
         """  target can be: 1 - upload new workout ,
-             2 - update an existing workout, 3 - upload new session
+             2 - update an existing workout, 3 - upload new session, 4 - upload settings
         """
         data = args[0]
         link = args[1]
@@ -1166,11 +1194,15 @@ class MainApp(MDApp):
             workout_key = args[3]
         except:
             workout_key = 0
-        self.display_loading_screen()
+
+        if target != 4:
+            self.display_loading_screen()
+
         self.upload_backup = [data, link, target, workout_key]
+
         if target == 1 or target == 3:
             method = 'POST'
-        elif target == 2:
+        elif target == 2 or target == 4:
             method = 'PUT'
 
         post_workout_req = UrlRequest(link, req_body=data, on_success=self.success_upload,
@@ -1179,19 +1211,24 @@ class MainApp(MDApp):
                                       ca_file=certifi.where(), method=method, verify=True)
 
     def success_upload(self, *args):
-        self.running_session = 0
+        if self.debug:
+            print("upload successful, args:", args)
 
-        self.change_screen1("workoutsscreen")
-        self.get_user_data()
-        self.load_session_data()
-
-        self.load_workout_data()
-        self.root.ids['toolbar'].right_action_items = [
-            ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
-
-
-        Snackbar(text="Workout saved!").show()
-        self.upload_backup = 0
+        req_data = args[1]
+        if 'units' in req_data:
+            pass
+        elif req_data.lower() == self.user_name.lower():
+            pass
+        else:
+            self.running_session = 0
+            self.change_screen1("workoutsscreen")
+            self.get_user_data()
+            self.load_session_data()
+            self.load_workout_data()
+            self.root.ids['toolbar'].right_action_items = [
+                ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
+            Snackbar(text="Workout saved!").show()
+            self.upload_backup = 0
         self.hide_loading_screen()
 
     def error_upload(self, *args):
@@ -1335,6 +1372,31 @@ class MainApp(MDApp):
 
     def hide_loading_screen(self, *args):
         self.popup.dismiss()
+
+    def upload_settings(self):
+        units = self.units
+        link = "https://gymbuddy2.firebaseio.com/%s/settings.json?auth=%s" % (self.local_id, self.id_token)
+        settings_data = {"units": units}
+        data = json.dumps(settings_data)
+        self.upload_data(data, link, 4)
+
+    def change_user_name(self, user_name):
+        if self.root.ids.firebase_login_screen.is_user_exist(user_name):
+            print("cant")
+            # TODO show user name already taken msg
+        else:
+            self.user_name = user_name
+
+            user_name_lower = user_name.lower()
+
+            link_lower = "https://gymbuddy2.firebaseio.com/%s/user_name.json?auth=%s" % (self.local_id, self.id_token)
+            link = "https://gymbuddy2.firebaseio.com/%s/real_user_name.json?auth=%s" % (self.local_id, self.id_token)
+
+            data = json.dumps(user_name)
+            data_lower = json.dumps(user_name_lower)
+
+            self.upload_data(data_lower, link_lower, 4)
+            self.upload_data(data, link, 4)
 
 
 MainApp().run()

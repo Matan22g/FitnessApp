@@ -1,3 +1,9 @@
+<Check@MDCheckbox>:
+    group: 'group'
+    size_hint: None, None
+    size: dp(48), dp(48)
+
+
 <SettingsScreen>:
 
     FloatLayout:
@@ -22,3 +28,17 @@
             text: "Change Theme"
             on_release: root.show_theme_picker()
 #            on_release: root.is_binary(binary_number.text)
+
+        Check:
+            active: True
+            id: metric
+            pos_hint: {'center_x': .4, 'center_y': .5}
+            on_release:
+                app.units= 'metric'
+
+        Check:
+            id: imperial
+            pos_hint: {'center_x': .6, 'center_y': .5}
+            on_release:
+                app.units= 'imperial'
+                app.upload_settings()

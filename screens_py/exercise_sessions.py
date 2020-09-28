@@ -73,7 +73,17 @@ class ExerciseSessionsScreen(Screen):
             self.app.root.ids['exercise_stats_screen'].ids["record_date"].text = date
 
             self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = best_reps
+
+            if self.app.units == "metric":
+                self.app.root.ids['exercise_stats_screen'].ids["weight_unit"].text = " Kg"
+
+            else:
+                self.app.root.ids['exercise_stats_screen'].ids["weight_unit"].text = " Lbs"
+                best_weight = str(round(float(best_weight) * self.app.kg_to_pounds, 2))
+
             self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = best_weight
+
+
         else:
             self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = "0"

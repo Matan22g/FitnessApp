@@ -17,7 +17,17 @@ class HomeScreen(Screen):
             self.app.change_title("Dashboard")
         except:
             pass
+        try:
+            if self.app.units == "metric":
+                self.ids["weight_units"].text = "Kg"
+            else:
+                self.ids["weight_units"].text = "Lbs"
+        except:
+            pass
 
+    def on_quick_menu(self, *args):
+        print(args[0].icon
+              )
 
     def on_enter(self, *args):
         self.app.title = "Home"

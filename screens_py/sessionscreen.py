@@ -10,7 +10,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.behaviors import TouchBehavior
-#from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+# from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
 from customKv.toggle_behavior import MDToggleButton
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDFlatButton, MDRoundFlatIconButton, MDIconButton, MDRectangleFlatButton
@@ -25,6 +25,7 @@ from kivymd.uix.list import OneLineListItem, ThreeLineListItem, OneLineAvatarIco
 from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.picker import MDDatePicker
+
 
 class SwipeToDeleteItem(MDCardSwipe):
     text = StringProperty()
@@ -79,7 +80,7 @@ class SessionScreen(Screen):
     view_mode = 0
     # long_press = 0
     session_key = 0
-    check_box_by_card ={}
+    check_box_by_card = {}
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -107,7 +108,6 @@ class SessionScreen(Screen):
     #     self.app.add_top_canvas()
 
     def on_pre_enter(self, *args):
-
 
         if self.app.debug:
             print("entering session page")
@@ -142,8 +142,6 @@ class SessionScreen(Screen):
             self.app.change_title("Push Harder")
 
         else:
-            # TODO fix scrollgrid, hide and disable button grid
-
 
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
@@ -225,7 +223,7 @@ class SessionScreen(Screen):
                 row_enlarger = row_enlarger_inc * len(session_rec[exc])
                 dict_of_row_height[i] += row_enlarger
         self.ids.exc_cards.rows_minimum = dict_of_row_height
-        self.check_box_by_card={}
+        self.check_box_by_card = {}
 
         # print(dict_of_row_height)
         for num_of_exc, exc in enumerate(self.workout):
@@ -239,7 +237,7 @@ class SessionScreen(Screen):
         check_box = self.check_box_by_card[args[0]]
         check_box_state = check_box.active
         check_box.active = not check_box_state
-        self.update_delete_num('sessionscreen',self.ex_reference_by_checkBox)
+        self.update_delete_num('sessionscreen', self.ex_reference_by_checkBox)
 
     def create_card(self, num_of_exc, exc, num_of_exc_total):
         if self.view_mode:
@@ -311,11 +309,10 @@ class SessionScreen(Screen):
             set_label, set_number, reps_label = self.create_set_label(set, num_of_set)
             exc_layout.add_widget(set_label)
             exc_layout.add_widget(set_number)
-            units_layout.add_widget(MDLabel(text="", size_hint_x = 0.9))
+            units_layout.add_widget(MDLabel(text="", size_hint_x=0.9))
             units_layout.add_widget(reps_label)
             excCard.add_widget(exc_layout)
             excCard.add_widget(units_layout)
-
 
             # new_exc_layout, new_units_layout = self.create_set_label(set, num_of_set)
             # excCard.add_widget(new_exc_layout)
@@ -329,7 +326,7 @@ class SessionScreen(Screen):
         return newlayout
 
     def create_top_card_layout(self, num_of_exc, num_of_exc_total, exc):
-        help_layout = MDGridLayout( rows=1, cols=2)
+        help_layout = MDGridLayout(rows=1, cols=2)
         excnum = str(num_of_exc + 1) + " of " + str(num_of_exc_total)
         exc_num = MDLabel(
             text=excnum,
@@ -345,7 +342,7 @@ class SessionScreen(Screen):
         help_layout.add_widget(exc_num)
         help_layout.add_widget(deleteBox)
 
-        return help_layout ,deleteBox
+        return help_layout, deleteBox
 
     def create_button_layout(self, exc):
         startButton = MDIconButton(
@@ -390,8 +387,9 @@ class SessionScreen(Screen):
             theme_text_color="Custom",
             text_color=self.app.text_color,
         )
+        unit = "Kg" if self.app.units == "metric" else "Lbs"
         reps_label = MDLabel(
-            text="  Reps                        Kg",
+            text="  Reps                        " + unit,
             font_style="Caption",
             size_hint=(1, None),
             theme_text_color="Custom",
@@ -414,6 +412,10 @@ class SessionScreen(Screen):
             text_color=self.app.text_color,
             halign='center'
         ))
+
+        if self.app.units != 'metric':
+            weights = str(round(float(weights) * self.app.kg_to_pounds, 2))
+
         set_layout.add_widget(MDLabel(
             text="  " + weights,
             font_style="H6",
@@ -599,13 +601,13 @@ class SessionScreen(Screen):
         if num_to_del:
             if int(num_to_del):
                 msg = "Delete " + num_to_del + " Exercise?"
-                warning =""
+                warning = ""
                 if self.view_mode:
                     warning = "Warning: deleting session record cannot be undone"
 
                 self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                        title=msg,
-                                       text = warning,
+                                       text=warning,
                                        buttons=[
                                            MDFlatButton(
                                                text="DELETE", text_color=self.app.theme_cls.primary_color,
@@ -704,12 +706,14 @@ class SessionScreen(Screen):
         self.app.reload_for_running_session = self.workout_name
         self.app.change_screen1("previous_workouts_screen")
 
+
 class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.background_down = self.theme_cls.primary_light
         self.background_normal = (1, 1, 1, 0)
         self.text_color = (1, 1, 1, 1)
+
 
 class MDSetsLabel(MDGridLayout):
     cols = 1
@@ -759,14 +763,20 @@ class ExerciseScreen(Screen):
                     self.ids["reps"].text = "0"
 
     def on_pre_enter(self, *args):
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
+
         self.sets = []
         self.app.title = "Home"
         self.app.root.ids['toolbar'].title = self.exercise
         self.app.add_bottom_canvas()
 
+        if self.app.units == "metric":
+            self.ids["weight"].helper_text = "Kg"
+        else:
+            self.ids["weight"].helper_text = "Lbs"
+
         exc = self.exercise
-        self.ids["ex_name"].text = exc
-        # if already completed a few sets in this session:
+        self.ids["ex_name"].text = exc  # if already completed a few sets in this session:
         session_rec = self.app.root.ids['sessionscreen'].session_rec
 
         if exc in session_rec:
@@ -776,8 +786,12 @@ class ExerciseScreen(Screen):
                 reps = set[0]
                 weight = set[2]
                 self.add_set_to_grid(int(reps), float(weight))
+                weight_to_show = weight
+                if self.app.units != 'metric':
+                    weight_to_show = str(round(float(weight) * self.app.kg_to_pounds, 2))
+
                 self.ids["reps"].text = reps
-                self.ids["weight"].text = weight
+                self.ids["weight"].text = weight_to_show
 
         else:
             session_rec[exc] = []
@@ -792,6 +806,9 @@ class ExerciseScreen(Screen):
             if weight[-1] == '.':
                 weight = weight[:-1]
         currWeight = float(weight)
+        if self.app.units != 'metric':
+            currWeight = round(currWeight / self.app.kg_to_pounds, 2)
+
         currReps = int(self.ids["reps"].text)
         if not currReps:
             self.show_invalid_input_msg()
@@ -831,7 +848,12 @@ class ExerciseScreen(Screen):
         if len(str(currWeight)) > 3:
             weight_inc = -0.004 * len(str(currWeight))
 
-        self.sets.append([currReps, currWeight])
+        weight_to_save = currWeight  # in kg as defualt
+        self.sets.append([currReps, weight_to_save])
+
+        if self.app.units != 'metric':
+            currWeight = round(currWeight * self.app.kg_to_pounds, 2)
+
         num_of_set = len(self.sets)
         # self.ids["md_list"].add_widget(
         #     SwipeToDeleteItem(text=f"{currReps}    X    {currWeight}", size_hint=(1, 1))
@@ -872,7 +894,8 @@ class ExerciseScreen(Screen):
                     theme_text_color="Custom",
                     text_color=self.app.theme_cls.primary_color
                     ))
-        last_label = MDLabel(text=f"Kg", font_style="Caption",
+        unit = "Kg" if self.app.units == "metric" else "Lbs"
+        last_label = MDLabel(text=unit, font_style="Caption",
                              pos_hint={"center_y": 0.3, "center_x": 1.09 + x_add},
                              theme_text_color="Custom",
                              text_color=self.app.theme_cls.primary_color

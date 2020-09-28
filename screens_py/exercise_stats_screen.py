@@ -23,11 +23,18 @@ class Year_Plot(RelativeLayout):
 
     def __init__(self, **kwargs):
         super(Year_Plot, self).__init__(**kwargs)
+        self.app = MDApp.get_running_app()
 
         strMth = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         # x1 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         x1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         y1 = self.weights
+
+        if self.app.units == "metric":
+            units = "Kg"
+        else:
+            units = "Lbs"
+            y1 = [round(float(weight) * self.app.kg_to_pounds, 2) for weight in y1]
 
         yData = len(y1)
 
@@ -72,11 +79,11 @@ class Year_Plot(RelativeLayout):
             xmin=intXmin,
             xmax=intXmax,
             ymin=0,
-            ymax=intYmax,
+            ymax=intYmax * 1.25,
             x_grid_label=True,
             y_grid_label=True,
             xlabel='Month',
-            ylabel=f'Weight (Kg)',
+            ylabel=f'Weight (' + units + ')',
             draw_border=True,
         )
 
@@ -98,11 +105,18 @@ class Month_Plot(RelativeLayout):
 
     def __init__(self, **kwargs):
         super(Month_Plot, self).__init__(**kwargs)
+        self.app = MDApp.get_running_app()
 
         strMth = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
         # x1 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
         x1 = self.days
         y1 = self.weights
+
+        if self.app.units == "metric":
+            units = "Kg"
+        else:
+            units = "Lbs"
+            y1 = [round(float(weight) * self.app.kg_to_pounds, 2) for weight in y1]
 
         yData = len(y1)
 
@@ -147,11 +161,11 @@ class Month_Plot(RelativeLayout):
             xmin=intXmin,
             xmax=intXmax,
             ymin=0,
-            ymax=intYmax,
+            ymax=intYmax * 1.25,
             x_grid_label=True,
             y_grid_label=True,
             xlabel='Day',
-            ylabel=f'Weight (Kg)',
+            ylabel=f'Weight (' + units + ')',
             draw_border=True,
         )
 
@@ -219,7 +233,7 @@ class ExerciseStatsScreen(Screen):
             self.curr_month = [self.today_date.year, self.today_date.month]
             self.curr_year = self.today_date.year
             self.ids.curr_label.text = str(self.today_date.year)
-            self.set_record(0, 0)
+            self.set_record(0, str(self.today_date.year))
             self.ids.no_data.opacity = 1
 
         self.app.root.ids['exercise_stats_screen'].ids["md_tabs"].switch_tab(
@@ -253,14 +267,22 @@ class ExerciseStatsScreen(Screen):
             set = maybe_best_set.split()
             maybe_best_weight = float(set[2])
             maybe_best_reps = int(set[0])
-            month_set_list[session_day - 1] = maybe_best_weight
+
+            if month_set_list[session_day - 1] < maybe_best_weight:
+                month_set_list[session_day - 1] = maybe_best_weight
+
             if maybe_best_weight > best_weight:
                 best_set = maybe_best_set
                 best_weight = maybe_best_weight
             elif maybe_best_weight == best_weight:
-                if maybe_best_reps > int(best_set.split()[0]):
+                if best_set:
+                    if maybe_best_reps > int(best_set.split()[0]):
+                        best_set = maybe_best_set
+                        best_weight = maybe_best_weight
+                else:
                     best_set = maybe_best_set
                     best_weight = maybe_best_weight
+
         best_set_of_the_month = best_set
         best_weight_of_the_month = best_weight
 
@@ -279,6 +301,8 @@ class ExerciseStatsScreen(Screen):
         except:
             pass
 
+        new_label = calendar.month_abbr[month] + " ," + str(year)
+
         if year in self.stats_dict:
             if month in self.stats_dict[year]:
                 month_days_list = self.stats_dict[year][month][0]
@@ -289,7 +313,6 @@ class ExerciseStatsScreen(Screen):
                                          pos_hint={"center_y": 0.3, "center_x": 0.5})
 
                 month_best_set = self.stats_dict[year][month][2]
-                new_label = calendar.month_abbr[month] + " ," + str(year)
                 self.set_record(month_best_set, new_label)
                 self.curr_month_best = month_best_set
 
@@ -302,11 +325,11 @@ class ExerciseStatsScreen(Screen):
 
             else:
                 self.ids.no_data.opacity = 1
-                self.set_record(0, 0)
+                self.set_record(0, new_label)
 
         else:
             self.ids.no_data.opacity = 1
-            self.set_record(0, 0)
+            self.set_record(0, new_label)
 
     def add_year_plot(self, year):
         try:
@@ -339,7 +362,7 @@ class ExerciseStatsScreen(Screen):
 
         else:
             self.ids.no_data.opacity = 1
-            self.set_record(0, 0)
+            self.set_record(0, str(year))
 
     def on_tab_switch(self, *args):
         period = args[3][9:14]
@@ -365,7 +388,7 @@ class ExerciseStatsScreen(Screen):
             self.ids.curr_label.text = new_label
             self.set_record(self.curr_year_best, new_label)
 
-    def switch_left(self, *args):
+    def switch_date(self, *args):
         print(args[0].icon[8:])
 
         direction = args[0].icon[8:]
@@ -420,16 +443,25 @@ class ExerciseStatsScreen(Screen):
         return False
 
     def set_record(self, record, period):
+        self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "Best of " + period
+
         if record:
             record = record.split()
             best_reps = record[0]
             best_weight = record[2]
-            self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "Best of " + period
 
             self.app.root.ids['exercise_stats_screen'].ids["best_month_reps"].text = best_reps
+
+            if self.app.units == "metric":
+                self.app.root.ids['exercise_stats_screen'].ids["best_month_weight_unit"].text = " Kg"
+
+            else:
+                self.app.root.ids['exercise_stats_screen'].ids["best_month_weight_unit"].text = " Lbs"
+                best_weight = str(round(float(best_weight) * self.app.kg_to_pounds, 2))
+
             self.app.root.ids['exercise_stats_screen'].ids["best_month_weight"].text = best_weight
         else:
-            self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "N/A"
+            # self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "N/A"
 
             self.app.root.ids['exercise_stats_screen'].ids["best_month_reps"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["best_month_weight"].text = "0"
