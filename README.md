@@ -19,8 +19,8 @@ improvements, and analyzing statistics.
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-  My first attempt to create a moblie app using only python, I wanted to create an app to help me keep track of my gym session, show me stats and graphs so, with the least hussle and effort, and max quailty.
-  Ive edited some of the kivyMd uix files to make them fit my app needs, most of the edited files are in customKv folder.
+  My first attempt to create a moblie app using only python, I wanted to create an app to help me keep track of my gym sessions, show me statistics and graphs, with the least hussle and effort, and with top quailty and design.
+  I've edited some of the kivyMd uix files to make them fit my app needs, most of the edited files are in customKv folder.
 
 ### Built With
 
