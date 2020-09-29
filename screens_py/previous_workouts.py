@@ -130,6 +130,9 @@ class PreviousWorkoutsScreen(Screen):
                     total_session_num += 1
         num_of_session = 0
         for sessions_date in sessions_dates:
+            print("sessions_date", sessions_date)
+            print("sessions_date", month)
+
             session = self.app.sessions[sessions_date]
             if self.app.reload_for_running_session:
                 if session.workout_name == self.app.reload_for_running_session:
@@ -283,6 +286,8 @@ class PreviousWorkoutsScreen(Screen):
 
         for checkbox_id in self.session_card_by_checkBox:
             checkbox_id.active = 0
+            checkbox_id.selected_color = self.app.text_color
+
             if to_show:
                 checkbox_id.opacity = 1
             else:

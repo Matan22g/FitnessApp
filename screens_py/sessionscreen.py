@@ -191,7 +191,7 @@ class SessionScreen(Screen):
 
             self.ids["timer"].opacity = 1
             self.ids["timer_view"].opacity = 0
-            self.ids["scroll"].size_hint_y = 0.73
+            self.ids["scroll"].size_hint_y = 0.74
 
             self.ids["date_view"].opacity = 0
             self.ids["date_icon"].opacity = 0
@@ -579,6 +579,7 @@ class SessionScreen(Screen):
 
         for checkbox_id in self.ex_reference_by_checkBox:
             checkbox_id.active = 0
+            checkbox_id.selected_color = self.app.text_color
             if to_show:
                 checkbox_id.opacity = 1
             else:

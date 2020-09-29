@@ -25,6 +25,8 @@ class ExerciseSessionsScreen(Screen):
         self.app = MDApp.get_running_app()
 
     def on_pre_enter(self, *args):
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
+
         self.dates = {}
         self.sessions = []
         self.app.change_title("Stats for Geeks")

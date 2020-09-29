@@ -554,11 +554,15 @@ class MainApp(MDApp):
 
             if date.month == curr_month and date.year == curr_year:
                 self.monthly_session_amount += 1
+                print("self.monthly_session_amount", self.monthly_session_amount)
+                print("date", date)
+
                 date_plus_one_day = date + timedelta(days=1)
 
                 if date_plus_one_day.isocalendar()[1] == curr_week:
                     self.weekly_session_amount += 1
-
+            if date in self.sessions:
+                date = date + timedelta(seconds=60)
             duration = session[1]
             workout_key = session[2]
             workout_name = session[3]
