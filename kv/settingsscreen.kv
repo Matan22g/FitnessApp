@@ -8,37 +8,147 @@
 
     FloatLayout:
 
-        MDLabel:
-            pos_hint: {"x": .3, "top": .9}
-            size_hint: (.2, .1)
-            text: "Dark Mode: "
-            halign: "center"
-            theme_text_color: "Primary"
+        BoxLayout:
+            orientation:'vertical'
+            pos_hint: {"center_x": .5, "center_y": .76}
+            size_hint: 1, 0.2
+            spacing: 20
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.15
 
-        MDSwitch:
-            id: mode
-            pos_hint: {"x": .6, "top": .9}
-            size_hint: (.05, .1)
-            on_active:
-                root.change_mode(*args)
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "weight"
+                    size_hint_x: 0.15
+#                        text_color: 1, 1, 1, 1
 
-        MDRoundFlatButton:
-            pos_hint: {"x": .35, "y": .7}
-            size_hint: (.3, .1)
-            text: "Change Theme"
-            on_release: root.show_theme_picker()
-#            on_release: root.is_binary(binary_number.text)
+                MDLabel:
+                    text: "Units"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.6
 
-        Check:
-            active: True
-            id: metric
-            pos_hint: {'center_x': .4, 'center_y': .5}
-            on_release:
-                app.units= 'metric'
+                MDBoxLayout:
+                    halign: "right"
+                    size_hint_x: 0.4
+                    size_hint_y: 1.8
 
-        Check:
-            id: imperial
-            pos_hint: {'center_x': .6, 'center_y': .5}
-            on_release:
-                app.units= 'imperial'
-                app.upload_settings()
+                    MyToggleButton:
+                        size_hint: (.75, .5)
+
+                        id: kg_button
+                        text: "Kg"
+                        group: "y"
+                        background_down : (0, 0, 1, 1)
+                        background_normal : (0.5, 0.5, 0.5, 1)
+                        on_release:
+                            app.units= 'metric'
+                            app.upload_settings()
+
+                    MyToggleButton:
+                        size_hint: (.75, .5)
+
+                        id: lbs_button
+                        text: "lbs"
+                        group: "y"
+                        background_down : (0, 0, 1, 1)
+                        background_normal : (0.5, 0.5, 0.5, 1)
+                        on_release:
+                            app.units= 'imperial'
+                            app.upload_settings()
+
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.15
+                on_release: app.show_change_user_name_dialog()
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "account"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "User name"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+
+                MDLabel:
+                    id: user_name_label
+                    text: "Matan22g"
+#                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "right"
+                    size_hint_x: 0.5
+
+#        MDLabel:
+#            pos_hint: {"x": .3, "top": .9}
+#            size_hint: (.2, .1)
+#            text: "Dark Mode: "
+#            halign: "center"
+#            theme_text_color: "Primary"
+#
+#        MDSwitch:
+#            id: mode
+#            pos_hint: {"x": .6, "top": .9}
+#            size_hint: (.05, .1)
+#            on_active:
+#                root.change_mode(*args)
+#
+#        MDRoundFlatButton:
+#            pos_hint: {"x": .35, "y": .7}
+#            size_hint: (.3, .1)
+#            text: "Change Theme"
+#            on_release: root.show_theme_picker()
+##            on_release: root.is_binary(binary_number.text)
+#
+#        MDLabel:
+#            pos_hint: {"x": .1, "top": .65}
+#            size_hint: (.2, .1)
+#            text: "Units:"
+#            halign: "center"
+#            theme_text_color: "Primary"
+#
+#        MDLabel:
+#            pos_hint: {"x": .275, "top": .7}
+#            size_hint: (.2, .1)
+#            text: "metric"
+#            halign: "center"
+#            theme_text_color: "Primary"
+#
+#        MDLabel:
+#            pos_hint: {"x": .47, "top": .7}
+#            size_hint: (.2, .1)
+#            text: "imperial"
+#            halign: "center"
+#            theme_text_color: "Primary"
+#
+#        Check:
+#            id: metric
+#            pos_hint: {'center_x': .4, 'center_y': .6}
+#            on_release:
+#                app.units= 'metric'
+#                app.upload_settings()
+#                self.active = True
+#        Check:
+#            id: imperial
+#            pos_hint: {'center_x': .6, 'center_y': .6}
+#            on_release:
+#                app.units= 'imperial'
+#                self.active = True
+#                app.upload_settings()
+#
+

@@ -707,12 +707,13 @@ class SessionScreen(Screen):
         self.app.change_screen1("previous_workouts_screen")
 
 
-class MyToggleButton(MDRectangleFlatButton, MDToggleButton):
+class MyToggleButton2(MDRectangleFlatButton, MDToggleButton):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.background_down = self.theme_cls.primary_light
         self.background_normal = (1, 1, 1, 0)
         self.text_color = (1, 1, 1, 1)
+        self.allow_no_selection = False
 
 
 class MDSetsLabel(MDGridLayout):
@@ -722,7 +723,7 @@ class MDSetsLabel(MDGridLayout):
 class ExerciseScreen(Screen):
     exercise = "TEST EXC"
     repScale = 1
-    weightScale = 5
+    weightScale = 1
     sets = []
     dialog = 0
     barbell = 0
@@ -765,6 +766,9 @@ class ExerciseScreen(Screen):
     def on_pre_enter(self, *args):
         self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
+        self.barbell = 0
+        self.change_scale(1)
+
         self.sets = []
         self.app.title = "Home"
         self.app.root.ids['toolbar'].title = self.exercise
@@ -795,6 +799,19 @@ class ExerciseScreen(Screen):
 
         else:
             session_rec[exc] = []
+        self.clear_focus_toggle()
+
+    def clear_focus_toggle(self):
+        for child in self.ids["group_scale"].children:
+            if child.text == '+1':
+                child.md_bg_color = self.app.theme_cls.primary_light
+            else:
+                child.md_bg_color = (1, 1, 1, 0)
+        for child in self.ids["group_barbell"].children:
+            if child.text == 'None':
+                child.md_bg_color = self.app.theme_cls.primary_light
+            else:
+                child.md_bg_color = (1, 1, 1, 0)
 
     def on_leave(self, *args):
         self.clear_screen()

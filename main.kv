@@ -24,6 +24,23 @@
         helper_text: "Enter valid name - English letters"
         input_filter: app.proper_input_filter
 
+<Change_User_Name_Content>
+    orientation: "vertical"
+    spacing: "10dp"
+    size_hint_y: None
+    height: "53dp"
+    MDTextField:
+        hint_text: "User name"
+        required: True
+        helper_text_mode: "on_error"
+        helper_text: "English letters and numbers only"
+        input_filter: app.proper_input_filter
+
+    MDLabel:
+        text: ''
+        theme_text_color: "Custom"
+        text_color: 1, 0, 0, 1
+        font_style:"Caption"
 NavigationLayout:
     id: nav_layout
     ScreenManager:

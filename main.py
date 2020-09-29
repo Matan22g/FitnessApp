@@ -58,6 +58,10 @@ class AddWorkoutContent(BoxLayout):
     pass
 
 
+class Change_User_Name_Content(BoxLayout):
+    pass
+
+
 class BlankScreen(Screen):
 
     def __init__(self, **kw):
@@ -220,7 +224,7 @@ class MainApp(MDApp):
                 self.retrieve_paused_session()
         except:
             print("key error: temp_session")
-        # self.change_screen1("exercise_stats_screen")
+        self.change_screen1("exercisescreen")
 
         ## for home screen first load
         if self.units == "metric":
@@ -233,6 +237,10 @@ class MainApp(MDApp):
         if "units" in settings_dict:
             units = settings_dict["units"]
             self.units = units
+            # if units == 'metric':
+            #     self.root.ids['settingsscreen'].ids.metric.active = True
+            # else:
+            #     self.root.ids['settingsscreen'].ids.imperial.active = True
 
     def on_logout(self):
         self.clear_user_app_data()
@@ -891,6 +899,39 @@ class MainApp(MDApp):
     def dismiss_dialog(self, *args):
         self.dialog.dismiss()
 
+    def show_change_user_name_dialog(self):
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.3),
+            title="Enter new user name",
+            type="custom",
+            content_cls=Change_User_Name_Content(),
+            buttons=[
+
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.change_user_name_callback
+                ),
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                )
+            ],
+        )
+        self.dialog.open()
+
+    def change_user_name_callback(self, *args):
+        text_field = args[0].parent.parent.parent.children[2].children[0].children[1]
+        error_label = args[0].parent.parent.parent.children[2].children[0].children[0]
+        new_user_name = text_field.text
+        if self.root.ids.firebase_login_screen.is_user_exist(new_user_name):
+            error_label.text = new_user_name + " Already taken"
+        else:
+            self.dismiss_dialog()
+            self.change_user_name(new_user_name)
+
     def start_workout(self, *args):
         # start new session of workout
 
@@ -1381,22 +1422,20 @@ class MainApp(MDApp):
         self.upload_data(data, link, 4)
 
     def change_user_name(self, user_name):
-        if self.root.ids.firebase_login_screen.is_user_exist(user_name):
-            print("cant")
-            # TODO show user name already taken msg
-        else:
-            self.user_name = user_name
+        self.user_name = user_name
 
-            user_name_lower = user_name.lower()
+        self.root.ids['settingsscreen'].ids.user_name_label.text = user_name
 
-            link_lower = "https://gymbuddy2.firebaseio.com/%s/user_name.json?auth=%s" % (self.local_id, self.id_token)
-            link = "https://gymbuddy2.firebaseio.com/%s/real_user_name.json?auth=%s" % (self.local_id, self.id_token)
+        user_name_lower = user_name.lower()
 
-            data = json.dumps(user_name)
-            data_lower = json.dumps(user_name_lower)
+        link_lower = "https://gymbuddy2.firebaseio.com/%s/user_name.json?auth=%s" % (self.local_id, self.id_token)
+        link = "https://gymbuddy2.firebaseio.com/%s/real_user_name.json?auth=%s" % (self.local_id, self.id_token)
 
-            self.upload_data(data_lower, link_lower, 4)
-            self.upload_data(data, link, 4)
+        data = json.dumps(user_name)
+        data_lower = json.dumps(user_name_lower)
+
+        self.upload_data(data_lower, link_lower, 4)
+        self.upload_data(data, link, 4)
 
 
 MainApp().run()

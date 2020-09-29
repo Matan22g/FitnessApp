@@ -67,10 +67,11 @@
             text: "Barbell"
 
         MDBoxLayout:
+            id: group_scale
             size_hint: (.4, .1)
             pos_hint: {"center_x": .5, "center_y": .995}
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "+1"
                 group: "x"
                 size_hint: (.75, .5)
@@ -79,7 +80,7 @@
                 text_color: 1,1,1,1
 
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "+2.5"
                 group: "x"
                 size_hint: (.75, .5)
@@ -87,7 +88,7 @@
                 theme_text_color: "Custom"
                 text_color: 1,1,1,1
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "+10"
                 group: "x"
                 size_hint: (.75, .5)
@@ -96,10 +97,11 @@
                 text_color: 1,1,1,1
 
         MDBoxLayout:
+            id: group_barbell
             size_hint: (.4, .1)
             pos_hint: {"center_x": .5, "center_y": .935}
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "None"
                 group: "y"
                 size_hint: (.75, .5)
@@ -108,7 +110,7 @@
                 text_color: 1,1,1,1
 
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "12.5"
                 group: "y"
                 size_hint: (.75, .5)
@@ -116,7 +118,7 @@
                 theme_text_color: "Custom"
                 text_color: 1,1,1,1
 
-            MyToggleButton:
+            MyToggleButton2:
                 text: "20"
                 group: "y"
                 size_hint: (.75, .5)
