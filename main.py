@@ -1,7 +1,7 @@
 import ast
 import calendar
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 import certifi
 from kivy.graphics.vertex_instructions import Rectangle, RoundedRectangle
@@ -100,7 +100,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 0
+    debug = 1
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -224,7 +224,7 @@ class MainApp(MDApp):
                 self.retrieve_paused_session()
         except:
             print("key error: temp_session")
-        self.change_screen1("exercisescreen")
+        # self.change_screen1("exercisescreen")
 
         ## for home screen first load
         if self.units == "metric":
@@ -554,7 +554,9 @@ class MainApp(MDApp):
 
             if date.month == curr_month and date.year == curr_year:
                 self.monthly_session_amount += 1
-                if date.isocalendar()[1] == curr_week:
+                date_plus_one_day = date + timedelta(days=1)
+
+                if date_plus_one_day.isocalendar()[1] == curr_week:
                     self.weekly_session_amount += 1
 
             duration = session[1]
@@ -1254,12 +1256,14 @@ class MainApp(MDApp):
     def success_upload(self, *args):
         if self.debug:
             print("upload successful, args:", args)
+        self.hide_loading_screen()
 
         req_data = args[1]
         if 'units' in req_data:
-            pass
-        elif req_data.lower() == self.user_name.lower():
-            pass
+            return
+        elif isinstance(req_data, str):
+            # req_data.lower() == self.user_name.lower():
+            return
         else:
             self.running_session = 0
             self.change_screen1("workoutsscreen")
@@ -1270,7 +1274,6 @@ class MainApp(MDApp):
                 ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
             Snackbar(text="Workout saved!").show()
             self.upload_backup = 0
-        self.hide_loading_screen()
 
     def error_upload(self, *args):
         self.refresh_auth_token()

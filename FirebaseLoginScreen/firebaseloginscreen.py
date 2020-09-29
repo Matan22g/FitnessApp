@@ -98,7 +98,11 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             self.app.dialog.open()
             self.hide_loading_screen()
             return
-        if not self.is_user_exist(user_name):
+        check_is_exist = self.is_user_exist(user_name)
+        if check_is_exist == 2:  # no internet
+            self.show_no_internet_msg()
+            return
+        if not check_is_exist:
             self.user_name = user_name
             signup_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/signupNewUser?key=" + self.web_api_key
             signup_payload = dumps(
@@ -108,7 +112,6 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
                        on_success=self.successful_sign_up,
                        on_failure=self.sign_up_failure,
                        on_error=self.sign_up_error, ca_file=certifi.where())
-
         else:
             comment = " already taken"
             self.user_look_up_msg(user_name, comment)
@@ -117,8 +120,12 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         # Method to check if User Name exist. try and fix the loading spinner problem
 
         user_name = '"' + user_name.lower() + '"'
-        check_req = requests.get(
-            'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
+
+        try:
+            check_req = requests.get(
+                'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
+        except:
+            return 2
         data = check_req.json()
         if self.debug:
             print("is_user_exist:", data)
@@ -126,6 +133,13 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             return True
         else:
             return False
+
+    def show_no_internet_msg(self):
+        self.app.dialog = MDDialog(title="Error: no internet", text="internet connection is required",
+                                   radius=[10, 7, 10, 7],
+                                   size_hint=(0.9, None))
+        self.app.dialog.open()
+        self.hide_loading_screen()
 
     def user_look_up_msg(self, user_name, comment):
         """Displays an error message that the user exist.
@@ -256,7 +270,13 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         if "@" not in email:
             # checks if the such user exist
             if self.is_user_exist(email):
-                self.get_user_name_email(email)
+                try:
+                    self.get_user_name_email(email)
+                except:
+
+                    self.show_no_internet_msg()
+                    self.hide_loading_screen()
+                    return
             else:
                 comment = " Doesnt exist"
                 self.user_look_up_msg(email, comment)
