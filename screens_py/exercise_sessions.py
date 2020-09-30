@@ -85,28 +85,27 @@ class ExerciseSessionsScreen(Screen):
 
             self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = best_weight
 
-
         else:
             self.app.root.ids['exercise_stats_screen'].ids["best_reps"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["best_weight"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["record"].text = "N/A"
             self.app.root.ids['exercise_stats_screen'].ids["record_date"].text = ""
 
-    def set_month_record(self, record, month):
-        return
-        if record:
-            record = record.split()
-            best_reps = record[0]
-            best_weight = record[2]
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "Best of " + month
-
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = best_reps
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = best_weight
-        else:
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "N/A"
-
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = "0"
-            self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = "0"
+    # def set_month_record(self, record, month):
+    #     return
+    #     if record:
+    #         record = record.split()
+    #         best_reps = record[0]
+    #         best_weight = record[2]
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "Best of " + month
+    #
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = best_reps
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = best_weight
+    #     else:
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_title"].text = "N/A"
+    #
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_reps"].text = "0"
+    #         self.app.root.ids['exercise_sessions_screen'].ids["best_month_weight"].text = "0"
 
     def nearest(self, items, pivot):
         return min(items, key=lambda x: abs(x - pivot))
@@ -193,7 +192,6 @@ class ExerciseSessionsScreen(Screen):
                 best_set = maybe_best_set
                 best_weight = maybe_best_weight
 
-        self.set_month_record(best_set, month_abb)
 
     def no_sessions_grid(self, msg, layout):
         new_card_layout = MDFloatLayout()  # for centering

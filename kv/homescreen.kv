@@ -27,13 +27,15 @@
                 theme_text_color: "Custom"
                 text_color: 1, 1, 1, 1
 
-            MDLabel:
-                id: sub_title
-                font_style: "H4"
-                halign: "center"
+            MDTextButton:
+                id: personal_weight
+                font_size: "35dp"
+                halign: "right"
                 text: "80"
-                theme_text_color: "Custom"
-                text_color: 1, 1, 1, 1
+                custom_color: 1, 1, 1, 1
+                size_hint:0.3,0.4
+                on_press:
+                    app.show_update_weight_dialog()
 
             MDLabel:
                 id: sub_title
@@ -42,7 +44,6 @@
                 text: "Monthly\nWorkouts"
                 theme_text_color: "Custom"
                 text_color: 1, 1, 1, 1
-
 #['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'Subtitle1', 'Subtitle2', 'Body1', 'Body2', 'Button', 'Caption', 'Overline', 'Icon']
             MDLabel:
                 id: sub_title
@@ -56,7 +57,7 @@
                 id: sub_title
                 font_style: "Caption"
                 halign: "center"
-                text: "Weight\n"
+                text: "Weight\n" +'(' + weight_units.text + ')'
                 theme_text_color: "Custom"
                 text_color: 1, 1, 1, 1
 
@@ -68,7 +69,7 @@
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
             pos_hint: {"center_x": .91, "center_y": .96}
-
+            opacity:0
         MDCard:
             orientation: "horizontal"
             padding: "8dp"
@@ -155,7 +156,7 @@
                 custom_color: 0, 0, 1, 1
                 font_style: 'caption'
                 on_release:
-                    print(3)
+                    app.change_screen1("previous_workouts_screen")
 
         ScrollView:
             id: records_scroll

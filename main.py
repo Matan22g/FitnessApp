@@ -16,6 +16,7 @@ from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
 from kivymd.uix.list import MDList, OneLineListItem, OneLineIconListItem
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.picker import MDDatePicker
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
@@ -57,6 +58,9 @@ if platform != 'android':
 class AddWorkoutContent(BoxLayout):
     pass
 
+
+class UpdateWeightContent(BoxLayout):
+    pass
 
 class Change_User_Name_Content(BoxLayout):
     pass
@@ -100,7 +104,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 1
+    debug = 0
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -120,7 +124,7 @@ class MainApp(MDApp):
     window_size = Window.size
     headline_text_size = int(math.sqrt(Window.size[0] * Window.size[0] + Window.size[1] * Window.size[
         1]) / 32)  # text_size adapted to window size - used for tabs title, and info title
-    last_session_date = 0
+    last_session_date = 0  # for dashboard quick view
     text_color = (1, 1, 1, 1)
     workout_edit_mode = 0
     exc_pie_dic = {"None": 100}
@@ -130,8 +134,11 @@ class MainApp(MDApp):
     workouts_trained_amount = {}
     today_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     units = "Imperial"  # kg to lbs 1 to 2.20462262
-    kg_to_pounds = 2.20462262
+    kg_to_pounds = 2.2
     user_name = ''
+    weights = {}  # dict of dates and weight measures
+    weight_date = 0
+    temp_num_filter = ''
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -166,7 +173,9 @@ class MainApp(MDApp):
         if key == 27:
             try:
                 if self.root.ids['screen_manager1'].current == "homescreen":
-                    self.stop()
+                    from jnius import autoclass
+                    activity = autoclass('org.kivy.android.PythonActivity')
+                    activity.moveTaskToBack(True)
                     return True
             except:
                 pass
@@ -204,6 +213,7 @@ class MainApp(MDApp):
                 self.sessions = {}
             self.load_workout_data()
             self.load_settings_data()
+            self.load_weight_data()
         else:
             self.clear_user_app_data()
             self.update_dashboard_stats()
@@ -232,15 +242,7 @@ class MainApp(MDApp):
         else:
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
 
-    def load_settings_data(self):
-        settings_dict = self.user_data['settings']
-        if "units" in settings_dict:
-            units = settings_dict["units"]
-            self.units = units
-            # if units == 'metric':
-            #     self.root.ids['settingsscreen'].ids.metric.active = True
-            # else:
-            #     self.root.ids['settingsscreen'].ids.imperial.active = True
+
 
     def on_logout(self):
         self.clear_user_app_data()
@@ -659,16 +661,15 @@ class MainApp(MDApp):
             size_hint=(0.9, 0.2),
             title="Do you wish to resume " + session[3],
             buttons=[
-
-                MDFlatButton(
-                    text="OK",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.resume_session
-                ),
                 MDFlatButton(
                     text="CANCEL",
                     text_color=self.theme_cls.primary_color,
                     on_release=self.dismiss_dialog
+                ),
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.resume_session
                 )
             ],
         )
@@ -889,15 +890,15 @@ class MainApp(MDApp):
             buttons=[
 
                 MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                ),
+                MDFlatButton(
                     text="OK",
                     text_color=self.theme_cls.primary_color,
                     on_release=self.create_new_workout
                 ),
-                MDFlatButton(
-                    text="CANCEL",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.dismiss_dialog
-                )
             ],
         )
         self.dialog.open()
@@ -915,15 +916,15 @@ class MainApp(MDApp):
             buttons=[
 
                 MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                ),
+                MDFlatButton(
                     text="OK",
                     text_color=self.theme_cls.primary_color,
                     on_release=self.change_user_name_callback
                 ),
-                MDFlatButton(
-                    text="CANCEL",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=self.dismiss_dialog
-                )
             ],
         )
         self.dialog.open()
@@ -1002,14 +1003,15 @@ class MainApp(MDApp):
                                title="Delete " + workout_name + "?",
                                text="Warning: Deleting " + workout_name + " cannot be undone\nYour workout history however wont be deleted",
                                buttons=[
+
+                                   MDFlatButton(
+                                       text="CANCEL", text_color=self.theme_cls.primary_color,
+                                       on_release=self.cancel_del_workout
+                                   ),
                                    MDFlatButton(
                                        text="DELETE", text_color=self.theme_cls.primary_color,
                                        on_release=self.del_workout
                                    ),
-                                   MDFlatButton(
-                                       text="CANCEL", text_color=self.theme_cls.primary_color,
-                                       on_release=self.cancel_del_workout
-                                   )
                                ],
                                )
         self.dialog.open()
@@ -1201,6 +1203,7 @@ class MainApp(MDApp):
         else:
             return False
 
+    # filter for names input, allows numbers and english letters only
     def proper_input_filter(self, input_to_check, indicator):
 
         if self.debug:
@@ -1219,6 +1222,25 @@ class MainApp(MDApp):
         else:
             return ""
 
+    # allow for 6 digits top as input
+    # def proper_number_filter(self, input_to_check, indicator):
+    #     self.temp_num_filter = self.dialog.content_cls.children[1].text
+    #     if len(self.temp_num_filter) < 6:
+    #         if input_to_check.isnumeric() or input_to_check== '.':
+    #             if input_to_check== '.':
+    #                 if self.temp_num_filter and '.' not in self.temp_num_filter:
+    #                     self.temp_num_filter += '.'
+    #                     if self.temp_num_filter[0] =='.':
+    #                         return ''
+    #                     else:
+    #                         self.dialog.content_cls.children[1].text = self.temp_num_filter
+    #                         return ''
+    #                 else:
+    #                     return ''
+    #             self.temp_num_filter += input_to_check
+    #             return input_to_check
+    #     return ''
+
     def proper_email_filter(self, input_to_check, indicator):
 
         if self.debug:
@@ -1228,6 +1250,47 @@ class MainApp(MDApp):
         if asci_val > 20 and asci_val < 177:
             return input_to_check
             return ""
+
+    def text_input_length_filter(self, widget, text, leng):
+        if len(text) > leng:
+            widget.text = text[:leng]
+
+    # additional filter for number inputs, checking length and if negative, and decimal precision
+    def input_number_check(self, widget, text):
+        new_text = text
+        if new_text and new_text != '.' and new_text != '-':
+
+            try:
+                number = int(new_text)
+            except ValueError:
+                number = float(new_text)
+
+            if number < 0:
+                new_text = str(number * -1)
+                print("isnegative now is:", new_text)
+
+            if len(new_text) > 6:
+                new_text = new_text[:6]
+                widget.text = new_text[:6]
+                print("longer than 6 now:", new_text)
+
+                return
+
+            if '.' in new_text:
+                new_text = self.check_after_float_point(new_text)
+                print("was . now :", new_text)
+
+        if new_text == '.' or new_text == '-':
+            new_text = ''
+        widget.text = new_text
+
+    # help method for input_number_check
+    def check_after_float_point(self, text):
+        text_len = len(text)
+        dot_ind = text.find('.')
+        if text_len - dot_ind > 2:
+            return text[:dot_ind + 3]
+        return text
 
     # Uploads all kind of Data Methods - Session / Workout
     def upload_data(self, *args):
@@ -1268,6 +1331,8 @@ class MainApp(MDApp):
         elif isinstance(req_data, str):
             # req_data.lower() == self.user_name.lower():
             return
+        elif req_data == str(self.weights):
+            print("weight_uploaded")
         else:
             self.running_session = 0
             self.change_screen1("workoutsscreen")
@@ -1421,12 +1486,6 @@ class MainApp(MDApp):
     def hide_loading_screen(self, *args):
         self.popup.dismiss()
 
-    def upload_settings(self):
-        units = self.units
-        link = "https://gymbuddy2.firebaseio.com/%s/settings.json?auth=%s" % (self.local_id, self.id_token)
-        settings_data = {"units": units}
-        data = json.dumps(settings_data)
-        self.upload_data(data, link, 4)
 
     def change_user_name(self, user_name):
         self.user_name = user_name
@@ -1444,5 +1503,201 @@ class MainApp(MDApp):
         self.upload_data(data_lower, link_lower, 4)
         self.upload_data(data, link, 4)
 
+    # Settings Methods
+    def upload_settings(self):
+        units = self.units
+        link = "https://gymbuddy2.firebaseio.com/%s/settings.json?auth=%s" % (self.local_id, self.id_token)
+        settings_data = {"units": units}
+        data = json.dumps(settings_data)
+        self.upload_data(data, link, 4)
 
+    def load_settings_data(self):
+        settings_dict = self.user_data['settings']
+        if "units" in settings_dict:
+            units = settings_dict["units"]
+            self.units = units
+            # if units == 'metric':
+            #     self.root.ids['settingsscreen'].ids.metric.active = True
+            # else:
+            #     self.root.ids['settingsscreen'].ids.imperial.active = True
+
+    # Personal weight methods
+
+    def upload_weight_data(self):
+        link = "https://gymbuddy2.firebaseio.com/%s/weights.json?auth=%s" % (self.local_id, self.id_token)
+        data_str = '{'
+        for key in self.weights:
+            data_str += '"' + key.strftime("%d/%m/%Y") + '"'
+            data_str += ':'
+            data_str += '"' + str(self.weights[key]) + '"'
+            data_str += ','
+        data_str = data_str[:-1]
+        data_str += '}'
+
+        data = json.dumps(data_str)
+
+        # max_date = datetime.strptime(self.app.today_date[:10], '%d/%m/%Y').date()
+
+        self.upload_data(data, link, 4)
+
+    def load_weight_data(self):
+        print("trying to load weight")
+        if 'weights' in self.user_data:
+            weights = self.user_data['weights']
+            print(weights)
+            print(type(json.loads(weights)))
+            weights = json.loads(weights)
+            print(weights)
+            for key in weights:
+                date_key = datetime.strptime(key, '%d/%m/%Y').date()
+                self.weights[date_key] = weights[key]
+            self.sort_weights()
+            print(self.weights)
+
+    def show_update_weight_dialog(self):
+        self.weight_date = self.today_date[:10]
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.4),
+            title="Weight",
+            type="custom",
+            content_cls=UpdateWeightContent(),
+            buttons=[
+                MDFlatButton(
+                    text="Show Stats",
+                    text_color=(0.5, 0.5, 0.5, 1),
+                    on_release=self.show_weight_stats
+
+                ),
+
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                ),
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=self.add_weight_meas
+                ),
+            ],
+        )
+        self.dialog.open()
+
+    def show_date_picker_for_weight(self, *args):
+        self.dialog.dismiss()
+        max_date = datetime.strptime(self.today_date[:10], '%d/%m/%Y').date()
+
+        MDDatePicker(self.set_previous_date, max_date=max_date).open()
+
+    def set_previous_date(self, date_obj):
+        new_date = date_obj.strftime("%d/%m/%Y")
+        self.weight_date = new_date
+        self.dialog.content_cls.children[0].text = new_date
+        self.dialog.open()
+
+    def add_weight_meas(self, *args):
+
+        print(self.dialog.content_cls.children[0].text)
+        print(self.dialog.content_cls.children[1].text)
+        self.dialog.dismiss()
+        Snackbar(text="Weight Saved").show()
+
+        date_to_save = self.dialog.content_cls.children[0].text
+        date_to_save = datetime.strptime(date_to_save, '%d/%m/%Y').date()
+
+        weight_to_save = self.dialog.content_cls.children[1].text
+        if self.units != 'metric':
+            weight_to_save = str(float(weight_to_save) / self.kg_to_pounds)
+
+        self.weights[date_to_save] = weight_to_save
+        self.sort_weights()
+        self.upload_weight_data()
+
+    # input floating number and returns 6 digits only 2 decimal point accuracy
+    # def length_filter(self, number_input):
+    #
+    #     number_input = round(number_input, 2)
+    #     number_input = str(number_input)
+    #
+    #     if len(number_input) > 5:
+    #         number_input = number_input[:6]
+    #         if number_input[-1] == '.':
+    #             number_input = number_input[:-1]
+    #
+    #     return float(number_input)
+
+    def set_current_weight(self, weight, date):
+        print("Setting current weight", weight, date)
+
+        self.root.ids['exercise_stats_screen'].ids["record"].text = "Current Weight"
+        month_abb = calendar.month_abbr[date.month]
+        date = str(date.day) + " " + month_abb + ", " + str(date.year)
+
+        if weight:
+
+            # self.root.ids['exercise_stats_screen'].ids["record_date"].text = date
+            self.root.ids['exercise_stats_screen'].ids["current_weight_date"].text = date
+
+            if self.units == "metric":
+                self.root.ids['exercise_stats_screen'].ids["current_weight_unit"].text = " Kg"
+                self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
+
+
+            else:
+                self.root.ids['exercise_stats_screen'].ids["current_weight_unit"].text = " Lbs"
+                self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
+
+                weight = str(round(float(weight) * self.kg_to_pounds, 2))
+
+            self.root.ids['exercise_stats_screen'].ids["current_weight"].text = weight
+
+            self.root.ids['homescreen'].ids["personal_weight"].text = weight
+
+        else:
+            self.root.ids['exercise_stats_screen'].ids["current_weight_label"].text = "N/A"
+            self.root.ids['exercise_stats_screen'].ids["current_weight_date"].text = ""
+
+    def show_weight_stats(self, *args):
+        self.dialog.dismiss()
+
+        today = datetime.today()
+
+        self.stats_to_weight_mode()
+        self.sort_weights()
+
+        self.change_screen1("exercise_stats_screen")
+
+    def sort_weights(self):
+        dates = [date for date in self.weights if date != "record"]
+        dates.sort(reverse=True)
+        if dates:
+            self.set_current_weight(self.weights[dates[0]], dates[0])
+
+        dates_dict = {}
+        for date in dates:
+            year = int(date.year)
+            month = int(date.month)
+
+            if year not in dates_dict:
+                dates_dict[year] = {}
+
+            if month not in dates_dict[year]:
+                dates_dict[year][month] = [date]
+
+            else:
+                dates_dict[year][month].append(date)
+        self.root.ids['exercise_stats_screen'].session_date = dates_dict
+
+    def stats_to_weight_mode(self):
+        self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 0
+        self.root.ids['exercise_stats_screen'].ids["current_weight_card"].opacity = 1
+        self.root.ids['exercise_stats_screen'].sessions = self.weights
+        self.root.ids['exercise_stats_screen'].exericse_name = "Personal Weight"
+        self.root.ids['exercise_stats_screen'].exericse_mode = 0
+
+    def stats_to_exercise_mode(self):
+        self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 1
+        self.root.ids['exercise_stats_screen'].ids["current_weight_card"].opacity = 0
+        self.root.ids['exercise_stats_screen'].exericse_mode = 1
 MainApp().run()

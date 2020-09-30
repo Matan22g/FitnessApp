@@ -4,12 +4,15 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
+from kivymd.uix import taptargetview
 from kivymd.uix.button import MDIconButton, MDFlatButton
 from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.label import MDLabel
+from kivymd.uix.taptargetview import MDTapTargetView
+
 from customKv.tab import MDTabsBase, MDTabs
 
 import copy
@@ -43,13 +46,17 @@ class WorkoutScreen(Screen):
     exc_to_del = ""
     tabs_by_split = {}
     create_mode = 0  # used when creating new workout
+    tap_target_view = 0
 
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
 
+
     def on_enter(self, *args):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
+        if self.create_mode:
+            self.start_add_split_animation()
 
     # def on_pre_leave(self, *args):
     #     self.app.clear_canvas()
@@ -59,9 +66,28 @@ class WorkoutScreen(Screen):
         # always deleting all splits and remaining with one tab.
         self.reset_tabs()
 
+    def stop_add_split_animation(self):
+        if self.is_animation_running():
+            self.app.root.ids['workoutscreen'].tap_target_view.stop()
+
+    def is_animation_running(self):
+        print(self.app.root.ids['workoutscreen'].tap_target_view.state)
+        if self.app.root.ids['workoutscreen'].tap_target_view.state == 'close':
+            return False
+        return True
+
+    def start_add_split_animation(self):
+        self.app.root.ids['workoutscreen'].tap_target_view.start()
+
     def on_pre_enter(self, *args):
         self.app.add_bottom_canvas()
-
+        self.app.root.ids['workoutscreen'].tap_target_view = MDTapTargetView(
+            widget=self.ids.add_split,
+            title_text="Add Splits",
+            description_text="press this button to add split days",
+            widget_position="right_top",
+            target_circle_color=(1, 0, 0)
+        )
         if self.app.debug:
             print("entering workout screen")
             print("create mode:", self.create_mode)
@@ -128,7 +154,7 @@ class WorkoutScreen(Screen):
         elif not num_of_tabs:
             self.add_split()
         screen_manager = self.app.root.ids['screen_manager1']
-        if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen":
+        if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen" and screen_manager.current != "exercise_sessions_screen":
             self.app.root.ids['toolbar'].right_action_items = [
                 ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
@@ -410,15 +436,15 @@ class WorkoutScreen(Screen):
             buttons=[
 
                 MDFlatButton(
+                    text="Cancel",
+                    text_color=self.app.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                ),
+                MDFlatButton(
                     text="OK",
                     text_color=self.app.theme_cls.primary_color,
                     on_release=self.add_exercise
                 ),
-                MDFlatButton(
-                    text="Cancel",
-                    text_color=self.app.theme_cls.primary_color,
-                    on_release=self.dismiss_dialog
-                )
             ],
         )
         self.dialog.open()
@@ -446,14 +472,15 @@ class WorkoutScreen(Screen):
         self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                title="Delete " + exc_name + "?",
                                buttons=[
+
+                                   MDFlatButton(
+                                       text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.cancel_exc_del
+                                   ),
                                    MDFlatButton(
                                        text="DELETE", text_color=self.app.theme_cls.primary_color,
                                        on_release=self.del_exc
                                    ),
-                                   MDFlatButton(
-                                       text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                       on_release=self.cancel_exc_del
-                                   )
                                ],
                                )
         self.dialog.open()
@@ -497,14 +524,15 @@ class WorkoutScreen(Screen):
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Delete " + "Split " + str(split_to_del) + "?",
                                    buttons=[
+
+                                       MDFlatButton(
+                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.dismiss_dialog
+                                       ),
                                        MDFlatButton(
                                            text="DELETE", text_color=self.app.theme_cls.primary_color,
                                            on_release=self.del_active_split
                                        ),
-                                       MDFlatButton(
-                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.dismiss_dialog
-                                       )
                                    ],
                                    )
         else:
@@ -555,14 +583,15 @@ class WorkoutScreen(Screen):
                                title="Are you sure you want to quit?",
                                text= "You will lose all unsaved progress.",
                                buttons=[
+
+                                   MDFlatButton(
+                                       text="EXIT", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.cancel_edit_mode
+                                   ),
                                    MDFlatButton(
                                        text="STAY", text_color=self.app.theme_cls.primary_color,
                                        on_release=self.dismiss_dialog
                                    ),
-                                   MDFlatButton(
-                                       text="EXIT", text_color=self.app.theme_cls.primary_color,
-                                       on_release=self.cancel_edit_mode
-                                   )
                                ],
                                )
         self.dialog.open()
@@ -612,14 +641,15 @@ class WorkoutScreen(Screen):
             self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
                                    title="Save " + self.workout_name + "?",
                                    buttons=[
+
+                                       MDFlatButton(
+                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.dismiss_dialog
+                                       ),
                                        MDFlatButton(
                                            text="SAVE", text_color=self.app.theme_cls.primary_color,
                                            on_release=self.save_workout
                                        ),
-                                       MDFlatButton(
-                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.dismiss_dialog
-                                       )
                                    ],
                                    )
         else:

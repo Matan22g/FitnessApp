@@ -65,6 +65,9 @@ class Year_Plot(RelativeLayout):
         intYmajor = int((intYmax - intYmin) / 5)
 
         degree_sign = u'\N{DEGREE SIGN}'
+        ylabel = f'Weight (' + units + ')'
+        if not self.app.root.ids['exercise_stats_screen'].exericse_mode:
+            ylabel = f'Avg Weight (' + units + ')'
 
         self.graph = Graph(
             pos_hint={'x': 0, 'y': 0},
@@ -76,14 +79,14 @@ class Year_Plot(RelativeLayout):
             y_grid=True,
             tick_color=[0, 0, 0, 1],
             x_axis=strMth,
-            xmin=intXmin,
-            xmax=intXmax,
+            xmin=1,
+            xmax=12,
             ymin=0,
             ymax=intYmax * 1.25,
             x_grid_label=True,
             y_grid_label=True,
             xlabel='Month',
-            ylabel=f'Weight (' + units + ')',
+            ylabel=ylabel,
             draw_border=True,
         )
 
@@ -195,6 +198,7 @@ class ExerciseStatsScreen(Screen):
     curr_month_best = ''
     curr_year_best = ''
     exericse_name = ' '
+    exercise_mode = 1
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -208,6 +212,11 @@ class ExerciseStatsScreen(Screen):
             pass
 
     def on_pre_enter(self, *args):
+        if self.app.root.ids['exercise_stats_screen'].exericse_mode == 0:
+            self.exercise_mode = 0
+        else:
+            self.exercise_mode = 1
+
         self.curr_graph = 0
         self.month_graph = 0
         self.year_graph = 0
@@ -228,6 +237,7 @@ class ExerciseStatsScreen(Screen):
             self.curr_month = [max_year, max_month]
             self.ids.curr_label.text = str(max_year)
         else:
+
             self.session_date = {}
 
             self.curr_month = [self.today_date.year, self.today_date.month]
@@ -259,36 +269,56 @@ class ExerciseStatsScreen(Screen):
         best_weight = 0
         best_set = 0
 
+        sum_of_weight = 0
+        total_meas = 0
+        avg_month_weight = 0
+
         for session_key in month_sessions_list:
-            session_exc = self.sessions[session_key][1]
             session_day = session_key.day
 
-            maybe_best_set = self.app.find_best_set(session_exc)
-            set = maybe_best_set.split()
-            maybe_best_weight = float(set[2])
-            maybe_best_reps = int(set[0])
+            if self.exercise_mode:
+                session_exc = self.sessions[session_key][1]
 
-            if month_set_list[session_day - 1] < maybe_best_weight:
-                month_set_list[session_day - 1] = maybe_best_weight
+                maybe_best_set = self.app.find_best_set(session_exc)
+                set = maybe_best_set.split()
+                maybe_best_weight = float(set[2])
+                maybe_best_reps = int(set[0])
 
-            if maybe_best_weight > best_weight:
-                best_set = maybe_best_set
-                best_weight = maybe_best_weight
-            elif maybe_best_weight == best_weight:
-                if best_set:
-                    if maybe_best_reps > int(best_set.split()[0]):
-                        best_set = maybe_best_set
-                        best_weight = maybe_best_weight
-                else:
+                if month_set_list[session_day - 1] < maybe_best_weight:
+                    month_set_list[session_day - 1] = maybe_best_weight
+
+                if maybe_best_weight > best_weight:
                     best_set = maybe_best_set
                     best_weight = maybe_best_weight
+                elif maybe_best_weight == best_weight:
+                    if best_set:
+                        if maybe_best_reps > int(best_set.split()[0]):
+                            best_set = maybe_best_set
+                            best_weight = maybe_best_weight
+                    else:
+                        best_set = maybe_best_set
+                        best_weight = maybe_best_weight
+
+            else:
+                session_exc = self.sessions[session_key]
+
+                sum_of_weight += float(session_exc)
+                total_meas += 1
+
+                month_set_list[session_day - 1] = float(session_exc)
 
         best_set_of_the_month = best_set
         best_weight_of_the_month = best_weight
 
         if year not in self.stats_dict:
             self.stats_dict[year] = {}
-        self.stats_dict[year][month] = [list_of_days, month_set_list, best_set_of_the_month]
+
+        if self.exercise_mode:
+            self.stats_dict[year][month] = [list_of_days, month_set_list, best_set_of_the_month]
+        else:
+            if total_meas:
+                avg_month_weight = sum_of_weight / total_meas
+            self.stats_dict[year][month] = [list_of_days, month_set_list, "1  X  " + str(avg_month_weight)]
 
         self.by_year_dict[year] = {}
 
@@ -309,7 +339,8 @@ class ExerciseStatsScreen(Screen):
                 month_sets_lits = self.stats_dict[year][month][1]
                 Month_Plot.days = month_days_list
                 Month_Plot.weights = month_sets_lits
-                month_graph = Month_Plot(size_hint_y=None, height=self.app.window_size[1] / 2,
+                month_graph = Month_Plot(size_hint_y=None, height=self.app.window_size[1] / 2.2,
+                                         size_hint_x=None, width=self.app.window_size[0] * 0.95,
                                          pos_hint={"center_y": 0.3, "center_x": 0.5})
 
                 month_best_set = self.stats_dict[year][month][2]
@@ -347,9 +378,10 @@ class ExerciseStatsScreen(Screen):
             best_set_of_the_year = self.app.find_best_set(best_month_set_list)
             self.set_record(best_set_of_the_year, str(year))
             self.curr_year_best = best_set_of_the_year
-
+            print("Year_Plot.weights = best_set", best_set)
             Year_Plot.weights = best_set
-            year_graph = Year_Plot(size_hint_y=None, height=self.app.window_size[1] / 2,
+            year_graph = Year_Plot(size_hint_y=None, height=self.app.window_size[1] / 2.2,
+                                   size_hint_x=None, width=self.app.window_size[0] * 0.95,
                                    pos_hint={"center_y": 0.3, "center_x": 0.5})
 
             self.curr_graph = year_graph
@@ -443,6 +475,8 @@ class ExerciseStatsScreen(Screen):
         return False
 
     def set_record(self, record, period):
+        if len(period) > 4:
+            period = period[0:3]
         self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "Best of " + period
 
         if record:

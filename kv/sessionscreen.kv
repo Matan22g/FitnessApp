@@ -10,6 +10,7 @@
         helper_text_mode: "on_error"
         helper_text: "Enter text"
         input_filter: app.proper_input_filter
+        on_text: app.text_input_length_filter(self, self.text, 16)
 
 
 

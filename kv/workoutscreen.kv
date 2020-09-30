@@ -9,6 +9,14 @@
 
 <WorkoutScreen>:
     FloatLayout:
+        on_touch_down:
+        #backgroung press hides checkboxes
+            caller = args[0]
+            touch = args[1]
+#            print(touch.spos)
+            root.stop_add_split_animation()
+#            if touch.spos[1]>0.92 and touch.spos[0]>0.2: root.stop_add_split_animation()
+#            if touch.spos[1]>0.83 and touch.spos[1]<0.92 and touch.spos[0]<0.77: root.stop_add_split_animation()
 
         MDTabs_custom:
             size_hint: 1, .65

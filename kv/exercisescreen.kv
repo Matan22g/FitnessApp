@@ -155,6 +155,7 @@
             halign: "center"
             text: "0"
             font_size: "32.5sp"
+            on_text: app.input_number_check(self, self.text)
 
         MDTextField:
             id: weight
@@ -162,6 +163,7 @@
             input_filter: 'float'
             helper_text: "Kg" if app.units == "metric" else "Lbs"
             helper_text_mode: "persistent"
+            on_text: app.input_number_check(self, self.text)
 
             font_size: "32.5sp"
             pos_hint: {"x": .575, "top": .805}

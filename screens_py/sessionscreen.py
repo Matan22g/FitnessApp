@@ -114,11 +114,12 @@ class SessionScreen(Screen):
             print("session screen, view mode:", self.view_mode)
             print("session workout", self.workout)
         self.app.title = "Session"
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
+
         if not self.view_mode:
             self.app.add_bottom_canvas()
 
             # self.app.root.ids['toolbar'].right_action_items = [['content-save', lambda x: self.save_session()]]
-            self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
             # First visit: setting date to today's date, and loading all exc to the list.
             self.show_checkbox(False)
@@ -139,7 +140,7 @@ class SessionScreen(Screen):
             self.load_session()
             self.hide_edit_buttons(False)
             # self.app.change_title(session.workout_name)
-            self.app.change_title("Push Harder")
+            self.app.change_title("Running Session")
 
         else:
 
@@ -517,14 +518,15 @@ class SessionScreen(Screen):
                                    title=msg,
                                    text=text,
                                    buttons=[
+
+                                       MDFlatButton(
+                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                           on_release=self.cancel_save
+                                       ),
                                        MDFlatButton(
                                            text="SAVE", text_color=self.app.theme_cls.primary_color,
                                            on_release=self.upload_session
                                        ),
-                                       MDFlatButton(
-                                           text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                           on_release=self.cancel_save
-                                       )
                                    ],
                                    )
         self.dialog.open()
@@ -610,14 +612,15 @@ class SessionScreen(Screen):
                                        title=msg,
                                        text=warning,
                                        buttons=[
+
+                                           MDFlatButton(
+                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.cancel_del_exc
+                                           ),
                                            MDFlatButton(
                                                text="DELETE", text_color=self.app.theme_cls.primary_color,
                                                on_release=self.del_exc
                                            ),
-                                           MDFlatButton(
-                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                               on_release=self.cancel_del_exc
-                                           )
                                        ],
                                        )
         self.dialog.open()
@@ -694,7 +697,8 @@ class SessionScreen(Screen):
         self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
     def show_example_date_picker(self, *args):
-        MDDatePicker(self.set_previous_date).open()
+        max_date = datetime.strptime(self.app.today_date[:10], '%d/%m/%Y').date()
+        MDDatePicker(self.set_previous_date, max_date=max_date).open()
 
     def set_previous_date(self, date_obj):
         new_date = date_obj.strftime("%d/%m/%Y")
@@ -819,11 +823,8 @@ class ExerciseScreen(Screen):
 
     def add_set(self):
         weight = self.ids["weight"].text
-        if len(weight) > 6:
-            weight = weight[:6]
-            if weight[-1] == '.':
-                weight = weight[:-1]
         currWeight = float(weight)
+
         if self.app.units != 'metric':
             currWeight = round(currWeight / self.app.kg_to_pounds, 2)
 
@@ -969,3 +970,4 @@ class ExerciseScreen(Screen):
             self.repScale = new_scale
         else:
             self.repScale = 1
+

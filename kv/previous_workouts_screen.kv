@@ -11,7 +11,7 @@
 
         MDIconButton:
             id: date_button
-            pos_hint: {"center_x": .83, "top": 1.005}
+            pos_hint: {"center_x": .83, "top": 0.975}
             icon: "tune"
             user_font_size: "25sp"
             theme_text_color: "Custom"
@@ -20,16 +20,16 @@
 
         MDLabel:
             id: month_to_view
-            pos_hint: {"center_x": 0.57, "top":1.05}
+            pos_hint: {"center_x": 0.57, "top":1.02}
             size_hint: (1, .2)
-            font_style: "H5"
+            font_style: "H4"
             text: "Jul"
             theme_text_color: "Custom"
             text_color: 1,1,1,1
 
         MDLabel:
             id: num_to_delete
-            pos_hint: {"center_x": 1.0175, "top":1.02}
+            pos_hint: {"center_x": 1.01, "top":0.99}
             size_hint: (.47, .15)
             font_size: "16sp"
             halign: "left"
@@ -39,7 +39,7 @@
 
         MDIconButton:
             id: delete_sessions
-            pos_hint: {"center_x": 0.8525, "top":1.015}
+            pos_hint: {"center_x": 0.8525, "top":0.985}
             icon: "trash-can-outline"
             user_font_size: "32sp"
             theme_text_color: "Custom"
@@ -48,9 +48,9 @@
 
         ScrollView:
             id: sessions_scroll
-            pos_hint: {"top": .8725}
+            pos_hint: {"top": .8745}
             size_hint_y: None
-            size_hint: 1, .87
+            size_hint: 1, .874
             GridLayout:
                 # sets_grid
                 id: sessions_grid
@@ -60,3 +60,4 @@
                 height: self.minimum_height
                 row_force_default: True
                 row_default_height: '100dp'
+                padding:20

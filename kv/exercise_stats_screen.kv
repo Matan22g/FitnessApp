@@ -39,7 +39,7 @@
 
         MDTabs:
             id: md_tabs
-            pos_hint: {"center_x": 0.75, "top": 0.96}
+            pos_hint: {"center_x": 0.79, "top": 0.95}
             background_color: 0, 0, 0, 0
             text_color_normal: 0, 0, 0, 1
             text_color_active: 1, 1, 1, 1
@@ -53,10 +53,10 @@
             size_hint_y:0.1
 
             Tab:
-                text: '[size=' + str(app.headline_text_size)+']Year[/size]'
+                text: '[size=' + str(int(0.9*app.headline_text_size))+']Year[/size]'
 
             Tab:
-                text: '[size=' + str(app.headline_text_size)+']Month[/size]'
+                text: '[size=' + str(int(0.9*app.headline_text_size))+']Month[/size]'
 
         MDCard:
             id: no_data
@@ -79,6 +79,76 @@
                 halign:'center'
                 pos_hint: {"center_x": .5, "center_y": 0.5}
                 size_hint_y: 0.75
+
+        MDCard:
+            id: current_weight_card
+            elevation: 0
+            radius:[80]
+            orientation: "vertical"
+            padding: "16dp"
+            size_hint: None, None
+            size: "185dp", "120dp"
+            pos_hint: {"center_x":0.5,"y": .6}
+            background : "resources/card_back.png"
+            BoxLayout:
+                orientation:'horizontal'
+                size_hint_y: 0.4
+                MDLabel:
+                    id: current_weight_label
+                    text: "Current Weight"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"H6"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+
+            MDSeparator:
+                height: "1dp"
+                color:app.text_color
+
+            GridLayout:
+                cols:2
+                rows:2
+                MDLabel:
+                    id: current_weight
+                    theme_text_color: "Primary"
+                    text: "12"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"H4"
+                    halign:'center'
+
+                MDLabel:
+                    id: current_weight_date
+                    text: "Overall Best"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"Caption"
+                    size_hint_y: None
+                    size_hint_x: 0.3
+                    height: self.texture_size[1]
+                    halign:'center'
+
+                MDLabel:
+                    id: current_weight_unit
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    text: " Reps"
+                    font_style:"Caption"
+                    size_hint_y:None
+                    height:20
+                    halign:'center'
+
+                MDLabel:
+                    id: nothing
+                    text: ""
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"Caption"
+                    size_hint_y: None
+                    size_hint_x: 0.3
+                    height: self.texture_size[1]
 
         ScrollView:
             id: records_scroll
@@ -106,12 +176,12 @@
                 row_default_height: '125dp'
 
                 MDCard:
-                    elevation: 1
+                    elevation: 5
                     radius:[80]
                     orientation: "vertical"
                     padding: "16dp"
                     size_hint: None, None
-                    size: "240dp", "110dp"
+                    size: "190dp", "110dp"
                     pos_hint:{"center_y": 0.5, "center_x": 0.5}
                     background : "resources/card_back.png"
                     BoxLayout:
@@ -133,7 +203,7 @@
                             text_color: app.text_color
                             font_style:"Caption"
                             size_hint_y: None
-                            size_hint_x: 0.4
+                            size_hint_x: 0.3
                             height: self.texture_size[1]
 
                     MDSeparator:
@@ -149,33 +219,38 @@
                             text: "12"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
+
                         MDLabel:
+                            id: best_x_label
                             theme_text_color: "Primary"
                             text: "X"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
 
                         MDLabel:
                             id: best_weight
                             text: "120.78"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
                             size_hint_x: 2
 
                         MDLabel:
+                            id: best_reps_unit
                             theme_text_color: "Custom"
                             text_color: app.text_color
                             text: " Reps"
-                            user_font_size: "20sp"
+                            font_style:"Caption"
                             size_hint_y:None
                             height:20
                         MDLabel:
+                            id: best_weight_mode_unit
                             theme_text_color: "Custom"
                             text_color: app.text_color
                             text: ""
+                            font_style:"Caption"
                             size_hint_y:None
                             height:20
                         MDLabel:
@@ -183,16 +258,17 @@
                             text: " Kg"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            user_font_size: "20sp"
+                            font_style:"Caption"
                             size_hint_y:None
                             height:20
                 MDCard:
-                    elevation: 1
+                    id: monthly_record_card
+                    elevation: 0
                     radius:[80]
                     orientation: "vertical"
                     padding: "16dp"
                     size_hint: None, None
-                    size: "240dp", "110dp"
+                    size: "190dp", "110dp"
                     pos_hint:{"center_y": 0.5, "center_x": 0.5}
                     background : "resources/card_back.png"
 
@@ -208,20 +284,24 @@
                     MDSeparator:
                         height: "1dp"
                         color:app.text_color
+
                     GridLayout:
                         cols:3
                         rows:2
+
                         MDLabel:
                             id: best_month_reps
                             text: "12"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
+
                         MDLabel:
+                            id: monthly_x_label
                             text: "X"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
 
                         MDLabel:
                             id: best_month_weight
@@ -229,17 +309,20 @@
                             size_hint_x: 2
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            font_style:"H4"
+                            font_style:"H5"
                             size_hint_x: 2
 
                         MDLabel:
+                            id: reps_unit
                             text: " Reps"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            user_font_size: "20sp"
+                            font_style:"Caption"
                             size_hint_y:None
                             height:20
+
                         MDLabel:
+                            id: weight_mode_unit
                             theme_text_color: "Primary"
                             text: ""
                             size_hint_y:None
@@ -249,6 +332,6 @@
                             text: " Kg"
                             theme_text_color: "Custom"
                             text_color: app.text_color
-                            user_font_size: "20sp"
+                            font_style:"Caption"
                             size_hint_y:None
                             height:20

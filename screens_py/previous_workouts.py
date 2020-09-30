@@ -317,13 +317,13 @@ class PreviousWorkoutsScreen(Screen):
                                        text=warning,
                                        buttons=[
                                            MDFlatButton(
+                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                               on_release=self.cancel_del_exc
+                                           ),
+                                           MDFlatButton(
                                                text="DELETE", text_color=self.app.theme_cls.primary_color,
                                                on_release=self.del_session
                                            ),
-                                           MDFlatButton(
-                                               text="CANCEL", text_color=self.app.theme_cls.primary_color,
-                                               on_release=self.cancel_del_exc
-                                           )
                                        ],
                                        )
         self.dialog.open()
