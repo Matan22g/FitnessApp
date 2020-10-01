@@ -247,7 +247,7 @@ class ExerciseStatsScreen(Screen):
             self.ids.no_data.opacity = 1
 
         self.app.root.ids['exercise_stats_screen'].ids["md_tabs"].switch_tab(
-            '[size=' + str(self.app.headline_text_size) + ']Year[/size]')
+            '[size=' + str(int(0.9 * self.app.headline_text_size)) + ']Year[/size]')
 
         try:
             self.app.change_title(self.exericse_name + " Stats")
@@ -343,9 +343,13 @@ class ExerciseStatsScreen(Screen):
                                          size_hint_x=None, width=self.app.window_size[0] * 0.95,
                                          pos_hint={"center_y": 0.3, "center_x": 0.5})
 
-
                 month_best_set = self.stats_dict[year][month][2]
-                self.set_record(month_best_set, new_label)
+
+                if self.exercise_mode:
+                    self.set_record(month_best_set, new_label)
+                else:
+                    self.set_avg_weight(month_best_set, new_label)
+
                 self.curr_month_best = month_best_set
 
                 self.curr_graph = month_graph
@@ -358,11 +362,12 @@ class ExerciseStatsScreen(Screen):
             else:
                 self.ids.no_data.opacity = 1
                 self.set_record(0, new_label)
+                self.set_avg_weight(0, new_label)
 
         else:
             self.ids.no_data.opacity = 1
             self.set_record(0, new_label)
-
+            self.set_avg_weight(0, new_label)
     def add_year_plot(self, year):
         try:
             self.ids.stats_layout.remove_widget(self.curr_graph)
@@ -376,9 +381,16 @@ class ExerciseStatsScreen(Screen):
                 best_set[month - 1] = float(best_month_set.split()[2])
                 best_month_set_list.append(best_month_set)
 
-            best_set_of_the_year = self.app.find_best_set(best_month_set_list)
-            self.set_record(best_set_of_the_year, str(year))
-            self.curr_year_best = best_set_of_the_year
+            if self.exercise_mode:
+                best_set_of_the_year = self.app.find_best_set(best_month_set_list)
+                self.set_record(best_set_of_the_year, str(year))
+                self.curr_year_best = best_set_of_the_year
+
+            else:
+                avg_weight = self.find_avarage_weight(best_month_set_list)
+                self.set_avg_weight(avg_weight, str(year))
+                self.curr_year_best = avg_weight
+
             print("Year_Plot.weights = best_set", best_set)
             Year_Plot.weights = best_set
             year_graph = Year_Plot(size_hint_y=None, height=self.app.window_size[1] / 2.2,
@@ -395,7 +407,23 @@ class ExerciseStatsScreen(Screen):
 
         else:
             self.ids.no_data.opacity = 1
-            self.set_record(0, str(year))
+
+            if self.exercise_mode:
+                self.set_record(0, str(year))
+            else:
+                self.set_avg_weight(0, str(year))
+
+    def find_avarage_weight(self, list_of_sets):
+        sum = 0
+        num_of_weights = 0
+        avg = 0
+        for set in list_of_sets:
+            weight = set.split()[2]
+            sum += float(weight)
+            num_of_weights += 1
+        if num_of_weights:
+            avg = sum / num_of_weights
+        return "1  X  " + str(avg)
 
     def on_tab_switch(self, *args):
         period = args[3][9:14]
@@ -411,15 +439,21 @@ class ExerciseStatsScreen(Screen):
             month_abb = calendar.month_abbr[self.curr_month[1]]
             new_label = month_abb + " ," + str(self.curr_month[0])
             self.ids.curr_label.text = new_label
-            self.set_record(self.curr_month_best, new_label)
-
+            if self.exercise_mode:
+                self.set_record(self.curr_month_best, new_label)
+            else:
+                self.set_avg_weight(self.curr_month_best, new_label)
         else:
             if self.year_graph:
                 self.ids.stats_layout.add_widget(self.year_graph)
             self.curr_graph = self.year_graph
             new_label = str(self.curr_year)
             self.ids.curr_label.text = new_label
-            self.set_record(self.curr_year_best, new_label)
+
+            if self.exercise_mode:
+                self.set_record(self.curr_year_best, new_label)
+            else:
+                self.set_avg_weight(self.curr_year_best, new_label)
 
     def switch_date(self, *args):
         print(args[0].icon[8:])
@@ -500,3 +534,24 @@ class ExerciseStatsScreen(Screen):
 
             self.app.root.ids['exercise_stats_screen'].ids["best_month_reps"].text = "0"
             self.app.root.ids['exercise_stats_screen'].ids["best_month_weight"].text = "0"
+
+    def set_avg_weight(self, avg_weight, period):
+        if avg_weight:
+            avg_weight = avg_weight.split()[2]
+
+        self.app.root.ids['exercise_stats_screen'].ids["average_weight_period"].text = "for " + period
+
+        if avg_weight:
+
+            if self.app.units == "metric":
+                self.app.root.ids['exercise_stats_screen'].ids["average_weight_unit"].text = " Kg"
+
+            else:
+                self.app.root.ids['exercise_stats_screen'].ids["average_weight_unit"].text = " Lbs"
+                avg_weight = str(round(float(avg_weight) * self.app.kg_to_pounds, 2))
+
+            self.app.root.ids['exercise_stats_screen'].ids["average_weight"].text = avg_weight
+        else:
+            # self.app.root.ids['exercise_stats_screen'].ids["best_month_title"].text = "N/A"
+
+            self.app.root.ids['exercise_stats_screen'].ids["average_weight"].text = "0"

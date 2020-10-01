@@ -88,7 +88,7 @@
             padding: "16dp"
             size_hint: None, None
             size: "185dp", "120dp"
-            pos_hint: {"center_x":0.5,"y": .6}
+            pos_hint: {"center_x":0.25,"y": .6}
             background : "resources/card_back.png"
             BoxLayout:
                 orientation:'horizontal'
@@ -132,6 +132,75 @@
 
                 MDLabel:
                     id: current_weight_unit
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    text: " Reps"
+                    font_style:"Caption"
+                    size_hint_y:None
+                    height:20
+                    halign:'center'
+
+                MDLabel:
+                    id: nothing
+                    text: ""
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"Caption"
+                    size_hint_y: None
+                    size_hint_x: 0.3
+                    height: self.texture_size[1]
+        MDCard:
+            id: avg_weight_card
+            elevation: 0
+            radius:[80]
+            orientation: "vertical"
+            padding: "16dp"
+            size_hint: None, None
+            size: "185dp", "120dp"
+            pos_hint: {"center_x":0.75,"y": .6}
+            background : "resources/card_back.png"
+            BoxLayout:
+                orientation:'horizontal'
+                size_hint_y: 0.4
+                MDLabel:
+                    id: avg_weight_label
+                    text: "Average Weight"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"H6"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+
+            MDSeparator:
+                height: "1dp"
+                color:app.text_color
+
+            GridLayout:
+                cols:2
+                rows:2
+                MDLabel:
+                    id: average_weight
+                    theme_text_color: "Primary"
+                    text: "12"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"H4"
+                    halign:'center'
+
+                MDLabel:
+                    id: average_weight_period
+                    text: "for Sep 2020"
+                    theme_text_color: "Custom"
+                    text_color: app.text_color
+                    font_style:"Caption"
+                    size_hint_y: None
+                    size_hint_x: 0.3
+                    height: self.texture_size[1]
+                    halign:'center'
+
+                MDLabel:
+                    id: average_weight_unit
                     theme_text_color: "Custom"
                     text_color: app.text_color
                     text: " Reps"

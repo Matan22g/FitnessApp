@@ -190,7 +190,7 @@ class MainApp(MDApp):
             self.back_to_last_screen()
         return True
 
-    MDTextField
+
     # App Main Functions
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
@@ -1845,9 +1845,12 @@ class MainApp(MDApp):
                 dates_dict[year][month].append(date)
         self.root.ids['exercise_stats_screen'].session_date = dates_dict
 
+
     def stats_to_weight_mode(self):
         self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 0
         self.root.ids['exercise_stats_screen'].ids["current_weight_card"].opacity = 1
+        self.root.ids['exercise_stats_screen'].ids["avg_weight_card"].opacity = 1
+
         self.root.ids['exercise_stats_screen'].sessions = self.weights
         self.root.ids['exercise_stats_screen'].exericse_name = "Personal Weight"
         self.root.ids['exercise_stats_screen'].exericse_mode = 0
@@ -1855,6 +1858,8 @@ class MainApp(MDApp):
     def stats_to_exercise_mode(self):
         self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 1
         self.root.ids['exercise_stats_screen'].ids["current_weight_card"].opacity = 0
+        self.root.ids['exercise_stats_screen'].ids["avg_weight_card"].opacity = 0
+
         self.root.ids['exercise_stats_screen'].exericse_mode = 1
 
     def success_del_account_data(self, *args):
