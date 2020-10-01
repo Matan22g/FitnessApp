@@ -1,8 +1,9 @@
 from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from customKv.piechart import AKPieChart
+from kivymd.uix.button import MDFloatingActionButtonSpeedDial
 
+from customKv.piechart import AKPieChart
 
 
 class HomeScreen(Screen):
@@ -53,3 +54,5 @@ class HomeScreen(Screen):
     #
     #     self.app.change_screen1(screenname,"right")
     #
+    def on_pre_leave(self, *args):
+        print(self.ids["dial_button"].state)

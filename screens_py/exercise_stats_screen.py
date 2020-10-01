@@ -343,6 +343,7 @@ class ExerciseStatsScreen(Screen):
                                          size_hint_x=None, width=self.app.window_size[0] * 0.95,
                                          pos_hint={"center_y": 0.3, "center_x": 0.5})
 
+
                 month_best_set = self.stats_dict[year][month][2]
                 self.set_record(month_best_set, new_label)
                 self.curr_month_best = month_best_set

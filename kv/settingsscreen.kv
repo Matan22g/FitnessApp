@@ -7,16 +7,29 @@
 <SettingsScreen>:
 
     FloatLayout:
+        MDIcon:
+            pos_hint: {"center_x": 0.92, "top": 1.45}
+            icon: "cog"
+            font_size: "50sp"
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
 
         BoxLayout:
             orientation:'vertical'
-            pos_hint: {"center_x": .5, "center_y": .76}
-            size_hint: 1, 0.2
-            spacing: 20
+            pos_hint: {"center_x": .5, "top": .885}
+            size_hint: 1, 0.34
+            spacing: 10
+            padding: '5dp'
+            MDLabel:
+                text: "  GENERAL"
+                font_style: "H6"
+                theme_text_color: "Secondary"
+                halign: "left"
+                size_hint_y: 0.1
             MDCard:
                 orientation: "horizontal"
                 padding: "8dp"
-                size_hint: 1, 0.15
+                size_hint: 1, 0.1
 
                 MDIcon:
                     id: unit_icon
@@ -67,7 +80,7 @@
             MDCard:
                 orientation: "horizontal"
                 padding: "8dp"
-                size_hint: 1, 0.15
+                size_hint: 1, 0.1
                 on_release: app.show_change_user_name_dialog()
                 MDIcon:
                     id: unit_icon
@@ -93,7 +106,154 @@
 #                        text_color: 1, 1, 1, 1
                     halign: "right"
                     size_hint_x: 0.5
+                    font_size: "20dp"
 
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.1
+                on_release: app.show_update_weight_dialog()
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "scale"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "Weight"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+
+                MDLabel:
+                    id: settings_weight_label
+                    text: "80 Kg"
+                    font_size: "20dp"
+
+#                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "right"
+                    size_hint_x: 0.5
+
+        BoxLayout:
+            orientation:'vertical'
+            pos_hint: {"center_x": .5, "top": .52}
+            size_hint: 1, 0.25
+            spacing: 10
+            padding: '5dp'
+
+            MDLabel:
+                text: "  ACCOUNT"
+                font_style: "H6"
+                theme_text_color: "Secondary"
+                halign: "left"
+                size_hint_y: 0.1
+
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.1
+                on_release: app.on_logout()
+
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "logout"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "Log out"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.1
+                on_release: app.show_ok_cancel_msg(app.delete_account, app.dismiss_dialog, "Do you wish to delete your account?", "Warning: Deleting your account cannot be undone, all your workout data will be lost.")
+
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "trash-can-outline"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "Delete account"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+
+        BoxLayout:
+            orientation:'vertical'
+            pos_hint: {"center_x": .5, "top": .25}
+            size_hint: 1, 0.2
+            spacing: 10
+            padding: '5dp'
+            MDLabel:
+                text: "  FEEDBACK"
+                font_style: "H6"
+                theme_text_color: "Secondary"
+                halign: "left"
+                size_hint_y: 0.1
+
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.1
+                on_release: app.show_content_msg(app.send_email, app.dismiss_dialog,"Report a Bug",1,"SEND")
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "bug-outline"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "Report a bug"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "8dp"
+                size_hint: 1, 0.1
+                on_release: app.show_content_msg(app.send_email, app.dismiss_dialog,"Send Feedback",1,"SEND")
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "send-outline"
+                    size_hint_x: 0.14
+#                        text_color: 1, 1, 1, 1
+
+                MDLabel:
+                    text: "Send feedback"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
 #        MDLabel:
 #            pos_hint: {"x": .3, "top": .9}
 #            size_hint: (.2, .1)

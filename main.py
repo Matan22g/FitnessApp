@@ -1,6 +1,7 @@
 import ast
 import calendar
 import os
+import smtplib
 from datetime import datetime, date, timedelta
 
 import certifi
@@ -59,8 +60,13 @@ class AddWorkoutContent(BoxLayout):
     pass
 
 
+class SendMailContent(BoxLayout):
+    pass
+
+
 class UpdateWeightContent(BoxLayout):
     pass
+
 
 class Change_User_Name_Content(BoxLayout):
     pass
@@ -139,6 +145,8 @@ class MainApp(MDApp):
     weights = {}  # dict of dates and weight measures
     weight_date = 0
     temp_num_filter = ''
+    app_mail = ''
+    app_pass = ''
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -182,6 +190,7 @@ class MainApp(MDApp):
             self.back_to_last_screen()
         return True
 
+    MDTextField
     # App Main Functions
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
@@ -191,7 +200,13 @@ class MainApp(MDApp):
         # bind android back button to back function
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
-
+        try:
+            file1 = open("resources/appmail.txt", "r")
+            account = file1.read().splitlines()
+            self.app_mail = account[0]
+            self.app_mail_pass = account[1]
+        except:
+            print("couldnt load mail and pass")
     def on_stop(self):
         if self.running_session:
             self.upload_temp_session()
@@ -200,6 +215,9 @@ class MainApp(MDApp):
 
     def on_login(self):
         # loads data
+        if self.root.ids.firebase_login_screen.login_success == False:
+            return
+
         self.add_top_canvas()
 
         if not self.sign_up:
@@ -242,12 +260,145 @@ class MainApp(MDApp):
         else:
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
 
+    def show_content_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 content - 1 means SendMailContent
+        """
+        try:
+            ok_action = args[0]
+            cancel_action = args[1]
+            title = args[2]
+            content = args[3]
+            ok_title = args[4]
+        except:
+            pass
+        if content == 1:
+            content = SendMailContent()
 
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.3),
+            title=title,
+            type="custom",
+            content_cls=content,
+            buttons=[
+
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=cancel_action
+                ),
+                MDFlatButton(
+                    text=ok_title,
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                ),
+            ],
+        )
+        self.dialog.open()
+
+    def send_email(self, *args):
+        self.dismiss_dialog()
+        self.display_loading_screen()
+        print(self.dialog.content_cls.children[0].text)
+        print(self.dialog.title)
+        subject = self.dialog.title.split()
+        try:
+            subject = subject[2]
+        except:
+            subject = subject[1]
+
+        msg = self.dialog.content_cls.children[0].text
+
+        fromaddr = self.app_mail
+        toaddrs = self.app_mail
+
+        user_email = self.user_data["email"]
+
+        TEXT = "From " + user_email + "\n" + msg
+        SUBJECT = subject
+        msg = 'Subject: {}\n\n{}'.format(SUBJECT, TEXT)
+
+        username = self.app_mail
+
+        password = self.app_mail_pass
+        try:
+            server = smtplib.SMTP('smtp.gmail.com:587')
+
+            server.starttls()
+
+            server.login(username, password)
+
+            server.sendmail(fromaddr, toaddrs, msg)
+
+            server.quit()
+            self.hide_loading_screen()
+
+            Snackbar(text="Message Sent! Thanks for the report").show()
+
+        except:
+            self.hide_loading_screen()
+            print("couldnt send msg")
+            Snackbar(text="Something went wrong, try again later").show()
+
+    def show_ok_cancel_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 for msg
+        """
+        try:
+            ok_action = args[0]
+            cancel_action = args[1]
+            title = args[2]
+            msg = args[3]
+        except:
+            pass
+
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title=title,
+            text=msg,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=cancel_action
+                ),
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                )
+            ],
+        )
+        self.dialog.open()
+
+    def show_ok_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for title, 2 for msg
+        """
+        try:
+            ok_action = args[0]
+            title = args[1]
+            msg = args[2]
+        except:
+            pass
+
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title=title,
+            text=msg,
+            buttons=[
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                )
+            ],
+        )
+        self.dialog.open()
 
     def on_logout(self):
         self.clear_user_app_data()
         self.root.ids['nav_drawer'].swipe_edge_width = -2
-        self.root.ids['nav_drawer'].set_state()
 
         self.root.ids.firebase_login_screen.login_success = False
         self.root.ids.firebase_login_screen.save_refresh_token("")
@@ -1121,6 +1272,8 @@ class MainApp(MDApp):
 
         screen_manager = self.root.ids['screen_manager1']
         current_screen = screen_manager.current
+        screen_manager.transition.direction = "left"
+
         if self.debug:
             print("Before change screen, curr screen: ", current_screen)
             print("trying to switch to: ", screen_name)
@@ -1295,7 +1448,7 @@ class MainApp(MDApp):
     # Uploads all kind of Data Methods - Session / Workout
     def upload_data(self, *args):
         """  target can be: 1 - upload new workout ,
-             2 - update an existing workout, 3 - upload new session, 4 - upload settings
+             2 - update an existing workout, 3 - upload new session, 4 - upload settings, 5 - delete account
         """
         data = args[0]
         link = args[1]
@@ -1310,7 +1463,7 @@ class MainApp(MDApp):
 
         self.upload_backup = [data, link, target, workout_key]
 
-        if target == 1 or target == 3:
+        if target == 1 or target == 3 or target == 5:
             method = 'POST'
         elif target == 2 or target == 4:
             method = 'PUT'
@@ -1638,7 +1791,7 @@ class MainApp(MDApp):
 
             # self.root.ids['exercise_stats_screen'].ids["record_date"].text = date
             self.root.ids['exercise_stats_screen'].ids["current_weight_date"].text = date
-
+            unit = " Kg"
             if self.units == "metric":
                 self.root.ids['exercise_stats_screen'].ids["current_weight_unit"].text = " Kg"
                 self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
@@ -1647,12 +1800,15 @@ class MainApp(MDApp):
             else:
                 self.root.ids['exercise_stats_screen'].ids["current_weight_unit"].text = " Lbs"
                 self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
-
+                unit = " Lbs"
                 weight = str(round(float(weight) * self.kg_to_pounds, 2))
 
             self.root.ids['exercise_stats_screen'].ids["current_weight"].text = weight
 
             self.root.ids['homescreen'].ids["personal_weight"].text = weight
+
+            self.root.ids['settingsscreen'].ids["settings_weight_label"].text = weight + unit
+
 
         else:
             self.root.ids['exercise_stats_screen'].ids["current_weight_label"].text = "N/A"
@@ -1700,4 +1856,42 @@ class MainApp(MDApp):
         self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 1
         self.root.ids['exercise_stats_screen'].ids["current_weight_card"].opacity = 0
         self.root.ids['exercise_stats_screen'].exericse_mode = 1
+
+    def success_del_account_data(self, *args):
+        delete_account_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key=" + self.root.ids.firebase_login_screen.web_api_key
+        delete_account_payload = json.dumps({"localId": self.local_id, "idToken": self.id_token})
+        UrlRequest(delete_account_url, req_body=delete_account_payload,
+                   on_success=self.successful_delete_account,
+                   on_failure=self.delete_account_failure,
+                   on_error=self.delete_account_failure, ca_file=certifi.where())
+
+    def error_del_account_data(self, *args):
+        print(args)
+        print("error deleting account data")
+        self.dismiss_dialog()
+        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Please try again later")
+
+    def delete_account(self, *args):
+        try:
+            account_data_link = "https://gymbuddy2.firebaseio.com/%s.json?auth=%s" % (
+                self.local_id, self.id_token)
+            del_req = UrlRequest(account_data_link, on_success=self.success_del_account_data,
+                                 on_error=self.error_del_account_data,
+                                 on_failure=self.error_del_account_data,
+                                 ca_file=certifi.where(), method='DELETE', verify=True)
+        except:
+            print("error requesting to delete account data")
+
+    def successful_delete_account(self, *args):
+        print(args)
+        self.dismiss_dialog()
+        self.on_logout()
+
+    def delete_account_failure(self, *args):
+        # TODO add error msg need to login again.
+        print(args)
+
+        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Try login again and than delete your account")
+
+
 MainApp().run()

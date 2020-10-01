@@ -31,7 +31,6 @@ Builder.load_file(folder + "/loadingpopup.kv")
 from FirebaseLoginScreen.login_screen import LoginScreen
 
 
-##TODO add exception catcher for non internet attempt
 
 class FirebaseLoginScreen(Screen, EventDispatcher):
     def __init__(self, **kw):

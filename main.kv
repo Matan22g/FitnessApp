@@ -11,6 +11,17 @@
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
+<SendMailContent>
+    orientation: "vertical"
+    spacing: "20dp"
+    size_hint_y: None
+    height: "150dp"
+    halign: "center"
+
+    MDTextFieldRect:
+        multiline: True
+        size_hint_y:0.7
+        hint_text: "Message"
 
 <AddWorkoutContent>
     orientation: "vertical"
@@ -43,7 +54,9 @@
         pos_hint: {"center_x": .5}
         size_hint: (.45, .33)
         halign: "center"
-        text: "0"
+        text: ""
+        hint_text: "               "
+
         on_text: app.input_number_check(self, self.text)
 
     MDTextButton:
@@ -67,7 +80,7 @@
         required: True
         helper_text_mode: "on_error"
         helper_text: "English letters and numbers only"
-        input_type: app.proper_input_filter
+        input_filter: app.proper_input_filter
 
     MDLabel:
         text: ''
@@ -243,16 +256,16 @@ NavigationLayout:
                             theme_text_color: "Custom"
                             text_color: 1,1,1,1
 
-                    OneLineIconListItem:
-                        text: "Log Out"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        on_release:
-                            app.on_logout()
-                        IconLeftWidget:
-                            icon: "login"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
+#                    OneLineIconListItem:
+#                        text: "Log Out"
+#                        theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+#                        on_release:
+#                            app.on_logout()
+#                        IconLeftWidget:
+#                            icon: "login"
+#                            theme_text_color: "Custom"
+#                            text_color: 1,1,1,1
 
                     OneLineIconListItem:
                         text: "Settings"
