@@ -47,7 +47,7 @@
             id: scroll
             pos_hint: {"top": .875}
             size: self.size
-            size_hint: 1., .74
+            size_hint: 1., .75 + app.bottom_buttons_inc
             GridLayout:
                 # Banner grid
                 id: exc_cards
@@ -62,7 +62,7 @@
         GridLayout:
             id: buttons_layout
             cols: 3
-            pos_hint: {"center_x": 0.5, "top": .125}
+            pos_hint: {"center_x": 0.5, "top": .125 - app.bottom_buttons_inc}
             size_hint_y:0.1
 #            spacing: 15
             MDIconButton:
@@ -94,7 +94,7 @@
                 theme_text_color: "Custom"
                 text_color: 1,1,1,1
                 on_release:
-                    root.start_session()
+                    root.start_session() if not app.running_session else root.show_start_workout_dialog()
                 size_hint: (0.12,0.075)
 
 #        MDRoundFlatIconButton:
@@ -126,7 +126,7 @@
         GridLayout:
             id: edit_grid
             cols:3
-            pos_hint: {"center_x": .5, "top": .12}
+            pos_hint: {"center_x": .5, "top": .12 - app.bottom_buttons_inc}
             size_hint_y:0.1
 
             MDIconButton:

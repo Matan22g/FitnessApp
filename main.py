@@ -10,7 +10,8 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
+from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition, FadeTransition, SwapTransition, \
+    FallOutTransition
 from kivy.core.window import Window
 from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
 from kivymd.uix.floatlayout import MDFloatLayout
@@ -96,7 +97,8 @@ class Workout_Session:
 
 
 class MainApp(MDApp):
-    mainscreens = ["homescreen", "workoutscreen", "friendsscreen", "settingsscreen"]
+    mainscreens = ["homescreen", "workoutsscreen", "previous_workouts_screen", "settingsscreen"]
+    bottom_nav = 0
     id_token = ""
     local_id = ""
     user_data = []  # on login loads all user data
@@ -147,6 +149,7 @@ class MainApp(MDApp):
     temp_num_filter = ''
     app_mail = ''
     app_pass = ''
+    bottom_buttons_inc = 0.018
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -219,10 +222,12 @@ class MainApp(MDApp):
             return
 
         self.add_top_canvas()
+        self.root.ids['bottom_nav'].switch_tab('1')
 
         if not self.sign_up:
             self.get_user_data()
             self.change_screen1("homescreen")
+
             try:
                 self.load_session_data()
                 self.update_chart()
@@ -453,7 +458,7 @@ class MainApp(MDApp):
     def add_bottom_canvas(self):
         with self.root.ids.main_layout.canvas.before:
             Rectangle(source='resources/loginback1.png', pos=(0, 0), size=(
-                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 8))
+                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 10))
 
     #
 
@@ -924,10 +929,12 @@ class MainApp(MDApp):
 
         for exc in exc_list:
 
-            exc_session = self.exc_sessions[exc].pop(date)
-            exc_session_len = len(exc_session[1])
-            self.exc_pie_dic[exc] -= exc_session_len
-            self.total_exc_sets -= exc_session_len
+            if self.is_in_past_month(date):
+                exc_session = self.exc_sessions[exc].pop(date)
+                exc_session_len = len(exc_session[1])
+                self.exc_pie_dic[exc] -= exc_session_len
+                self.total_exc_sets -= exc_session_len
+
             if "record" in self.exc_sessions[exc]:
                 record_date = self.exc_sessions[exc]["record"][1]
                 if record_date == date:
@@ -1187,7 +1194,8 @@ class MainApp(MDApp):
 
     def success_del_workout(self, req, result):
         self.hide_loading_screen()
-        self.change_screen1("workoutsscreen")
+        self.lastscreens = ["homescreen"]
+        self.change_screen1("workoutsscreen", -1)
         Snackbar(text="Workout Deleted!").show()
         # self.load_workout_data()
         self.add_workouts(self.workoutsParsed)
@@ -1243,7 +1251,10 @@ class MainApp(MDApp):
                     last_screen = self.lastscreens.pop(-1)
 
                 # -1 is 'back' indicator for change screen method
-                self.change_screen1(last_screen, -1, "right")
+                if last_screen in self.mainscreens and current_screen not in self.mainscreens:
+                    self.change_screen1(last_screen, -1, "down")
+                else:
+                    self.change_screen1(last_screen, -1, "right")
             else:
                 self.change_screen1("homescreen", "right")
 
@@ -1262,17 +1273,35 @@ class MainApp(MDApp):
         screen_manager = self.root.ids
 
     # For app screens
+    def remove_bottom_nav(self):
+        try:
+            self.bottom_nav = self.root.ids['bottom_nav']
+            self.root.ids['main_layout'].remove_widget(self.bottom_nav)
+        except:
+            pass
+
+    def add_bottom_nav(self):
+        try:
+            self.root.ids['main_layout'].add_widget(self.bottom_nav)
+        except:
+            pass
 
     def change_screen1(self, screen_name, *args):
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
+        print(self.root.ids['bottom_nav'].current)
+
         if screen_name != "sessionscreen" and screen_name != "workoutscreen":
             self.clear_canvas()
             self.add_top_canvas()
+        if screen_name in self.mainscreens:
+            if not self.reload_for_running_session and not screen_name == "previous_workouts_screen":
+                self.add_bottom_nav()
+        else:
+            self.remove_bottom_nav()
 
         screen_manager = self.root.ids['screen_manager1']
         current_screen = screen_manager.current
-        screen_manager.transition.direction = "left"
 
         if self.debug:
             print("Before change screen, curr screen: ", current_screen)
@@ -1282,6 +1311,7 @@ class MainApp(MDApp):
             self.lastscreens.append(current_screen)
         else:
             self.lastscreens.append(current_screen)
+        # screen_manager.transition = NoTransition()
 
         if args:
             for item in args:
@@ -1289,13 +1319,27 @@ class MainApp(MDApp):
                     last_screen = self.lastscreens.pop(-1)
                     while self.lastscreens and self.lastscreens[-1] == last_screen:
                         last_screen = self.lastscreens.pop(-1)
+
+                    if screen_name in self.mainscreens:
+                        try:
+                            ind = self.mainscreens.index(screen_name)
+                            print(self.lastscreens)
+                            temp = copy.deepcopy(self.lastscreens)
+                            self.root.ids['bottom_nav'].switch_tab(str(ind + 1))
+                            self.lastscreens = temp
+
+                            print(self.lastscreens)
+
+                        except:
+                            print("wasnt able to switch tabs")
+
                 if item == -2:  # optional no transition
                     screen_manager.transition = NoTransition()
                 if isinstance(item, str):  # optional transition direction
                     screen_manager.transition.direction = item
 
         else:
-            screen_manager.transition.direction = "left"
+            screen_manager.transition.direction = self.direction_to_switch(screen_name)
             # if args[1]:  # optional no transition
             #     screen_manager.transition = NoTransition()
 
@@ -1321,6 +1365,25 @@ class MainApp(MDApp):
         if self.debug:
             print("self.lastscreens", self.lastscreens, )
             print("currscreen = ", screen_name)
+
+    def direction_to_switch(self, new_screen):
+        screen_manager = self.root.ids['screen_manager1']
+        current_screen = screen_manager.current
+
+        if current_screen in self.mainscreens:
+            ind_of_current = self.mainscreens.index(current_screen)
+            if new_screen in self.mainscreens:
+                ind_of_new = self.mainscreens.index(new_screen)
+                dif = ind_of_current - ind_of_new
+                if dif > 0:
+                    return "right"
+                else:
+                    return "left"
+            else:
+                return "up"
+        elif new_screen in self.mainscreens:
+            return "down"
+        return "left"
 
     # test username methods
     #######################
@@ -1477,15 +1540,12 @@ class MainApp(MDApp):
         if self.debug:
             print("upload successful, args:", args)
         self.hide_loading_screen()
-
-        req_data = args[1]
-        if 'units' in req_data:
+        """  target can be: 1 - upload new workout ,
+             2 - update an existing workout, 3 - upload new session, 4 - upload settings, 5 - delete account
+        """
+        target = self.upload_backup[2]
+        if target == 4 or target == 5:
             return
-        elif isinstance(req_data, str):
-            # req_data.lower() == self.user_name.lower():
-            return
-        elif req_data == str(self.weights):
-            print("weight_uploaded")
         else:
             self.running_session = 0
             self.change_screen1("workoutsscreen")
@@ -1503,6 +1563,7 @@ class MainApp(MDApp):
         Snackbar(text="Something went wrong!", padding="20dp", button_text="TRY AGAIN", button_color=(1, 0, 1, 1),
                  duration=15,
                  button_callback=self.on_upload_error).show()
+
         if self.debug:
             print(args)
             print("error session save")

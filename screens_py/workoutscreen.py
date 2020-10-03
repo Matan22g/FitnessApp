@@ -244,7 +244,7 @@ class WorkoutScreen(Screen):
 
             self.ids["edit_grid"].opacity = 1
             self.ids["edit_grid"].disabled = False
-            self.ids["edit_grid"].pos_hint = {"center_x": .5, "top": .12}
+            self.ids["edit_grid"].pos_hint = {"center_x": .5, "top": .12 - self.app.bottom_buttons_inc}
 
         else:
             self.ids["edit_grid"].opacity = 0
@@ -632,8 +632,30 @@ class WorkoutScreen(Screen):
     def switch_to_first_split(self):
         pass
 
-    def start_session(self):
+    def start_session(self, *args):
+        try:
+            self.dismiss_dialog()
+        except:
+            print("no dialog was open")
         self.app.start_workout(self.workout_key, self.split_active)
+
+    def show_start_workout_dialog(self):
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
+                               title="Start a new session?",
+                               text="Starting a new session will delete the current running session data",
+                               buttons=[
+
+                                   MDFlatButton(
+                                       text="CANCEL", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.dismiss_dialog
+                                   ),
+                                   MDFlatButton(
+                                       text="START", text_color=self.app.theme_cls.primary_color,
+                                       on_release=self.start_session
+                                   ),
+                               ],
+                               )
+        self.dialog.open()
 
     def show_save_workout_dialog(self):
 
@@ -675,13 +697,16 @@ class WorkoutScreen(Screen):
 
         if self.create_mode:
             self.create_mode = 0
+            self.app.root.ids['workoutscreen'].create_mode = 0
             link = "https://gymbuddy2.firebaseio.com/%s/workouts.json?auth=%s" % (self.app.local_id, self.app.id_token)
             self.app.upload_data(data, link, 1)
+            self.app.root.ids['workoutscreen'].edit_mode = 0
 
         else:
             link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
             self.app.local_id, workout_key, self.app.id_token)
             self.app.upload_data(data, link, 2, workout_key)
+            self.app.root.ids['workoutscreen'].edit_mode = 0
 
         self.dismiss_dialog()
         self.workout_key = 0

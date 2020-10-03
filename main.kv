@@ -105,7 +105,7 @@ NavigationLayout:
                 app.localId = self.localId
                 app.idToken = self.idToken
                 app.on_login()
-
+                bottom_nav.on_resize()
 
         Screen:
             name: "main_app_screen"
@@ -132,6 +132,9 @@ NavigationLayout:
                     left_action_items: [["chevron-left", lambda x: app.back_to_last_screen()]]
                     size_hint_y: 0.075
                     round : "100dp"
+
+
+
 
 
                 ScreenManager:
@@ -177,7 +180,40 @@ NavigationLayout:
                         id: previous_workouts_screen
                         name: "previous_workouts_screen"
 
+                MDBottomNavigation:
+                    id: bottom_nav
+                    pos_hint: {"center_x": .5}
+                    size_hint_y:0.07
+                    panel_color: .5, .5, 1, 0
+                    text_color_active: 0,0,1,1
+                    MDBottomNavigationItem:
+                        id: 1
+                        name: '1'
+                        text: 'Dashboard'
+                        icon: 'home'
+                        on_tab_press: app.change_screen1("homescreen")
 
+                    MDBottomNavigationItem:
+                        id: 2
+                        name: '2'
+                        text: 'Workouts'
+                        icon: 'dumbbell'
+                        on_tab_press: app.change_screen1("workoutsscreen")
+
+                    MDBottomNavigationItem:
+                        id: 3
+
+                        name: '3'
+                        text: 'previous'
+                        icon: 'calendar-clock'
+                        on_tab_press: app.change_screen1("previous_workouts_screen")
+
+                    MDBottomNavigationItem:
+                        id: 4
+                        name: '4'
+                        text: 'Account'
+                        icon: 'account'
+                        on_tab_press: app.change_screen1("settingsscreen")
 
     MDNavigationDrawer:
         id: nav_drawer
@@ -280,6 +316,5 @@ NavigationLayout:
 
                             theme_text_color: "Custom"
                             text_color: 1,1,1,1
-
 
 

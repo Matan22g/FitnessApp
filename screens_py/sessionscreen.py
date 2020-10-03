@@ -192,7 +192,7 @@ class SessionScreen(Screen):
 
             self.ids["timer"].opacity = 1
             self.ids["timer_view"].opacity = 0
-            self.ids["scroll"].size_hint_y = 0.74
+            self.ids["scroll"].size_hint_y = 0.75 + self.app.bottom_buttons_inc
 
             self.ids["date_view"].opacity = 0
             self.ids["date_icon"].opacity = 0

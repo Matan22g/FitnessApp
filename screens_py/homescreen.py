@@ -28,9 +28,9 @@ class HomeScreen(Screen):
         except:
             pass
 
-    def on_quick_menu(self, *args):
-        print(args[0].icon
-              )
+    # def on_quick_menu(self, *args):
+    #     print(args[0].icon
+    #           )
 
     def on_enter(self, *args):
         self.app.title = "Home"
@@ -54,5 +54,3 @@ class HomeScreen(Screen):
     #
     #     self.app.change_screen1(screenname,"right")
     #
-    def on_pre_leave(self, *args):
-        print(self.ids["dial_button"].state)

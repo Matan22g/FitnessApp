@@ -86,16 +86,18 @@ class PreviousWorkoutsScreen(Screen):
                 curr_year = self.nearest(list(self.app.sessions_by_month_year.keys()), curr_year)
             if curr_month not in self.app.sessions_by_month_year[curr_year]:
                 curr_month = self.nearest(self.app.sessions_by_month_year[curr_year], curr_month)
+        if self.app.reload_for_running_session:
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['', lambda x: None]]
 
         self.show_checkbox(False)
         if not self.curr_month and not self.curr_year:
             self.curr_month = curr_month
             self.curr_year = curr_year
+        else:
+            return
         self.load_sessions(self.curr_year, self.curr_month)
         # self.fix_grid_heights()
-        if self.app.reload_for_running_session:
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['', lambda x: None]]
 
     def load_sessions(self, year, month):
         if self.app.debug:
@@ -139,18 +141,18 @@ class PreviousWorkoutsScreen(Screen):
                     num_of_session += 1
                     new_card_layout = self.create_card(num_of_session, total_session_num, session.workout_name,
                                                        session.date,
-                                                       session.duration, sessions_date)
+                                                       session.duration, sessions_date, len(session.exercises))
                     sessions_layout.add_widget(new_card_layout)
 
             else:
                 num_of_session += 1
                 new_card_layout = self.create_card(num_of_session, total_session_num, session.workout_name,
                                                    session.date,
-                                                   session.duration, sessions_date)
+                                                   session.duration, sessions_date, len(session.exercises))
                 sessions_layout.add_widget(new_card_layout)
 
     def create_card(self, num_of_session, total_session_num, session_workout_name, session_date, session_duration,
-                    sessions_date_key):
+                    sessions_date_key, num_exc_completed):
         new_card_layout = MDFloatLayout()  # for centering
         help_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=3)
 
@@ -215,9 +217,9 @@ class PreviousWorkoutsScreen(Screen):
             text_color=self.app.text_color
         )
         workout_duration_label = MDLabel(
-            text=session_duration,
+            text=session_duration + "    " + str(num_exc_completed) + " Exercises Completed",
             font_style="Caption",
-            size_hint=(0.3, 0.1),
+            size_hint=(0.6, 0.1),
             theme_text_color="Custom",
             text_color=self.app.text_color
         )
@@ -230,21 +232,15 @@ class PreviousWorkoutsScreen(Screen):
         excCard.add_widget(help_layout)
 
         if self.app.reload_for_running_session:
-            middle_layout = MDGridLayout(rows=1, cols=2, size_hint_x=0.95)
+            middle_layout = MDGridLayout(rows=1, cols=2, size_hint=(1, 0.4))
             middle_layout.add_widget(workout_name_label)
+
             middle_layout.add_widget(MDTextButton(
                 text="Load",
                 font_size=str(self.app.headline_text_size * 0.9),
                 custom_color=self.app.text_color,
-                halign='center',
                 on_release=self.load_for_running_session))
 
-            nothing_label = MDLabel(
-                text="",
-                font_style="H5",
-                theme_text_color="Custom",
-                text_color=self.app.text_color
-            )
             # middle_layout.add_widget(nothing_label)
 
             excCard.add_widget(middle_layout)
@@ -340,9 +336,9 @@ class PreviousWorkoutsScreen(Screen):
                 self.ids["sessions_grid"].remove_widget(session_card)
                 self.app.del_session(session_key)
 
-        self.on_pre_enter()
         Snackbar(text="Session Deleted!").show()
         self.show_checkbox(False)
+        self.load_sessions(self.curr_year, self.curr_month)
 
     def fix_grid_heights(self):
         grid = self.ids.sessions_grid
