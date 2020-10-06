@@ -100,7 +100,6 @@ NavigationLayout:
             on_login_success:
                 app.root= nav_layout
                 app.change_screen("main_app_screen")
-                nav_drawer.swipe_edge_width=20
                 Snackbar(text="Logged in!").show()
                 app.localId = self.localId
                 app.idToken = self.idToken
@@ -128,7 +127,7 @@ NavigationLayout:
                     id: toolbar
                     title: "Hello Matan"
                     elevation: 0
-                    right_action_items: [['menu', lambda x: nav_drawer.set_state()]]
+                    right_action_items: [['', lambda x: None]]
                     left_action_items: [["chevron-left", lambda x: app.back_to_last_screen()]]
                     size_hint_y: 0.075
                     round : "100dp"
@@ -214,107 +213,5 @@ NavigationLayout:
                         text: 'Account'
                         icon: 'account'
                         on_tab_press: app.change_screen1("settingsscreen")
-
-    MDNavigationDrawer:
-        id: nav_drawer
-        anchor: "right"
-        size_hint_x: 0.45
-
-        BoxLayout:
-            orientation: "vertical"
-            padding: "4dp"
-            spacing: "10dp"
-            canvas:
-                Rectangle:
-                    pos: self.pos
-                    size: self.size
-                    source: "resources/loginback1.png"
-            Image:
-                source: "resources/logo.png"
-                size_hint_y: None
-                size: "95dp", "95dp"
-
-
-            ScrollView:
-
-                MDList:
-
-                    OneLineIconListItem:
-                        text: "Home"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        on_release:
-                            app.change_screen1("homescreen")
-#                            screen_manager1.current = "homescreen"
-                            nav_drawer.set_state()
-                        IconLeftWidget:
-                            icon: "home"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-
-                    OneLineIconListItem:
-                        text: "Friends"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-
-                        on_release:
-                            app.change_screen1("blankscreen")
-#                            screen_manager1.current = "friendsscreen"
-                            nav_drawer.set_state()
-                        IconLeftWidget:
-                            icon: "account-group"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-
-                    OneLineIconListItem:
-                        text: "Recent"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        on_release:
-                            app.change_screen1("previous_workouts_screen")
-#                            screen_manager1.current = "workoutsscreen"
-                            nav_drawer.set_state()
-                        IconLeftWidget:
-                            icon: "calendar-clock"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-
-                    OneLineIconListItem:
-                        text: "Workouts"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        on_release:
-                            app.change_screen1("workoutsscreen")
-#                            screen_manager1.current = "workoutsscreen"
-                            nav_drawer.set_state()
-                        IconLeftWidget:
-                            icon: "dumbbell"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-
-#                    OneLineIconListItem:
-#                        text: "Log Out"
-#                        theme_text_color: "Custom"
-#                        text_color: 1,1,1,1
-#                        on_release:
-#                            app.on_logout()
-#                        IconLeftWidget:
-#                            icon: "login"
-#                            theme_text_color: "Custom"
-#                            text_color: 1,1,1,1
-
-                    OneLineIconListItem:
-                        text: "Settings"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        on_release:
-                            app.change_screen1("settingsscreen")
-#                            screen_manager1.current = "settingsscreen"
-                            nav_drawer.set_state()
-                        IconLeftWidget:
-                            icon: "cog"
-
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
 
 

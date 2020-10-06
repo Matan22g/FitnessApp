@@ -22,6 +22,7 @@ class SettingsScreen(Screen):
 
     def on_pre_enter(self, *args):
         self.app.change_title("Settings")
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
         if self.app.units == 'metric':
             self.ids.kg_button.md_bg_color = (0, 0, 1, 1)

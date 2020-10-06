@@ -1,3 +1,4 @@
+#:import utils kivy.utils
 <HomeScreen>:
 #    canvas.before:
 #        Rectangle:
@@ -142,16 +143,17 @@
 
         BoxLayout:
             orientation:'horizontal'
-            pos_hint: {"x": .05, "center_y": 0.83}
+            pos_hint: {"x": -.335, "center_y": 0.83}
             size_hint_y:0.03
-            size_hint_x: 0.8
+            size_hint_x: 1.25
 
             MDLabel:
                 text: "Recent Workouts"
-                font_style: "H5"
+                font_style: "H6"
                 theme_text_color: "Custom"
                 text_color: 0, 0, 0, 1
                 halign: "center"
+                size_hint_x: 1.2
 
             MDTextButton:
                 text: "See All"
@@ -160,12 +162,22 @@
                 on_release:
                     app.root.ids['bottom_nav'].switch_tab('2')
 
+
+        MDLabel:
+            id: no_workout_label
+            text: "You have not done any workout yet\nGo to the Gym! "
+            font_style: "H6"
+            theme_text_color: "Custom"
+            text_color: 0, 0, 0, 1
+            halign: "center"
+            pos_hint: {"center_y": 5, "center_y": 0.72}
+
         ScrollView:
-            id: records_scroll
-            pos_hint: {"y": .5, "center_x": .55}
+            id: last_sessions
+            pos_hint: {"y": .33, "center_x": .55}
             size_hint_y: None
             size_hint_x: None
-            size_hint: 1, .3
+            size_hint: 1, .48
             do_scroll_y: False
             do_scroll_x: True
             scroll_type:['content']
@@ -183,34 +195,46 @@
                 height: self.minimum_height
                 width: self.minimum_width
                 row_force_default: True
-                row_default_height: '165dp'
+                row_default_height: '240dp'
 
 
                 MDCard:
-                    id: no_data
-                    elevation: 1
+                    id: last_session_card
+                    elevation: 0
                     radius:[80]
                     orientation: "vertical"
                     padding: [50, 40, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
-
+                    spacing: 1
                     size_hint: None, None
-                    size: "160dp", "135dp"
-                    background : "resources/card_back.png"
-                    opacity:1
+                    size: "160dp", "230dp"
+                    background : "resources/welcome1.png"
                     MDLabel:
+                        id: last_session_date
                         text: "Mon, Sep 27"
                         font_style: "Caption"
                         theme_text_color: "Custom"
-                        text_color: 1, 1, 1, 1
-                        halign: "center"
+                        text_color: 1,1,1,1
+                        halign: "left"
                         size_hint_y:0.1
                     MDLabel:
+                        id: last_space
+                        text: ""
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
+                        font_style:"H4"
+                        halign:'left'
+                        pos_hint: {"center_x": .5, "center_y": 0.25}
+                        size_hint_y:2
+
+                    MDLabel:
+                        id: last_session_name
                         text: "FBW"
                         theme_text_color: "Custom"
-                        text_color: app.text_color
+                        text_color: 1,1,1,1
                         font_style:"H4"
-                        halign:'center'
-                        pos_hint: {"center_x": .5, "center_y": 0.5}
+                        halign:'left'
+                        pos_hint: {"center_x": .5, "center_y": 0.25}
+                        size_hint_y:1
 
                     MDSeparator:
                         height: "1dp"
@@ -223,55 +247,70 @@
                         id: records_grid
                         cols: 3
                         rows: 1
-                        size_hint_y:0.5
+                        size_hint_y:0.7
 
                         MDIconButton:
                             icon: "eye"
-                            user_font_size: "25sp"
+                            user_font_size: "20sp"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             size_hint_y:7.5
                             size_hint_x:1.1
+                            on_release:root.view_recent_session(1)
 
                         MDSeparator:
                             height: "1dp"
-                            color: 1,1,1,1
+                            color:0,0,0,1
                             orientation: "vertical"
-                            size_hint_y:7.5
+                            size_hint_y:0.1
 
                         MDIconButton:
                             icon: "play"
-                            user_font_size: "25sp"
+                            user_font_size: "30sp"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             size_hint_y:7.5
                             size_hint_x:1
+                            on_release:root.start_recent_session(1)
 
 
                 MDCard:
-                    id: no_data
-                    elevation: 1
+                    id: prev_last_session_card
+                    elevation: 0
                     radius:[80]
                     orientation: "vertical"
                     padding: [50, 40, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
+                    spacing: 1
                     size_hint: None, None
-                    size: "160dp", "135dp"
-                    background : "resources/card_back.png"
-                    opacity:1
+                    size: "160dp", "230dp"
+                    background : "resources/welcome3.png"
                     MDLabel:
-                        text: "Mon, Sep 29"
+                        id: prev_last_session_date
+                        text: "Mon, Sep 27"
                         font_style: "Caption"
                         theme_text_color: "Custom"
-                        text_color: 1, 1, 1, 1
-                        halign: "center"
+                        text_color: 1,1,1,1
+                        halign: "left"
                         size_hint_y:0.1
                     MDLabel:
+                        id: prev_last_space
+                        text: ""
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
+                        font_style:"H4"
+                        halign:'left'
+                        pos_hint: {"center_x": .5, "center_y": 0.25}
+                        size_hint_y:2
+
+                    MDLabel:
+                        id: prev_last_session_name
                         text: "ABC"
                         theme_text_color: "Custom"
-                        text_color: app.text_color
+                        text_color: 1,1,1,1
                         font_style:"H4"
-                        halign:'center'
-                        pos_hint: {"center_x": .5, "center_y": 0.5}
+                        halign:'left'
+                        pos_hint: {"center_x": .5, "center_y": 0.25}
+                        size_hint_y:1
 
                     MDSeparator:
                         height: "1dp"
@@ -281,44 +320,47 @@
 
                     GridLayout:
                         # sets_grid
-                        id: records_grid
+                        id: buttons_grid
                         cols: 3
                         rows: 1
-                        size_hint_y:0.5
+                        size_hint_y:0.7
 
                         MDIconButton:
                             icon: "eye"
-                            user_font_size: "25sp"
+                            user_font_size: "20sp"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
-                            size_hint_y:10
+                            text_color: 1,1,1,1
+                            size_hint_y:7.5
                             size_hint_x:1.1
+                            on_release:root.view_recent_session(2)
 
                         MDSeparator:
                             height: "1dp"
-                            color: 1,1,1,1
+                            color:0,0,0,1
                             orientation: "vertical"
-                            size_hint_y:10
+                            size_hint_y:0.1
 
                         MDIconButton:
                             icon: "play"
-                            user_font_size: "25sp"
+                            user_font_size: "30sp"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
-                            size_hint_y:10
+                            text_color: 1,1,1,1
+                            size_hint_y:7.5
                             size_hint_x:1
+                            on_release:root.start_recent_session(2)
+
 
 
 
         BoxLayout:
             orientation:'horizontal'
-            pos_hint: {"x": .1, "center_y": 0.47}
+            pos_hint: {"x": .03, "center_y": 0.45}
             size_hint_y:0.2
-            size_hint_x: 0.9
+            size_hint_x: 0.7
 
             MDLabel:
                 text: "Exercises Statistics"
-                font_style: "H5"
+                font_style: "H6"
                 theme_text_color: "Custom"
                 text_color: 0, 0, 0, 1
                 halign: "center"
@@ -333,7 +375,7 @@
                 theme_text_color: "Secondary"
 
         ScrollView:
-            pos_hint: {"center_x": .5, "center_y": -0.075}
+            pos_hint: {"center_x": .5, "center_y": -0.080}
             MDBoxLayout:
                 id: chart_box
                 adaptive_height: True

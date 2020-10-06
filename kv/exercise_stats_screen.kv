@@ -2,6 +2,7 @@
     FloatLayout:
 
         id: stats_layout
+
         GridLayout:
             id: buttons_layout
             cols: 3
@@ -41,9 +42,9 @@
             id: md_tabs
             pos_hint: {"center_x": 0.79, "top": 0.95}
             background_color: 0, 0, 0, 0
-            text_color_normal: 0, 0, 0, 1
-            text_color_active: 1, 1, 1, 1
-            color_indicator: 1, 1, 1, 1
+            text_color_normal: 1, 1, 1, 1
+            text_color_active: app.theme_cls.primary_color
+            color_indicator:  app.theme_cls.primary_color
             allow_stretch: False
             spacing:100
             tab_indicator_anim: True
@@ -67,13 +68,13 @@
             size_hint: None, None
             size: "240dp", "110dp"
             pos_hint: {"center_x": .5, "center_y": 0.3}
-            background : "resources/card_back.png"
+            background : "resources/loginback1.png"
             opacity:0
 
             MDLabel:
                 text: "No data available"
                 theme_text_color: "Custom"
-                text_color: app.text_color
+                text_color: 1,1,1,1
                 size_hint_y: None
                 font_style:"H5"
                 halign:'center'
@@ -89,7 +90,7 @@
             size_hint: None, None
             size: "185dp", "120dp"
             pos_hint: {"center_x":0.25,"y": .6}
-            background : "resources/card_back.png"
+            background : "resources/loginback1.png"
             BoxLayout:
                 orientation:'horizontal'
                 size_hint_y: 0.4
@@ -97,7 +98,7 @@
                     id: current_weight_label
                     text: "Current Weight"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"H6"
                     size_hint_y: None
                     height: self.texture_size[1]
@@ -105,7 +106,7 @@
 
             MDSeparator:
                 height: "1dp"
-                color:app.text_color
+                color:1,1,1,1
 
             GridLayout:
                 cols:2
@@ -115,7 +116,7 @@
                     theme_text_color: "Primary"
                     text: "12"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"H4"
                     halign:'center'
 
@@ -123,7 +124,7 @@
                     id: current_weight_date
                     text: "Overall Best"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"Caption"
                     size_hint_y: None
                     size_hint_x: 0.3
@@ -133,7 +134,7 @@
                 MDLabel:
                     id: current_weight_unit
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     text: " Reps"
                     font_style:"Caption"
                     size_hint_y:None
@@ -144,7 +145,7 @@
                     id: nothing
                     text: ""
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"Caption"
                     size_hint_y: None
                     size_hint_x: 0.3
@@ -158,7 +159,7 @@
             size_hint: None, None
             size: "185dp", "120dp"
             pos_hint: {"center_x":0.75,"y": .6}
-            background : "resources/card_back.png"
+            background : "resources/loginback1.png"
             BoxLayout:
                 orientation:'horizontal'
                 size_hint_y: 0.4
@@ -166,7 +167,7 @@
                     id: avg_weight_label
                     text: "Average Weight"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"H6"
                     size_hint_y: None
                     height: self.texture_size[1]
@@ -174,7 +175,7 @@
 
             MDSeparator:
                 height: "1dp"
-                color:app.text_color
+                color:1,1,1,1
 
             GridLayout:
                 cols:2
@@ -184,7 +185,7 @@
                     theme_text_color: "Primary"
                     text: "12"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"H4"
                     halign:'center'
 
@@ -192,7 +193,7 @@
                     id: average_weight_period
                     text: "for Sep 2020"
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"Caption"
                     size_hint_y: None
                     size_hint_x: 0.3
@@ -202,7 +203,7 @@
                 MDLabel:
                     id: average_weight_unit
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     text: " Reps"
                     font_style:"Caption"
                     size_hint_y:None
@@ -213,7 +214,7 @@
                     id: nothing
                     text: ""
                     theme_text_color: "Custom"
-                    text_color: app.text_color
+                    text_color: 1,1,1,1
                     font_style:"Caption"
                     size_hint_y: None
                     size_hint_x: 0.3
@@ -252,7 +253,7 @@
                     size_hint: None, None
                     size: "190dp", "110dp"
                     pos_hint:{"center_y": 0.5, "center_x": 0.5}
-                    background : "resources/card_back.png"
+                    background : "resources/loginback1.png"
                     BoxLayout:
                         orientation:'horizontal'
                         size_hint_y: 0.4
@@ -260,7 +261,7 @@
                             id: record
                             text: "Overall Best"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H6"
                             size_hint_y: None
                             height: self.texture_size[1]
@@ -269,7 +270,7 @@
                             id: record_date
                             text: "Overall Best"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"Caption"
                             size_hint_y: None
                             size_hint_x: 0.3
@@ -277,7 +278,7 @@
 
                     MDSeparator:
                         height: "1dp"
-                        color:app.text_color
+                        color:1,1,1,1
 
                     GridLayout:
                         cols:3
@@ -287,7 +288,7 @@
                             theme_text_color: "Primary"
                             text: "12"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
 
                         MDLabel:
@@ -295,21 +296,21 @@
                             theme_text_color: "Primary"
                             text: "X"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
 
                         MDLabel:
                             id: best_weight
                             text: "120.78"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
                             size_hint_x: 2
 
                         MDLabel:
                             id: best_reps_unit
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             text: " Reps"
                             font_style:"Caption"
                             size_hint_y:None
@@ -317,7 +318,7 @@
                         MDLabel:
                             id: best_weight_mode_unit
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             text: ""
                             font_style:"Caption"
                             size_hint_y:None
@@ -326,7 +327,7 @@
                             id: weight_unit
                             text: " Kg"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"Caption"
                             size_hint_y:None
                             height:20
@@ -339,20 +340,20 @@
                     size_hint: None, None
                     size: "190dp", "110dp"
                     pos_hint:{"center_y": 0.5, "center_x": 0.5}
-                    background : "resources/card_back.png"
+                    background : "resources/loginback1.png"
 
                     MDLabel:
                         text: "Overall Best"
                         id: best_month_title
                         theme_text_color: "Custom"
-                        text_color: app.text_color
+                        text_color: 1,1,1,1
                         size_hint_y: None
                         height: self.texture_size[1]
                         font_style:"H6"
 
                     MDSeparator:
                         height: "1dp"
-                        color:app.text_color
+                        color:1,1,1,1
 
                     GridLayout:
                         cols:3
@@ -362,14 +363,14 @@
                             id: best_month_reps
                             text: "12"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
 
                         MDLabel:
                             id: monthly_x_label
                             text: "X"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
 
                         MDLabel:
@@ -377,7 +378,7 @@
                             text: "120.78"
                             size_hint_x: 2
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"H5"
                             size_hint_x: 2
 
@@ -385,7 +386,7 @@
                             id: reps_unit
                             text: " Reps"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"Caption"
                             size_hint_y:None
                             height:20
@@ -400,7 +401,7 @@
                             id: best_month_weight_unit
                             text: " Kg"
                             theme_text_color: "Custom"
-                            text_color: app.text_color
+                            text_color: 1,1,1,1
                             font_style:"Caption"
                             size_hint_y:None
                             height:20

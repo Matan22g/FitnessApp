@@ -59,13 +59,14 @@ class Year_Plot(RelativeLayout):
         # if DEVICE_TYPE != 'mobile': print(f'intXmin={intXmin}')
         # if DEVICE_TYPE != 'mobile': print(f'intXmax={intXmax}')
 
-        intYmax = int(max(y1)) + 1
-        intYmin = int(min(y1)) - 1
+        intYmax = (int(max(y1) / 25) + 1) * 25
+
+        intYmin = 0
 
         intYmajor = int((intYmax - intYmin) / 5)
 
-        degree_sign = u'\N{DEGREE SIGN}'
         ylabel = f'Weight (' + units + ')'
+
         if not self.app.root.ids['exercise_stats_screen'].exericse_mode:
             ylabel = f'Avg Weight (' + units + ')'
 
@@ -82,7 +83,7 @@ class Year_Plot(RelativeLayout):
             xmin=1,
             xmax=12,
             ymin=0,
-            ymax=intYmax * 1.25,
+            ymax=intYmax,
             x_grid_label=True,
             y_grid_label=True,
             xlabel='Month',
@@ -144,12 +145,11 @@ class Month_Plot(RelativeLayout):
         # if DEVICE_TYPE != 'mobile': print(f'intXmin={intXmin}')
         # if DEVICE_TYPE != 'mobile': print(f'intXmax={intXmax}')
 
-        intYmax = int(max(y1)) + 1
-        intYmin = int(min(y1)) - 1
+        intYmax = (int(max(y1) / 25) + 1) * 25
+
+        intYmin = 0
 
         intYmajor = int((intYmax - intYmin) / 5)
-
-        degree_sign = u'\N{DEGREE SIGN}'
 
         self.graph = Graph(
             pos_hint={'x': 0, 'y': 0},
@@ -164,7 +164,7 @@ class Month_Plot(RelativeLayout):
             xmin=intXmin,
             xmax=intXmax,
             ymin=0,
-            ymax=intYmax * 1.25,
+            ymax=intYmax,
             x_grid_label=True,
             y_grid_label=True,
             xlabel='Day',
@@ -211,10 +211,19 @@ class ExerciseStatsScreen(Screen):
         except:
             pass
 
+    def on_pre_leave(self, *args):
+        if self.app.root.ids['exercise_stats_screen'].exericse_mode == 0:
+            if not self.app.root.ids['previous_workouts_screen'].weight_history:
+                self.app.root.ids['toolbar'].right_action_items = [
+                    ['', lambda x: None]]
+
     def on_pre_enter(self, *args):
         if self.app.root.ids['exercise_stats_screen'].exericse_mode == 0:
             self.exercise_mode = 0
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['history', lambda x: self.app.show_weight_history()]]
         else:
+            self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
             self.exercise_mode = 1
 
         self.curr_graph = 0
@@ -223,7 +232,6 @@ class ExerciseStatsScreen(Screen):
         self.curr_month_best = ''
         self.curr_year_best = ''
 
-        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
         self.stats_dict = {}
         self.by_year_dict = {}
 
@@ -545,6 +553,7 @@ class ExerciseStatsScreen(Screen):
 
             if self.app.units == "metric":
                 self.app.root.ids['exercise_stats_screen'].ids["average_weight_unit"].text = " Kg"
+                avg_weight = str(round(float(avg_weight), 2))
 
             else:
                 self.app.root.ids['exercise_stats_screen'].ids["average_weight_unit"].text = " Lbs"

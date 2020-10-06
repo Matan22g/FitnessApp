@@ -1,3 +1,5 @@
+#:import utils kivy.utils
+#utils.get_color_from_hex("#283592")
 
 # defining our special list
 <SwipeToDeleteItem>:
@@ -146,12 +148,11 @@
 
         MDTextField:
             id: reps
-            mode: "rectangle"
             input_filter: 'int'
             helper_text: "Reps"
             helper_text_mode: "persistent"
             pos_hint: {"x": .125, "top": .805}
-            size_hint: (.31, .13)
+            size_hint: (.31, .1)
             halign: "center"
             text: "0"
             font_size: "32.5sp"
@@ -159,7 +160,6 @@
 
         MDTextField:
             id: weight
-            mode: "rectangle"
             input_filter: 'float'
             helper_text: "Kg" if app.units == "metric" else "Lbs"
             helper_text_mode: "persistent"
@@ -167,7 +167,7 @@
 
             font_size: "32.5sp"
             pos_hint: {"x": .575, "top": .805}
-            size_hint: (.31, .13)
+            size_hint: (.31, .1)
             halign: "center"
             text: "0"
 
@@ -175,7 +175,7 @@
             icon: 'chevron-up'
             on_release: root.changeInput("w" , 1)
             size_hint: (.2, .1)
-            pos_hint: {"center_x": 0.725, "top": .89}
+            pos_hint: {"center_x": 0.725, "top": .87}
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
@@ -183,7 +183,7 @@
         MDIconButton:
             icon: 'chevron-up'
             on_release: root.changeInput("r" , 1)
-            pos_hint: {"center_x": 0.275, "top": .89}
+            pos_hint: {"center_x": 0.275, "top": .87}
             user_font_size: "64sp"
             size_hint: (.2, .1)
             theme_text_color: "Custom"
@@ -192,7 +192,7 @@
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("w" , 0)
-            pos_hint: {"center_x": 0.725, "top": .69}
+            pos_hint: {"center_x": 0.725, "top": .725}
             user_font_size: "64sp"
             size_hint: (.2, .1)
             text_color: 0, 0, 1, 1
@@ -202,18 +202,36 @@
         MDIconButton:
             icon: 'chevron-down'
             on_release: root.changeInput("r" , 0)
-            pos_hint: {"center_x": 0.275, "top": .69}
+            pos_hint: {"center_x": 0.275, "top": .725}
             size_hint: (.2, .1)
             user_font_size: "64sp"
             theme_text_color: "Custom"
             text_color: app.theme_cls.primary_color
 
+        MDFillRoundFlatButton:
+            pos_hint: {"center_x": 0.5, "top": 0.625}
+            text:"SAVE SET"
+            text_color:1,1,1,1
 
-            MDList:
-                size_hint: 0.1, 0.1
-                id: md_list
-                padding: 0
-                pos_hint: {"top": .9}
+#            size_hint_x:0.8
+            on_release: root.add_set()
+            font_size:20
+
+        MDLabel:
+            text: "Sets"
+            pos_hint: {"center_x": 0.625, "top": 1.02}
+            theme_text_color: "Custom"
+            text_color: 0,0,0,1
+            font_style: "H6"
+#utils.get_color_from_hex("#283592")
+
+        MDSeparator:
+            height: "1dp"
+            color: 0,0,0,1
+            pos_hint: {"center_x": .5, "top": 0.49}
+            size_hint_x: 0.8
+
+
 
 #        MDRoundFlatIconButton:
 #            pos_hint: {"center_x": 0.2, "top": .1}
@@ -238,14 +256,14 @@
 
         GridLayout:
             id: control_grid
-            cols:3
+            cols:2
             pos_hint: {"center_x": .5, "top": .12-app.bottom_buttons_inc}
             size_hint_y:0.1
             size_hint_x:0.7
 
             MDIconButton:
                 id: add_exc
-                icon: "minus"
+                icon: "trash-can-outline"
                 theme_text_color: "Custom"
                 text_color: 1,1,1,1
                 user_font_size: "44sp"
@@ -253,15 +271,15 @@
                 on_release: root.delete_set()
                 size_hint: (0.01,2)
 
-            MDIconButton:
-                icon: "plus"
-                theme_text_color: "Custom"
-                text_color: 1,1,1,1
-                user_font_size: "44sp"
-                halign: "center"
-                id: load_session
-                on_release: root.add_set()
-                size_hint: (0.01,2)
+#            MDIconButton:
+#                icon: "plus"
+#                theme_text_color: "Custom"
+#                text_color: 1,1,1,1
+#                user_font_size: "44sp"
+#                halign: "center"
+#                id: load_session
+#                on_release: root.add_set()
+#                size_hint: (0.01,2)
 
             MDIconButton:
                 icon: "content-save"
@@ -279,12 +297,12 @@
                 font_style: "Caption"
                 halign: "center"
 
-            MDLabel:
-                text: "Set"
-                theme_text_color: "Custom"
-                text_color: 1,1,1,1
-                font_style: "Caption"
-                halign: "center"
+#            MDLabel:
+#                text: "Set"
+#                theme_text_color: "Custom"
+#                text_color: 1,1,1,1
+#                font_style: "Caption"
+#                halign: "center"
 
             MDLabel:
                 text: "Save"
@@ -294,9 +312,9 @@
                 halign: "center"
         ScrollView:
             id: sets_scroll
-            pos_hint: {"top": .6}
+            pos_hint: {"top": .48}
             size_hint_y: None
-            size_hint: 1, .47
+            size_hint: 1, .365
             GridLayout:
                 # sets_grid
                 id: sets_grid

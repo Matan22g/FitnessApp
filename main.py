@@ -133,7 +133,7 @@ class MainApp(MDApp):
     headline_text_size = int(math.sqrt(Window.size[0] * Window.size[0] + Window.size[1] * Window.size[
         1]) / 32)  # text_size adapted to window size - used for tabs title, and info title
     last_session_date = 0  # for dashboard quick view
-    text_color = (1, 1, 1, 1)
+    text_color = (0, 0, 1, 1)
     workout_edit_mode = 0
     exc_pie_dic = {"None": 100}
     total_exc_sets = 0
@@ -150,6 +150,14 @@ class MainApp(MDApp):
     app_mail = ''
     app_pass = ''
     bottom_buttons_inc = 0.018
+    weight_history_by_month_year = {}
+    recent_sessions = []
+
+    def fix_weight_by_unit(self, weight):
+        if self.units == 'metric':
+            return weight, "kg"
+        else:
+            return float(weight) * self.kg_to_pounds, "Lbs"
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -194,12 +202,11 @@ class MainApp(MDApp):
         return True
 
 
+
     # App Main Functions
     def on_start(self):
         self.root.ids.firebase_login_screen.ids.login_screen.ids.backdrop.open()  # start login screen with closed backdrop
         # before login, denies access to navigation drawer
-        self.root.ids['nav_drawer'].swipe_edge_width = -2
-        print(self.headline_text_size)
         # bind android back button to back function
         from kivy.base import EventLoop
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
@@ -217,6 +224,8 @@ class MainApp(MDApp):
             self.clean_temp_session_data()
 
     def on_login(self):
+        self.text_color = utils.get_color_from_hex("#283592")
+
         # loads data
         if self.root.ids.firebase_login_screen.login_success == False:
             return
@@ -257,13 +266,13 @@ class MainApp(MDApp):
                 self.retrieve_paused_session()
         except:
             print("key error: temp_session")
-        # self.change_screen1("exercisescreen")
 
         ## for home screen first load
         if self.units == "metric":
             self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
         else:
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
+
 
     def show_content_msg(self, *args):
         """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 content - 1 means SendMailContent
@@ -403,14 +412,12 @@ class MainApp(MDApp):
 
     def on_logout(self):
         self.clear_user_app_data()
-        self.root.ids['nav_drawer'].swipe_edge_width = -2
 
         self.root.ids.firebase_login_screen.login_success = False
         self.root.ids.firebase_login_screen.save_refresh_token("")
 
         Snackbar(text="Logged out!").show()
         self.change_screen("loginscreen", 'right')
-        self.root.ids['nav_drawer'].swipe_edge_width = -2
 
     def clear_user_app_data(self):
         self.workouts = {}
@@ -747,8 +754,17 @@ class MainApp(MDApp):
         session_dates.sort(reverse=True)
 
         if session_dates:
+            last_session_date = session_dates[0]
             self.last_session_date = session_dates[0]
-            self.update_last_date_card(session_dates[0])
+            try:
+                prev_last_session_date = session_dates[1]
+                self.recent_sessions = [last_session_date, prev_last_session_date]
+            except:
+                self.recent_sessions = [last_session_date]
+                # only one session
+        else:
+            self.recent_sessions = []
+        self.update_last_date_card()
 
         self.sessions_by_month_year = {}
         for date in session_dates:
@@ -765,25 +781,62 @@ class MainApp(MDApp):
         if self.debug:
             print("sessions_by_month_year: ", self.sessions_by_month_year)
 
-    def update_last_date_card(self, session_date):
+    def update_last_date_card(self):
+        if self.recent_sessions:
 
-        last_session_month = ""
-        last_session_day = ""
-        last_session_name = "N/A"
-        session_exc_completed = "Go Train"
+            last_session_date = self.recent_sessions[0]
 
-        if session_date:
-            self.last_session_date = session_date
-            last_session = self.sessions[session_date]
-            last_session_month = calendar.month_abbr[last_session.date.month]
-            last_session_day = str(last_session.date.day)
+            last_session = self.sessions[last_session_date]
             last_session_name = last_session.workout_name
-            session_exc_completed = str(len(last_session.exercises)) + " exercises completed"
+            last_session_exc_completed = str(len(last_session.exercises)) + " exercises completed"
+            last_session_date = last_session_date.ctime()[0:10]
+            last_session_date = last_session_date[0:3] + "," + last_session_date[3:]
+            if len(last_session_name) > 11:
+                self.root.ids['homescreen'].ids['last_session_name'].font_style = "H5"
+            else:
+                self.root.ids['homescreen'].ids['last_session_name'].font_style = "H4"
 
-        self.root.ids['homescreen'].ids['last_session_month'].text = last_session_month
-        self.root.ids['homescreen'].ids['last_session_day'].text = last_session_day
-        self.root.ids['homescreen'].ids['last_session_name'].text = last_session_name
-        self.root.ids['homescreen'].ids['session_exc_completed'].text = session_exc_completed
+            self.root.ids['homescreen'].ids['last_session_date'].text = last_session_date
+            self.root.ids['homescreen'].ids['last_session_name'].text = last_session_name
+            # self.root.ids['homescreen'].ids['session_exc_completed'].text = session_exc_completed
+            if len(self.recent_sessions) > 1:
+                prev_last_session_date = self.recent_sessions[1]
+
+                prev_last_session = self.sessions[prev_last_session_date]
+                prev_last_session_name = prev_last_session.workout_name
+                prev_last_session_exc_completed = str(len(prev_last_session.exercises)) + " exercises completed"
+                prev_last_session_date = prev_last_session_date.ctime()[0:10]
+                prev_last_session_date = prev_last_session_date[0:3] + "," + prev_last_session_date[3:]
+                if len(prev_last_session_name) > 11:
+                    self.root.ids['homescreen'].ids['prev_last_session_name'].font_style = "H5"
+
+                else:
+                    self.root.ids['homescreen'].ids['prev_last_session_name'].font_style = "H4"
+
+                self.root.ids['homescreen'].ids['prev_last_session_date'].text = prev_last_session_date
+                self.root.ids['homescreen'].ids['prev_last_session_name'].text = prev_last_session_name
+                self.show_two_recent_msg()
+            else:
+                self.show_one_recent()
+        else:
+            self.show_no_recent_msg()
+
+    def generate_num_of_pic(self):
+
+    def show_two_recent_msg(self):
+        self.root.ids['homescreen'].ids["no_workout_label"].opacity = 0
+        self.root.ids['homescreen'].ids["last_session_card"].opacity = 1
+        self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 1
+
+    def show_no_recent_msg(self):
+        self.root.ids['homescreen'].ids["no_workout_label"].opacity = 1
+        self.root.ids['homescreen'].ids["last_session_card"].opacity = 0
+        self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 0
+
+    def show_one_recent(self):
+        self.root.ids['homescreen'].ids["no_workout_label"].opacity = 0
+        self.root.ids['homescreen'].ids["last_session_card"].opacity = 1
+        self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 0
 
     def update_dashboard_stats(self):
 
@@ -1091,11 +1144,17 @@ class MainApp(MDApp):
         text_field = args[0].parent.parent.parent.children[2].children[0].children[1]
         error_label = args[0].parent.parent.parent.children[2].children[0].children[0]
         new_user_name = text_field.text
-        if self.root.ids.firebase_login_screen.is_user_exist(new_user_name):
-            error_label.text = new_user_name + " Already taken"
-        else:
+
+        check_is_exist = self.root.ids.firebase_login_screen.is_user_exist(new_user_name)
+        if check_is_exist == 2:  # no internet
+            self.dismiss_dialog()
+            self.root.ids.firebase_login_screen.show_no_internet_msg()
+            return
+        if not check_is_exist:
             self.dismiss_dialog()
             self.change_user_name(new_user_name)
+        else:
+            error_label.text = new_user_name + " Already taken"
 
     def start_workout(self, *args):
         # start new session of workout
@@ -1231,6 +1290,12 @@ class MainApp(MDApp):
             if current_screen == "previous_workouts_screen":
                 if self.reload_for_running_session:
                     self.reload_for_running_session = ""
+                    self.root.ids['previous_workouts_screen'].curr_year = 0
+                    self.root.ids['previous_workouts_screen'].curr_month = 0
+                    self.lastscreens = ["homescreen", "workoutsscreen", "workoutscreen"]
+                    self.change_screen1("sessionscreen", -1, "right")
+                    return
+
                 if self.root.ids['previous_workouts_screen'].delete_mode:
                     self.root.ids['previous_workouts_screen'].show_checkbox(False)
                     return
@@ -1295,7 +1360,10 @@ class MainApp(MDApp):
             self.clear_canvas()
             self.add_top_canvas()
         if screen_name in self.mainscreens:
-            if not self.reload_for_running_session and not screen_name == "previous_workouts_screen":
+            print("self.reload_for_running_session", self.reload_for_running_session)
+            if self.reload_for_running_session and screen_name == "previous_workouts_screen":
+                pass
+            else:
                 self.add_bottom_nav()
         else:
             self.remove_bottom_nav()
@@ -1344,17 +1412,17 @@ class MainApp(MDApp):
             #     screen_manager.transition = NoTransition()
 
         if screen_name == "homescreen":
-            # self.root.ids['toolbar'].left_action_items = [
-            #     ["cog", lambda x: self.change_screen1("settingsscreen")]]
             self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
-
             self.lastscreens = []
         else:
-            self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
+            if screen_name in self.mainscreens and not self.reload_for_running_session:
+                self.root.ids['toolbar'].left_action_items = [['', lambda x: None]]
+            else:
+                self.root.ids['toolbar'].left_action_items = [["chevron-left", lambda x: self.back_to_last_screen()]]
 
-        if screen_name != "sessionscreen":
-            self.root.ids['toolbar'].right_action_items = [
-                ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
+        # if screen_name != "sessionscreen":
+        #     self.root.ids['toolbar'].right_action_items = [
+        #         ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
 
         if -3 in args:  # recovering transition
             screen_manager.current = screen_name
@@ -1413,6 +1481,7 @@ class MainApp(MDApp):
         user_name = '"' + user_name + '"'
         check_req = requests.get(
             'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
+        print(check_req)
         data = check_req.json()
         if data:
             return True
@@ -1552,8 +1621,8 @@ class MainApp(MDApp):
             self.get_user_data()
             self.load_session_data()
             self.load_workout_data()
-            self.root.ids['toolbar'].right_action_items = [
-                ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
+            # self.root.ids['toolbar'].right_action_items = [
+            #     ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
             Snackbar(text="Workout saved!").show()
             self.upload_backup = 0
 
@@ -1586,89 +1655,6 @@ class MainApp(MDApp):
 
             self.upload_data(data, link, target)
 
-    # def upload_new_workout(self, data, link):
-    #
-    #     self.display_loading_screen()
-    #     self.upload_backup = ["upload_new_workout", data, link]
-    #     post_workout_req = UrlRequest(link, req_body=data, on_success=self.success_upload_workout,
-    #                                   on_error=self.error_upload_workout,
-    #                                   on_failure=self.error_upload_workout,
-    #                                   ca_file=certifi.where(), method='POST', verify=True)
-    #
-    #
-    # def success_upload_workout(self, *args):
-    #     self.hide_loading_screen()
-    #
-    #     self.change_screen1("workoutsscreen")
-    #     self.get_user_data()
-    #     self.load_workout_data()
-    #     Snackbar(text="Workout saved!").show()
-    #     self.root.ids['toolbar'].right_action_items = [
-    #         ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]
-    #
-    # def error_upload_workout(self, *args):
-    #     self.hide_loading_screen()
-    #     print(args)
-    #     print(args[0])
-    #     print("error uploading")
-    #
-    # def update_existing_workout(self, workout_key, workout_name, workout_exc):
-    #     if self.debug:
-    #         print("workout_key to update:", workout_key)
-    #         print("workout_name to update:", workout_name)
-    #         print("workout_exc to update:", workout_exc)
-    #         print("real workout details:", self.workoutsParsed[workout_key])
-    #
-    #     self.display_loading_screen()
-    #
-    #     workout_link = "https://gymbuddy2.firebaseio.com/%s/workouts/%s.json?auth=%s" % (
-    #         self.local_id, workout_key, self.id_token)
-    #     print(workout_link)
-    #     Workout = "{%s: %s}" % ('"' + workout_name + '"', '"' + str(workout_exc) + '"')
-    #     data = json.dumps(Workout)
-    #     post_workout_req = UrlRequest(workout_link, req_body=data, on_success=self.success_upload_workout,
-    #                                   on_error=self.error_upload_workout,
-    #                                   on_failure=self.error_upload_workout,
-    #                                   ca_file=certifi.where(), method='PUT', verify=True)
-    #
-    # def upload_session(self, data, link):
-    #     self.display_loading_screen()
-    #     self.upload_backup = ["session_upload", data, link]
-    #     req = UrlRequest(link, req_body=data, on_success=self.on_session_save_success,
-    #                      on_error=self.on_session_save_error,
-    #                      on_failure=self.on_session_save_error, ca_file=certifi.where(), verify=True)
-    #
-    # def on_session_save_success(self, *args):
-    #     self.root.ids['sessionscreen'].dialog.dismiss()
-    #     self.change_screen1("homescreen")
-    #     self.get_user_data()
-    #     self.load_session_data()
-    #     self.running_session = 0
-    #     Snackbar(text="Session saved!").show()
-    #     self.upload_backup = 0
-    #     self.hide_loading_screen()
-    #
-    # def on_session_save_error(self, *args):
-    #     self.root.ids['sessionscreen'].dialog.dismiss()
-    #     self.refresh_auth_token()
-    #     self.hide_loading_screen()
-    #     Snackbar(text="Something went wrong!", padding="20dp", button_text="TRY AGAIN", button_color=(1, 0, 1, 1),
-    #              duration=10,
-    #              button_callback=self.on_upload_error).show()
-    #     if self.debug:
-    #         print(args)
-    #         print("error session save")
-    #
-    # def on_upload_error(self, *args):
-    #     if self.upload_backup:
-    #         upload_backup = self.upload_backup
-    #         method = upload_backup[0]
-    #         data = upload_backup[1]
-    #         link = upload_backup[2]
-    #         if method == "session_upload":
-    #             self.upload_session(data, link)
-
-    # Backup in case of app being closed on running session
     def upload_temp_session(self, *args):
 
         date = self.root.ids['sessionscreen'].ids["date_picker_label"].text
@@ -1754,6 +1740,14 @@ class MainApp(MDApp):
 
         self.upload_data(data, link, 4)
 
+    def del_weight_by_key(self, weight_key):
+        weight = self.weights.pop(weight_key)
+        print("weight_key to del", weight_key)
+        weight_history_ref = self.weight_history_by_month_year[weight_key.year][weight_key.month]
+        ind_to_pop = weight_history_ref.index(weight_key)
+        weight_history_ref.pop(ind_to_pop)
+        self.upload_weight_data()
+
     def load_weight_data(self):
         print("trying to load weight")
         if 'weights' in self.user_data:
@@ -1766,6 +1760,7 @@ class MainApp(MDApp):
                 date_key = datetime.strptime(key, '%d/%m/%Y').date()
                 self.weights[date_key] = weights[key]
             self.sort_weights()
+
             print(self.weights)
 
     def show_update_weight_dialog(self):
@@ -1790,7 +1785,7 @@ class MainApp(MDApp):
                     on_release=self.dismiss_dialog
                 ),
                 MDFlatButton(
-                    text="OK",
+                    text="SAVE",
                     text_color=self.theme_cls.primary_color,
                     on_release=self.add_weight_meas
                 ),
@@ -1811,9 +1806,7 @@ class MainApp(MDApp):
         self.dialog.open()
 
     def add_weight_meas(self, *args):
-
-        print(self.dialog.content_cls.children[0].text)
-        print(self.dialog.content_cls.children[1].text)
+        # TODO add internet check
         self.dialog.dismiss()
         Snackbar(text="Weight Saved").show()
 
@@ -1827,6 +1820,9 @@ class MainApp(MDApp):
         self.weights[date_to_save] = weight_to_save
         self.sort_weights()
         self.upload_weight_data()
+
+        if self.root.ids['previous_workouts_screen'].weight_history:
+            self.root.ids['previous_workouts_screen'].on_pre_enter()
 
     # input floating number and returns 6 digits only 2 decimal point accuracy
     # def length_filter(self, number_input):
@@ -1904,8 +1900,12 @@ class MainApp(MDApp):
 
             else:
                 dates_dict[year][month].append(date)
+        self.weight_history_by_month_year = dates_dict
         self.root.ids['exercise_stats_screen'].session_date = dates_dict
 
+    def show_weight_history(self):
+        self.root.ids['previous_workouts_screen'].weight_history = 1
+        self.change_screen1("previous_workouts_screen", 'left')
 
     def stats_to_weight_mode(self):
         self.root.ids['exercise_stats_screen'].ids["records_scroll"].opacity = 0

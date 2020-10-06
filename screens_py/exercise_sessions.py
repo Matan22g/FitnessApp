@@ -29,7 +29,7 @@ class ExerciseSessionsScreen(Screen):
 
         self.dates = {}
         self.sessions = []
-        self.app.change_title("Stats for Geeks")
+        self.app.change_title(self.exercise + " History")
         self.app.root.ids['exercise_sessions_screen'].ids["exc_name"].text = self.exercise
         if self.app.debug:
             print("entering history", self.exercise)
@@ -159,7 +159,7 @@ class ExerciseSessionsScreen(Screen):
         # month = sessions_keys[0].ctime()[4:7]
 
         window_height = Window.size[1]
-        row_height = window_height / 6.2
+        row_height = window_height / 7
         row_enlarger_inc = window_height / 17.6
 
         for i, session_key in enumerate(sessions_keys):
@@ -238,7 +238,7 @@ class ExerciseSessionsScreen(Screen):
             padding=[25, 16, 15, 25],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
             background="resources/card_back.png",
-            elevation=0
+            elevation=1
 
         )
 
@@ -248,10 +248,9 @@ class ExerciseSessionsScreen(Screen):
         excnum = str(num_of_session + 1) + " of " + str(total_session_num)
 
         exc_num = MDLabel(
-            text=excnum,
+            text="    " + excnum,
             font_style="Caption",
-            theme_text_color="Custom",
-            text_color=self.app.text_color,
+            theme_text_color="Secondary",
             pos_hint={"center_y": 0.85, "center_x": 0.17}
         )
         # help_layout.add_widget(exc_num)
@@ -310,5 +309,7 @@ class ExerciseSessionsScreen(Screen):
         if not date:
             return
         new_date = '%d / %d / %d' % (date.day, date.month, date.year)
-        print(new_date)
-        self.load_sessions(int(date.year), int(date.month))
+        if self.app.root.ids['previous_workouts_screen'].weight_history:
+            self.load_weight_history(int(date.year), int(date.month))
+        else:
+            self.load_sessions(int(date.year), int(date.month))

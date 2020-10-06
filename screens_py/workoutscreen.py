@@ -154,9 +154,9 @@ class WorkoutScreen(Screen):
         elif not num_of_tabs:
             self.add_split()
         screen_manager = self.app.root.ids['screen_manager1']
-        if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen" and screen_manager.current != "exercise_sessions_screen":
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
+        # if screen_manager.current != "workoutscreen" and screen_manager.current != "sessionscreen" and screen_manager.current != "exercise_sessions_screen":
+        #     self.app.root.ids['toolbar'].right_action_items = [
+        #         ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
 
     def switch_mode(self, mode):
         if mode == "view":
@@ -193,9 +193,9 @@ class WorkoutScreen(Screen):
 
         if to_show:
             screen_manager = self.app.root.ids['screen_manager1']
-            if screen_manager.current == "workoutscreen":
-                self.app.root.ids['toolbar'].right_action_items = [
-                    ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
+            # if screen_manager.current == "workoutscreen":
+            #     self.app.root.ids['toolbar'].right_action_items = [
+            #         ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
             self.show_exc_del_buttons(False)
             self.show_exc_stats_buttons(True)
             self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (0.9, .65)
@@ -388,7 +388,7 @@ class WorkoutScreen(Screen):
         sButton = MDIconButton(
             icon="history",
             theme_text_color="Custom",
-            text_color=self.app.text_color,
+            text_color=self.app.theme_cls.primary_color,
             on_release=self.show_exc_history,
         )
 
@@ -599,8 +599,8 @@ class WorkoutScreen(Screen):
     def cancel_edit_mode(self, *args):
         self.dismiss_dialog()
         if self.app.root.ids['workoutscreen'].create_mode:
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
+            # self.app.root.ids['toolbar'].right_action_items = [
+            #     ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
             self.edit_mode = 0
             self.app.root.ids['workoutscreen'].create_mode = 0
             self.app.change_screen1("homescreen")

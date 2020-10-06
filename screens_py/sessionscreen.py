@@ -11,9 +11,12 @@ from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
 from kivymd.uix.behaviors import TouchBehavior
 # from kivymd.uix.behaviors.toggle_behavior import MDToggleButton
+from kivymd.uix.textfield import MDTextField
+
 from customKv.toggle_behavior import MDToggleButton
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDFlatButton, MDRoundFlatIconButton, MDIconButton, MDRectangleFlatButton
+from kivymd.uix.button import MDFlatButton, MDRoundFlatIconButton, MDIconButton, MDRectangleFlatButton, \
+    MDFloatingActionButton
 from kivymd.uix.card import MDCardSwipe, MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
@@ -143,6 +146,8 @@ class SessionScreen(Screen):
             self.app.change_title("Running Session")
 
         else:
+            print(self.app.sessions)
+            print(self.session_key)
 
             session = self.app.sessions[self.session_key]
             session_workout = list(session.exercises.keys())
@@ -163,7 +168,7 @@ class SessionScreen(Screen):
             self.load_session()
             self.hide_edit_buttons(True)
             # self.app.change_title(session.workout_name)
-            self.app.change_title("Push Harder")
+            self.app.change_title("Recent Workout")
             self.ids["workout_name"].text = session.workout_name
             inc = (len(session.workout_name.split()) - 1) * 0.02
             self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .95 + self.inc + inc}
@@ -264,7 +269,9 @@ class SessionScreen(Screen):
                 padding=[25, 25, 0, 20],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
                 background="resources/card_back.png",
-                on_release=self.active_card_check_box
+                on_release=self.active_card_check_box,
+                elevation=1,
+
             )
         else:
             excCard = MDCard(
@@ -275,6 +282,7 @@ class SessionScreen(Screen):
                 padding=[25, 25, 0, 45],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
                 background="resources/card_back.png",
+                elevation=1,
             )
 
         help_layout, check_box = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
@@ -314,7 +322,6 @@ class SessionScreen(Screen):
             units_layout.add_widget(reps_label)
             excCard.add_widget(exc_layout)
             excCard.add_widget(units_layout)
-
             # new_exc_layout, new_units_layout = self.create_set_label(set, num_of_set)
             # excCard.add_widget(new_exc_layout)
             # excCard.add_widget(new_units_layout)
@@ -349,12 +356,23 @@ class SessionScreen(Screen):
         startButton = MDIconButton(
             icon="arrow-right-drop-circle-outline",
             theme_text_color="Custom",
-            text_color=(0, 1, 0, 1),
+            text_color=self.app.theme_cls.primary_color,
             user_font_size="45sp",
             size_hint=(0.2, 3.5),
             pos_hint={"center_x": 0.5},
-            on_release=self.start_exc
+            on_release=self.start_exc,
         )
+        # startButton = MDFloatingActionButton(
+        #     icon="play",
+        #     theme_text_color="Custom",
+        #     text_color=(1,1,1,1),
+        #     md_bg_color= self.app.theme_cls.primary_color,
+        #     elevation= 0,
+        #     size_hint=(0.15, 2),
+        #     user_font_size="35sp",
+        #     pos_hint={"center_x": 0.5},
+        #     on_release=self.start_exc
+        # )
 
         self.ex_reference_by_id[startButton] = exc
         return startButton
@@ -540,7 +558,7 @@ class SessionScreen(Screen):
                 self.session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.app.local_id, self.app.id_token)
         session_data = [date, self.app.timer_format, self.workout_key, self.workout_name, self.num_of_split,
-                        self.session_rec]
+                        self.session_rec, ]
         Workout = "{%s}" % (str(session_data))
         data = json.dumps(Workout)
 
@@ -581,7 +599,7 @@ class SessionScreen(Screen):
 
         for checkbox_id in self.ex_reference_by_checkBox:
             checkbox_id.active = 0
-            checkbox_id.selected_color = self.app.text_color
+            checkbox_id.selected_color = self.app.theme_cls.primary_color
             if to_show:
                 checkbox_id.opacity = 1
             else:
@@ -886,38 +904,36 @@ class ExerciseScreen(Screen):
         set_layout.add_widget(
             MDLabel(text=set_num, size_hint=(1, 0.2), font_style="H5",
                     pos_hint={"center_y": 0.7, "center_x": 0.62 + set_add}, theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
+                    text_color=self.app.text_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text=str(currReps), size_hint=(1, 0.2), font_style="H5",
                     pos_hint={"center_y": 0.7, "center_x": 0.865 + x_add + rep_inc}, theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
+                    text_color=self.app.text_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text="X", size_hint=(1, 0.2), font_style="H5",
                     pos_hint={"center_y": 0.7, "center_x": 0.969 + x_add}, theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
+                    text_color=self.app.text_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text=str(currWeight), size_hint=(1, 0.2), font_style="H5",
                     pos_hint={"center_y": 0.7, "center_x": 1.06 + x_add + weight_inc}, theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
+                    text_color=self.app.text_color
                     )
         )
         set_layout.add_widget(
             MDLabel(text=f"Reps", font_style="Caption",
                     pos_hint={"center_y": 0.3, "center_x": 0.86 + x_add},
-                    theme_text_color="Custom",
-                    text_color=self.app.theme_cls.primary_color
+                    theme_text_color="Secondary"
                     ))
         unit = "Kg" if self.app.units == "metric" else "Lbs"
         last_label = MDLabel(text=unit, font_style="Caption",
                              pos_hint={"center_y": 0.3, "center_x": 1.09 + x_add},
-                             theme_text_color="Custom",
-                             text_color=self.app.theme_cls.primary_color
+                             theme_text_color="Secondary"
                              )
         set_layout.add_widget(last_label)
 
