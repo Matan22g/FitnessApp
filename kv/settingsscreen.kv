@@ -8,15 +8,15 @@
 
     FloatLayout:
         MDIcon:
-            pos_hint: {"center_x": 0.92, "top": 1.45}
+            pos_hint: {"center_x": 0.9, "top": 1.4425}
             icon: "cog"
-            font_size: "50sp"
+            font_size: "80sp"
             theme_text_color: "Custom"
             text_color: 1,1,1,1
 
         BoxLayout:
             orientation:'vertical'
-            pos_hint: {"center_x": .5, "top": .885}
+            pos_hint: {"center_x": .5, "top": .87}
             size_hint: 1, 0.34
             spacing: 10
             padding: '5dp'
@@ -54,7 +54,6 @@
 
                     MyToggleButton:
                         size_hint: (.75, .5)
-
                         id: kg_button
                         text: "Kg"
                         group: "y"
@@ -66,7 +65,6 @@
 
                     MyToggleButton:
                         size_hint: (.75, .5)
-
                         id: lbs_button
                         text: "lbs"
                         group: "y"
@@ -131,7 +129,7 @@
 
                 MDLabel:
                     id: settings_weight_label
-                    text: "80 Kg"
+                    text: "0 Kg"
                     font_size: "20dp"
 
 #                    font_style: "H6"

@@ -308,7 +308,7 @@ class PreviousWorkoutsScreen(Screen):
                 spacing=8,
                 radius=[80, 0, 80, 0],
                 orientation="horizontal",
-                size_hint=(0.87, 0.97),
+                size_hint=(0.95, 0.97),
                 padding=[40, 40, 20, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
                 background="resources/card_back_prev.png",
@@ -320,7 +320,7 @@ class PreviousWorkoutsScreen(Screen):
                 spacing=8,
                 radius=[80, 0, 80, 0],
                 orientation="horizontal",
-                size_hint=(0.87, 0.97),
+                size_hint=(0.95, 0.97),
                 padding=[40, 40, 20, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
                 pos_hint={"center_y": 0.5, "center_x": 0.5},
                 background="resources/card_back_prev.png",
@@ -332,7 +332,7 @@ class PreviousWorkoutsScreen(Screen):
         # help_layout = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
         # excCard.add_widget(help_layout)
         session_date = session_date.ctime()[0:10]
-        session_date = session_date[8:] + "\n" + session_date[4:7]
+        session_date = " " + session_date[8:] + "\n " + session_date[4:7]
         print(session_date)
         date_size_hint_x = 0.2
         if self.app.reload_for_running_session:
@@ -568,7 +568,7 @@ class PreviousWorkoutsScreen(Screen):
             spacing=8,
             radius=[80, 0, 80, 0],
             orientation="horizontal",
-            size_hint=(0.87, 0.97),
+            size_hint=(0.95, 0.97),
             padding=[40, 40, 20, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
             background="resources/card_back_prev.png",

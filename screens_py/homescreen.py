@@ -1,7 +1,6 @@
 from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen
 from kivymd.app import MDApp
-from kivymd.uix.button import MDFloatingActionButtonSpeedDial
 
 from customKv.piechart import AKPieChart
 

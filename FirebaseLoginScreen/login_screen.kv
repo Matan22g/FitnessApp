@@ -5,27 +5,31 @@
     size_hint_y: None
     height: text_field.height
 
-    MDTextFieldRound:
+    MDTextField:
         height:0.5
         id: text_field
         hint_text: root.hint_text
         text: root.text
+        mode: "fill"
+        line_color_focus: 1, 1, 1, 1
+        icon_right_color: 1, 1, 1, 1
+        current_hint_text_color:0.7,0.7,0.7,1
+        fill_color: 1, 1, 1, .2
+
         password: True
         color_active: app.theme_cls.primary_light
-        icon_left: "lock"
-        icon_left_color: app.theme_cls.primary_color
-        on_focus: self.icon_left_color = self.theme_cls.primary_color
-        normal_color: 1,1,1,1
-        color_active: 1,1,1,1
+#        icon_left: "lock"
+#        icon_left_color: app.theme_cls.primary_color
+#        on_focus: self.icon_left_color = self.theme_cls.primary_color
         input_filter: app.proper_input_filter
 
         padding:
-            self._lbl_icon_left.texture_size[1] + dp(10) if self.icon_left else dp(15), (self.height / 2) - (self.line_height / 2), self._lbl_icon_right.texture_size[1] + dp(20),  0
+            dp(7.5), dp(30), self._lbl_icon_right.texture_size[1] + dp(20),  dp(15)
 
     MDIconButton:
         icon: "eye-off"
         theme_text_color: "Custom"
-        text_color: app.theme_cls.primary_color
+        text_color: 1,1,1,0.7
         ripple_scale: .5
         pos_hint: {"center_y": .5}
         pos: text_field.width - self.width + dp(8), 0
@@ -71,7 +75,7 @@
                 bold: True
                 pos_y: 0.3
                 theme_text_color: "Custom"
-                text_color: 0.2,0,1,1
+                text_color:  utils.get_color_from_hex("#8EADFF")
                 font_style: 'H4'
                 halign: 'center'
                 valign: 'center'
@@ -105,12 +109,13 @@
             id: md_tabs
             pos_hint: {"center_x": 0.72, "top": 1.025}
             background_color: 0, 0, 0, 0
-            text_color_normal: 0, 0, 0, 1
+            text_color_normal: 1, 1, 1, 0.5
             text_color_active: 1, 1, 1, 1
             color_indicator: 1, 1, 1, 1
             allow_stretch: False
             spacing:100
             tab_indicator_anim: True
+            tab_indicator_height: dp(3)
             on_tab_switch: root.parent.parent.parent.parent.parent.on_tab_switch(*args)
             opacity:0
             disabled:True
@@ -120,38 +125,62 @@
             Tab:
                 text: '[size=' + str(app.headline_text_size)+']Sign up[/size]'
 
-
-        MDTextFieldRound:
+        MDTextField:
             id: email
-            icon_left: "email"
-            hint_text: "  Email or User name"
-            size_hint_x: 0.7
-#            size_hint_y: 0.1
             pos_hint: {"center_x": .5, "center_y": .8}
-            normal_color: 1,1,1,1
-            color_active: 1,1,1,1
-            elevation: 10
-            icon_left_color: app.theme_cls.primary_color
-            on_focus: self.icon_left_color = self.theme_cls.primary_color
+            hint_text: "  Username or email"
+            mode: "fill"
+            color_mode: 'custom'
+            size_hint_x: 0.9
+            line_color_focus: 1, 1, 1, 1
+            icon_right_color: 1, 1, 1, 0.7
+            current_hint_text_color:0.7,0.7,0.7,1
+            fill_color: 1, 1, 1, .2
             input_filter: app.proper_email_filter
 
-        MDTextFieldRound:
+
+#        MDTextFieldRound:
+#            icon_left: "email"
+#            hint_text: "  Email or User name"
+#            size_hint_x: 0.7
+##            size_hint_y: 0.1
+#            pos_hint: {"center_x": .5, "center_y": .8}
+#            normal_color: 1,1,1,1
+#            color_active: 1,1,1,1
+#            elevation: 10
+#            icon_left_color: app.theme_cls.primary_color
+#            on_focus: self.icon_left_color = self.theme_cls.primary_color
+#            input_filter: app.proper_email_filter
+        MDTextField:
             id: username
-            icon_left: "account"
-            hint_text: "  Username"
-            size_hint_x: 0.7
             pos_hint: {"center_x": .5, "center_y": .65}
-            opacity: 0
-            normal_color: 1,1,1,1
-            color_active: 1,1,1,1
-            elevation: 10
-            icon_left_color: app.theme_cls.primary_color
-            on_focus: self.icon_left_color = self.theme_cls.primary_color
+            hint_text: "  Username"
+            mode: "fill"
+            color_mode: 'custom'
+            size_hint_x: 0.9
+            line_color_focus: 1, 1, 1, 1
+            icon_right_color: 1, 1, 1, 0.7
+            current_hint_text_color:0.7,0.7,0.7,1
+            fill_color: 1, 1, 1, .2
             input_filter: app.proper_input_filter
+            opacity: 0
+
+#        MDTextFieldRound:
+#            id: username
+#            icon_left: "account"
+#            hint_text: "  Username"
+#            size_hint_x: 0.9
+#            opacity: 0
+#            normal_color: 1,1,1,1
+#            color_active: 1,1,1,1
+#            elevation: 10
+#            icon_left_color: app.theme_cls.primary_color
+#            on_focus: self.icon_left_color = self.theme_cls.primary_color
+#            input_filter: app.proper_input_filter
 
         ClickableTextFieldRound:
             icon_right_color: app.theme_cls.primary_color
-            size_hint_x: 0.7
+            size_hint_x: 0.9
             id: password
             hint_text: "  Password"
             pos_hint: {"center_x": .5, "center_y": .65}
@@ -190,10 +219,11 @@
         orientation: 'vertical'
         spacing: dp(10)
 
+
         AKOnboarding:
             id: boarding
             circles_size: dp(15)
-            circles_color: 0,0,1,1
+            circles_color: utils.get_color_from_hex("#8EADFF")
             MyAKOnboardingItem:
                 source: "resources/welcome1.png"
                 text: "Workout Diary, Remember Your workout, helps you get Stronger"

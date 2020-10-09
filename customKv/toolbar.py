@@ -265,7 +265,7 @@ Builder.load_string(
     padding: [root.theme_cls.horizontal_margins - dp(12), 0]
     opposite_colors: True
     elevation: root.elevation
-    # md_bg_color: self.theme_cls.primary_color if root.type != "bottom" else [0, 0, 0, 0]
+    # md_bg_color: self.theme_cls.primary_color if root.type != "bottom" else [0, 1, 0, 1]
     orientation: 'vertical'
     canvas:
         Color:

@@ -1,0 +1,207 @@
+#:import utils kivy.utils
+
+# defining our special list
+
+<WelcomeScreen>:
+    FitImage:
+        source: "resources/sign_up/3.png"
+    FloatLayout:
+        MDLabel:
+            pos_hint: {"center_x": 0.5, "top": 1.25}
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: 1,1,1,1
+            text: "Great! So let's get\nstarted with the basics"
+            halign: 'center'
+
+        MDSeparator:
+            pos_hint: {"center_x": 0.5, "top": 0.7}
+
+            height: "1dp"
+            color: 0,1,0,1
+            size_hint_x: 0.8
+
+#        MDLabel:
+#            pos_hint: {"center_x": 0.5, "top": 1.25}
+#            font_style: "H6"
+#            theme_text_color: "Custom"
+#            text_color: 1,1,1,1
+#            text: "What units system do you prefer?"
+#            halign: 'center'
+##
+#        MDLabel:
+#            pos_hint: {"center_x": 0.5, "top": 1}
+#            font_style: "H6"
+#            theme_text_color: "Custom"
+#            text_color: 1,1,1,1
+#            text: "Enter your weight"
+#            halign: 'center'
+#
+#        MDBoxLayout:
+#            halign: "right"
+#            size_hint_x: 0.4
+#            size_hint_y: 0.1
+#            pos_hint: {"center_x": 0.38, "top": 0.7}
+#            spacing: 15
+#            MyToggleButton:
+#                radius:[200,dp(40),dp(40),dp(40)]
+#                id: kg_button
+#                text: "Kg"
+#                group: "y"
+#                background_down : (1, 1, 1, 1)
+#                background_normal : (1, 1, 1, 1)
+#                text_color:utils.get_color_from_hex("#283592")
+#
+#                font_color_normal:  utils.get_color_from_hex("#283592")
+#                font_color_down: utils.get_color_from_hex("#283592")
+#                on_release:
+#                    self.text_color = utils.get_color_from_hex("#283592")
+#                    lbs_button.text_color = 0.5,0.5,0.5,1
+#
+#            MyToggleButton:
+#
+#                id: lbs_button
+#                text: "lbs"
+#                group: "y"
+#                font_color_normal: utils.get_color_from_hex("#283592")
+#                font_color_down: utils.get_color_from_hex("#283592")
+#                text_color:utils.get_color_from_hex("#283592")
+#
+#                background_down :  (1, 1, 1, 1)
+#                background_normal :  (1, 1, 1, 1)
+#                on_release:
+#                    self.text_color = utils.get_color_from_hex("#283592")
+#                    kg_button.text_color = 0.5,0.5,0.5,1
+#
+#
+#        MDRectangleFlatIconButton:
+#            pos_hint: {"center_x": 0.5, "top": 0.425}
+#            text: "Set Weight"
+#            text_color: 0,0,0,1
+#            md_bg_color: 1, 1, 1, 0
+#            icon: 'scale'
+#            md_bg_color: 1, 1, 1, 1
+
+        MDTextButton:
+            text: "skip"
+            custom_color: 1, 1, 1, 0.8
+            pos_hint: {"center_x": 0.9, "top": 0.05}
+            font_size: "21dp"
+            on_release:
+                app.change_screen("main_app_screen")
+                app.add_top_canvas()
+                app.root.ids['bottom_nav'].switch_tab('1')
+                app.root.ids['bottom_nav'].on_resize()
+
+        MDRectangleFlatButton:
+            text: "Create your first workout"
+            pos_hint: {"center_x": 0.5, "top": 0.15}
+            text_color:0, 0, 0, 1
+            size_hint_x: 0.9
+            md_bg_color: 1, 1, 0, 1
+            font_size: "10dp"
+            on_release:
+                app.show_content_msg(app.first_new_workout, app.dismiss_dialog, "Enter workout name", 3, "NEXT")
+
+        BoxLayout:
+            orientation:'vertical'
+            pos_hint: {"center_x": .5, "top": .56}
+            size_hint: 1, 0.15
+            spacing: 10
+            padding: '5dp'
+            MDCard:
+                orientation: "horizontal"
+                padding: "12dp"
+                size_hint: 1, 0.2
+                opacity: 0.5
+                radius: [80]
+
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "weight"
+                    size_hint_x: 0.15
+                    text_color: (0.5, 0.5, 0.5, 1)
+                    opacity: 2
+
+                MDLabel:
+                    text: "  Units"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.6
+                    opacity: 2
+
+                MDBoxLayout:
+                    halign: "right"
+                    size_hint_x: 0.6
+                    size_hint_y: 1.8
+                    spacing: 5
+                    MyToggleButton2:
+                        size_hint: (.75, .5)
+                        text_color: 0,0,0,1
+                        id: kg_button
+                        text: "Kg"
+                        group: "y"
+                        background_down : utils.get_color_from_hex("#283592")
+                        background_normal : (0, 0, 1, 0)
+                        font_color_normal: utils.get_color_from_hex("#283592")
+                        font_color_down: 0,0,0,0
+                        opacity: 2
+                        on_release:
+                            if app.units == 'imperial' and initial_weight_button.text != "Set": initial_weight_button.text = str(round(float(initial_weight_button.text.split()[0])/2.2,2)) + " Kg"
+                            app.units= 'metric'
+                            app.upload_settings()
+
+                    MyToggleButton2:
+                        size_hint: (.75, .5)
+                        text_color :0,0,0,1
+                        id: lbs_button
+                        text: "lbs"
+                        group: "y"
+                        background_down : utils.get_color_from_hex("#283592")
+                        background_normal : (0, 0, 1, 0)
+
+                        opacity: 2
+                        on_release:
+                            app.units= 'imperial'
+                            app.upload_settings()
+                            if initial_weight_button.text != "Set": initial_weight_button.text = str(app.fix_weight_by_unit(initial_weight_button.text.split()[0])[0]) + " Lbs"
+
+            MDCard:
+                orientation: "horizontal"
+                padding: "12dp"
+                size_hint: 1, 0.2
+                opacity: 0.5
+                radius: [80]
+                MDIcon:
+                    id: unit_icon
+                    theme_text_color: "Custom"
+#                        text_color: 1,1,1,1
+                    icon: "scale"
+                    size_hint_x: 0.14
+                    text_color: (0.5, 0.5, 0.5, 1)
+                    opacity: 2
+
+                MDLabel:
+                    text: "Weight"
+                    font_style: "H6"
+#                        theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "left"
+                    size_hint_x: 0.5
+                    opacity: 2
+                MDRectangleFlatButton:
+                    size_hint: 0.3, 1
+                    id: initial_weight_button
+                    text: "Set"
+#                    font_style: "H6"
+                    theme_text_color: "Custom"
+#                        text_color: 1, 1, 1, 1
+                    halign: "right"
+                    theme_text_color: "Custom"
+                    text_color: 0,0,0,1
+                    opacity: 2
+                    on_release: app.show_content_msg(app.add_weight_meas, app.dismiss_dialog, "Weight", 2, "SAVE")

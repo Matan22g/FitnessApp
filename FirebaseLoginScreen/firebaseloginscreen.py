@@ -72,7 +72,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     # def error_listener(self):
     #     pass
     def on_login_success(self, *args):
-        self.app.change_screen("main_app_screen")
+        pass
 
     def on_web_api_key(self, *args):
         """When the web api key is set, look for an existing account in local
@@ -204,7 +204,6 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         self.app.local_id = log_in_data['localId']
         self.save_refresh_token(self.refresh_token)
         self.login_success = True
-        self.app.change_screen("main_app_screen")
         if self.debug:
             print("Successfully logged in a user: ", log_in_data)
 

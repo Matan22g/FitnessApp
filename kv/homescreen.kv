@@ -33,10 +33,10 @@
                 id: personal_weight
                 font_size: "35dp"
                 halign: "right"
-                text: "80"
+                text: "0"
                 custom_color: 1, 1, 1, 1
                 size_hint:0.3,0.4
-                on_press:
+                on_release:
                     app.show_update_weight_dialog()
 
             MDLabel:
@@ -73,73 +73,6 @@
             pos_hint: {"center_x": .91, "center_y": .96}
             opacity:0
 
-        MDCard:
-            orientation: "horizontal"
-            padding: "8dp"
-            size_hint: 1, 0.15
-            pos_hint: {"center_x": .5, "center_y": .0}
-            on_release: app.view_session(app.last_session_date)
-            opacity : 0
-            BoxLayout:
-                orientation:"vertical"
-                size_hint_x:0.3
-                canvas.before:
-                    Rectangle:
-                        pos: self.pos
-                        size: self.size
-                        source: "resources/loginback1.png"
-                MDLabel:
-                    id: last_session_month
-                    text: ""
-                    font_style: "H5"
-                    theme_text_color: "Custom"
-                    text_color: 1, 1, 1, 1
-                    halign: "center"
-
-                MDLabel:
-                    id: last_session_day
-                    text: ""
-                    font_style: "H6"
-
-                    theme_text_color: "Custom"
-                    text_color: 1, 1, 1, 1
-                    halign: "center"
-            BoxLayout:
-                orientation: "vertical"
-                spacing: 20
-                MDLabel:
-                    text: "Last Workout"
-                    theme_text_color: "Custom"
-                    text_color: 0, 0, 0, 1
-                    halign:"center"
-
-                MDLabel:
-                    id: last_session_name
-                    text: "N/A"
-                    font_style: "H5"
-                    theme_text_color: "Custom"
-                    text_color: 0, 0, 1, 1
-                    halign: "center"
-
-                MDLabel:
-                    id: session_exc_completed
-                    text: "Go Train"
-                    font_style: "Caption"
-                    theme_text_color: "Custom"
-                    text_color: 0, 0, 0, 1
-                    halign: "center"
-
-            MDIconButton:
-                icon: "chevron-right"
-                halign: "right"
-                on_release: print(3)
-                user_font_size: "50sp"
-                theme_text_color: "Custom"
-                text_color: 0, 0, 1, 1
-                on_release: app.view_session(app.last_session_date)
-                size_hint: (0.4,1)
-
-
 
         BoxLayout:
             orientation:'horizontal'
@@ -167,14 +100,13 @@
             id: no_workout_label
             text: "You have not done any workout yet\nGo to the Gym! "
             font_style: "H6"
-            theme_text_color: "Custom"
-            text_color: 0, 0, 0, 1
+            theme_text_color: "Secondary"
             halign: "center"
-            pos_hint: {"center_y": 5, "center_y": 0.72}
+            pos_hint: {"center_y": 5, "center_y": 0.7}
 
         ScrollView:
             id: last_sessions
-            pos_hint: {"y": .33, "center_x": .55}
+            pos_hint: {"y": .33, "center_x": .6}
             size_hint_y: None
             size_hint_x: None
             size_hint: 1, .48
@@ -203,38 +135,56 @@
                     elevation: 0
                     radius:[80]
                     orientation: "vertical"
-                    padding: [50, 40, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
+                    padding: [50, 0, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
                     spacing: 1
                     size_hint: None, None
-                    size: "160dp", "230dp"
+                    size: "140dp", "230dp"
                     background : "resources/welcome1.png"
-                    MDLabel:
-                        id: last_session_date
-                        text: "Mon, Sep 27"
-                        font_style: "Caption"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        halign: "left"
-                        size_hint_y:0.1
+                    GridLayout:
+                        cols: 2
+                        rows: 1
+                        size_hint_x:1.1
+                        row_force_default: True
+                        row_default_height: '35dp'
+
+                        MDLabel:
+                            id: last_session_date
+                            text: "Mon, Sep 27"
+                            font_style: "Caption"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            halign: "left"
+                            size_hint_x:1
+
+                        MDIconButton:
+                            icon: "eye"
+                            user_font_size: "20sp"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            on_release:root.view_recent_session(1)
+                            halign: "right"
+                            size_hint_x:0.6
+                            size_hint_y:1
+
                     MDLabel:
                         id: last_space
                         text: ""
                         theme_text_color: "Custom"
                         text_color: 1,1,1,1
-                        font_style:"H4"
+                        font_style:"H3"
                         halign:'left'
-                        pos_hint: {"center_x": .5, "center_y": 0.25}
-                        size_hint_y:2
+                        pos_hint: {"center_x": .5, "center_y": 0.6}
+                        size_hint_y:6.5
 
                     MDLabel:
                         id: last_session_name
                         text: "FBW"
                         theme_text_color: "Custom"
                         text_color: 1,1,1,1
-                        font_style:"H4"
+                        font_style:"H5"
                         halign:'left'
                         pos_hint: {"center_x": .5, "center_y": 0.25}
-                        size_hint_y:1
+                        size_hint_y:4
 
                     MDSeparator:
                         height: "1dp"
@@ -242,36 +192,14 @@
                         pos_hint: {"center_x": .5}
                         size_hint_x: 1.25
 
-                    GridLayout:
-                        # sets_grid
-                        id: records_grid
-                        cols: 3
-                        rows: 1
-                        size_hint_y:0.7
+                    MDIconButton:
+                        icon: "play"
+                        user_font_size: "30sp"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
+                        size_hint_y:2.5
 
-                        MDIconButton:
-                            icon: "eye"
-                            user_font_size: "20sp"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-                            size_hint_y:7.5
-                            size_hint_x:1.1
-                            on_release:root.view_recent_session(1)
-
-                        MDSeparator:
-                            height: "1dp"
-                            color:0,0,0,1
-                            orientation: "vertical"
-                            size_hint_y:0.1
-
-                        MDIconButton:
-                            icon: "play"
-                            user_font_size: "30sp"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-                            size_hint_y:7.5
-                            size_hint_x:1
-                            on_release:root.start_recent_session(1)
+                        on_release:root.start_recent_session(1)
 
 
                 MDCard:
@@ -279,38 +207,59 @@
                     elevation: 0
                     radius:[80]
                     orientation: "vertical"
-                    padding: [50, 40, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
+                    padding: [50, 0, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
                     spacing: 1
                     size_hint: None, None
-                    size: "160dp", "230dp"
+                    size: "140dp", "230dp"
                     background : "resources/welcome3.png"
-                    MDLabel:
-                        id: prev_last_session_date
-                        text: "Mon, Sep 27"
-                        font_style: "Caption"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        halign: "left"
-                        size_hint_y:0.1
+
+
+                    GridLayout:
+                        cols: 2
+                        rows: 1
+                        size_hint_x:1.1
+                        row_force_default: True
+                        row_default_height: '35dp'
+
+                        MDLabel:
+                            id: prev_last_session_date
+                            text: "Mon, Sep 27"
+                            font_style: "Caption"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            halign: "left"
+                            size_hint_x:1
+
+                        MDIconButton:
+                            icon: "eye"
+                            user_font_size: "20sp"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            on_release:root.view_recent_session(1)
+                            halign: "right"
+                            size_hint_x:0.6
+                            size_hint_y:1
+
+
                     MDLabel:
                         id: prev_last_space
                         text: ""
                         theme_text_color: "Custom"
                         text_color: 1,1,1,1
-                        font_style:"H4"
+                        font_style:"H3"
                         halign:'left'
                         pos_hint: {"center_x": .5, "center_y": 0.25}
-                        size_hint_y:2
+                        size_hint_y:8.4
 
                     MDLabel:
                         id: prev_last_session_name
                         text: "ABC"
                         theme_text_color: "Custom"
                         text_color: 1,1,1,1
-                        font_style:"H4"
+                        font_style:"H5"
                         halign:'left'
                         pos_hint: {"center_x": .5, "center_y": 0.25}
-                        size_hint_y:1
+                        size_hint_y:2.5
 
                     MDSeparator:
                         height: "1dp"
@@ -318,43 +267,21 @@
                         pos_hint: {"center_x": .5}
                         size_hint_x: 1.25
 
-                    GridLayout:
-                        # sets_grid
-                        id: buttons_grid
-                        cols: 3
-                        rows: 1
-                        size_hint_y:0.7
+                    MDIconButton:
+                        icon: "play"
+                        user_font_size: "30sp"
+                        theme_text_color: "Custom"
+                        text_color: 1,1,1,1
+                        size_hint_y:2.5
+                        on_release:root.start_recent_session(2)
 
-                        MDIconButton:
-                            icon: "eye"
-                            user_font_size: "20sp"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-                            size_hint_y:7.5
-                            size_hint_x:1.1
-                            on_release:root.view_recent_session(2)
-
-                        MDSeparator:
-                            height: "1dp"
-                            color:0,0,0,1
-                            orientation: "vertical"
-                            size_hint_y:0.1
-
-                        MDIconButton:
-                            icon: "play"
-                            user_font_size: "30sp"
-                            theme_text_color: "Custom"
-                            text_color: 1,1,1,1
-                            size_hint_y:7.5
-                            size_hint_x:1
-                            on_release:root.start_recent_session(2)
 
 
 
 
         BoxLayout:
             orientation:'horizontal'
-            pos_hint: {"x": .03, "center_y": 0.45}
+            pos_hint: {"x": .032, "center_y": 0.45}
             size_hint_y:0.2
             size_hint_x: 0.7
 
@@ -389,7 +316,10 @@
                     pos_hint: {'center_x': 0.5, 'center_y': .5}
                     size_hint:[None,None]
                     size:(dp(300),dp(300))
-
+                    on_touch_down:
+                        caller = args[0]
+                        touch = args[1]
+                        if touch.spos[1]>0.08 and touch.spos[1]<0.36 and touch.spos[0]>0.2 and touch.spos[0]<0.82: app.open_pie_dialog()
 
 #        MDFloatingActionButtonSpeedDial:
 #            id: dial_button

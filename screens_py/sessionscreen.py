@@ -558,7 +558,7 @@ class SessionScreen(Screen):
                 self.session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/sessions.json?auth=%s" % (self.app.local_id, self.app.id_token)
         session_data = [date, self.app.timer_format, self.workout_key, self.workout_name, self.num_of_split,
-                        self.session_rec, ]
+                        self.session_rec]
         Workout = "{%s}" % (str(session_data))
         data = json.dumps(Workout)
 
@@ -679,7 +679,16 @@ class SessionScreen(Screen):
             type="custom",
             content_cls=AddExerciseContent(),
             buttons=[
-
+                MDFlatButton(
+                    text="Exercises Bank",
+                    text_color=self.app.theme_cls.primary_color,
+                    on_release=self.app.open_exercise_bank_menu
+                ),
+                MDFlatButton(
+                    text="Cancel",
+                    text_color=self.app.theme_cls.primary_color,
+                    on_release=self.dismiss_dialog
+                ),
                 MDFlatButton(
                     text="OK",
                     text_color=self.app.theme_cls.primary_color,
@@ -688,6 +697,9 @@ class SessionScreen(Screen):
             ],
         )
         self.dialog.open()
+
+    def dismiss_dialog(self, *args):
+        self.dialog.dismiss()
 
     def add_exercise(self, *args):
         new_exercise = args[0].parent.parent.parent.children[2].children[0].children[0].text
@@ -702,7 +714,8 @@ class SessionScreen(Screen):
 
             # animation for scrolling to the new exercise
             new_card = self.ex_reference_by_exc[new_exercise]
-            self.ids.scroll.scroll_to(new_card, padding=10, animate=True)
+            if len(self.workout) > 5:
+                self.ids.scroll.scroll_to(new_card, padding=10, animate=True)
 
     def fix_resize(self):
         # after delete or add exercise, needs to adjust scroll view size
@@ -938,8 +951,8 @@ class ExerciseScreen(Screen):
         set_layout.add_widget(last_label)
 
         self.ids["sets_grid"].add_widget(set_layout)
-
-        self.ids.sets_scroll.scroll_to(last_label, padding=10, animate=True)
+        if len(self.sets) > 5:
+            self.ids.sets_scroll.scroll_to(last_label, padding=10, animate=True)
 
     def save_exc(self):
         exc = self.ids["ex_name"].text

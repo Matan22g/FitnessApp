@@ -80,7 +80,10 @@ class WorkoutScreen(Screen):
         self.app.root.ids['workoutscreen'].tap_target_view.start()
 
     def on_pre_enter(self, *args):
-        self.app.add_bottom_canvas()
+        try:
+            self.app.add_bottom_canvas()
+        except:
+            print("on sign up")
         self.app.root.ids['workoutscreen'].tap_target_view = MDTapTargetView(
             widget=self.ids.add_split,
             title_text="Add Splits",
@@ -434,7 +437,11 @@ class WorkoutScreen(Screen):
             type="custom",
             content_cls=AddExerciseContent(),
             buttons=[
-
+                MDFlatButton(
+                    text="Exercises Bank",
+                    text_color=self.app.theme_cls.primary_color,
+                    on_release=self.app.open_exercise_bank_menu
+                ),
                 MDFlatButton(
                     text="Cancel",
                     text_color=self.app.theme_cls.primary_color,
@@ -449,6 +456,7 @@ class WorkoutScreen(Screen):
         )
         self.dialog.open()
 
+
     def dismiss_dialog(self, *args):
         self.dialog.dismiss()
 
@@ -462,7 +470,8 @@ class WorkoutScreen(Screen):
             self.load_exc(split_to_add)
             self.dialog.dismiss()
             new_card = self.del_button_id_by_exc[new_exercise].parent.parent
-            self.ids.scroll.scroll_to(new_card, padding=10, animate=True)
+            if len(self.temp_workout) > 5:
+                self.ids.scroll.scroll_to(new_card, padding=10, animate=True)
 
     def show_del_exercise_dialog(self, *args):
         del_button = args[0]
@@ -603,7 +612,7 @@ class WorkoutScreen(Screen):
             #     ['menu', lambda x: self.app.root.ids['nav_drawer'].set_state()]]
             self.edit_mode = 0
             self.app.root.ids['workoutscreen'].create_mode = 0
-            self.app.change_screen1("homescreen")
+            self.app.root.ids['bottom_nav'].switch_tab('1')
         else:
             self.reset_tabs()
             self.edit_mode = 0
