@@ -39,10 +39,27 @@
 
 <UpdateWeightContent>
     orientation: "vertical"
-    spacing: "20dp"
+    spacing: "30dp"
     size_hint_y: None
     height: "110dp"
     halign: "center"
+    GridLayout:
+        cols:2
+        rows:1
+        size_hint_y:0.5
+        MDLabel:
+            text:"Weight"
+            font_style: "H6"
+
+        MDTextButton:
+            id: weight_date
+            font_size: "15dp"
+            halign: "right"
+            text: app.weight_date
+            custom_color: 0, 0, 1, 1
+            on_release:
+                app.show_date_picker_for_weight()
+            pos_hint: {"center_x": .5}
 
     MDTextField:
         id: weight
@@ -53,23 +70,14 @@
         input_filter: 'float'
         font_size: "32.5sp"
         pos_hint: {"center_x": .5}
-        size_hint: (.45, .33)
+        size_hint: (.45, 6)
         halign: "center"
         text: ""
         hint_text: "               "
 
         on_text: app.input_number_check(self, self.text)
 
-    MDTextButton:
-        id: weight_date
-        font_size: "15dp"
-        halign: "right"
-        text: app.weight_date
-        custom_color: 0, 0, 1, 1
-        size_hint:0.3,0.1
-        on_press:
-            app.show_date_picker_for_weight()
-        pos_hint: {"center_x": .5}
+
 
 <Change_User_Name_Content>
     orientation: "vertical"
