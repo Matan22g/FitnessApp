@@ -389,6 +389,8 @@ class SessionScreen(Screen):
         reps = set.split()
         weights = reps[2]
 
+        weights, unit = self.app.fix_weight_by_unit(weights)
+
         reps = reps[0]
         if len(reps) > 1:
             units_pos = 0.9
@@ -406,7 +408,6 @@ class SessionScreen(Screen):
             theme_text_color="Custom",
             text_color=self.app.text_color,
         )
-        unit = "Kg" if self.app.units == "metric" else "Lbs"
         reps_label = MDLabel(
             text="  Reps                        " + unit,
             font_style="Caption",
@@ -432,11 +433,13 @@ class SessionScreen(Screen):
             halign='center'
         ))
 
-        if self.app.units != 'metric':
-            weights = str(round(float(weights) * self.app.kg_to_pounds, 2))
+        # if self.app.units != 'metric':
+        #     weights = str(round(float(weights) * self.app.kg_to_pounds, 2))
+        # else:
+        #     weights = str(round(float(weights), 2))
 
         set_layout.add_widget(MDLabel(
-            text="  " + weights,
+            text="  " + str(weights),
             font_style="H6",
             size_hint=(1.4, None),
             theme_text_color="Custom",
@@ -829,6 +832,8 @@ class ExerciseScreen(Screen):
                 weight_to_show = weight
                 if self.app.units != 'metric':
                     weight_to_show = str(round(float(weight) * self.app.kg_to_pounds, 2))
+                else:
+                    weight_to_show = str(round(float(weight), 2))
 
                 self.ids["reps"].text = reps
                 self.ids["weight"].text = weight_to_show
@@ -857,7 +862,7 @@ class ExerciseScreen(Screen):
         currWeight = float(weight)
 
         if self.app.units != 'metric':
-            currWeight = round(currWeight / self.app.kg_to_pounds, 2)
+            currWeight = currWeight / self.app.kg_to_pounds
 
         currReps = int(self.ids["reps"].text)
         if not currReps:
@@ -865,6 +870,9 @@ class ExerciseScreen(Screen):
         else:
             if self.barbell:
                 currWeight = currWeight * 2 + self.barbell
+
+            weight_to_save = currWeight  # in kg as defualt
+
             self.add_set_to_grid(currReps, currWeight)
 
     def show_invalid_input_msg(self):
@@ -895,14 +903,13 @@ class ExerciseScreen(Screen):
         weight_inc = 0
         if currReps > 9:
             rep_inc = -0.015
+
+        self.sets.append([currReps, currWeight])
+
+        currWeight, unit = self.app.fix_weight_by_unit(currWeight)
+
         if len(str(currWeight)) > 3:
             weight_inc = -0.004 * len(str(currWeight))
-
-        weight_to_save = currWeight  # in kg as defualt
-        self.sets.append([currReps, weight_to_save])
-
-        if self.app.units != 'metric':
-            currWeight = round(currWeight * self.app.kg_to_pounds, 2)
 
         num_of_set = len(self.sets)
         # self.ids["md_list"].add_widget(
@@ -911,7 +918,6 @@ class ExerciseScreen(Screen):
         set_add = 0.05
         x_add = 0.23
 
-        set = f"{currReps}    X    {currWeight}"
         set_layout = MDFloatLayout()
         set_num = "SET " + str(num_of_set) + ":"
         set_layout.add_widget(
@@ -943,7 +949,6 @@ class ExerciseScreen(Screen):
                     pos_hint={"center_y": 0.3, "center_x": 0.86 + x_add},
                     theme_text_color="Secondary"
                     ))
-        unit = "Kg" if self.app.units == "metric" else "Lbs"
         last_label = MDLabel(text=unit, font_style="Caption",
                              pos_hint={"center_y": 0.3, "center_x": 1.09 + x_add},
                              theme_text_color="Secondary"

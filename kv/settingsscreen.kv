@@ -62,6 +62,7 @@
                         on_release:
                             app.units= 'metric'
                             app.upload_settings()
+                            if settings_weight_label.text: settings_weight_label.text = str(round(float(settings_weight_label.text.split()[0])/2.2,2)) + " Kg"
 
                     MyToggleButton:
                         size_hint: (.75, .5)
@@ -73,6 +74,7 @@
                         on_release:
                             app.units= 'imperial'
                             app.upload_settings()
+                            if settings_weight_label.text: settings_weight_label.text = str(app.fix_weight_by_unit(settings_weight_label.text.split()[0])[0]) + " Lbs"
 
 
             MDCard:
@@ -129,7 +131,7 @@
 
                 MDLabel:
                     id: settings_weight_label
-                    text: "0 Kg"
+                    text: ""
                     font_size: "20dp"
 
 #                    font_style: "H6"

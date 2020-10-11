@@ -157,6 +157,8 @@ class PreviousWorkoutsScreen(Screen):
         month_abb = calendar.month_abbr[month]
         self.app.root.ids['previous_workouts_screen'].ids["month_to_view"].text = month_abb + ", " + str(year)
 
+        print('self.app.sessions_by_month_year', self.app.sessions_by_month_year)
+        print("session", self.app.sessions)
         if year in self.app.sessions_by_month_year and month in self.app.sessions_by_month_year[year]:
             sessions_dates = self.app.sessions_by_month_year[year][month]
         else:

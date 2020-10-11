@@ -185,12 +185,12 @@ class ExerciseSessionsScreen(Screen):
 
             sessions_layout.add_widget(new_card_layout)
 
-            maybe_best_set = self.app.find_best_set(session_exc)
-            set = maybe_best_set.split()
-            maybe_best_weight = float(set[2])
-            if maybe_best_weight > best_weight:
-                best_set = maybe_best_set
-                best_weight = maybe_best_weight
+            # maybe_best_set = self.app.find_best_set(session_exc)
+            # set = maybe_best_set.split()
+            # maybe_best_weight = float(set[2])
+            # if maybe_best_weight > best_weight:
+            #     best_set = maybe_best_set
+            #     best_weight = maybe_best_weight
 
 
     def no_sessions_grid(self, msg, layout):
