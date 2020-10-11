@@ -12,11 +12,13 @@ class WorkoutsScreen(Screen):
     def on_pre_enter(self, *args):
         self.app.change_title("Workouts")
         if self.app.running_session == 0:
-            self.app.root.ids['workoutsscreen'].ids["running_session"].text = ""
+            # self.app.root.ids['workoutsscreen'].ids["running_session_label"].text = ""
+            self.app.root.ids['workoutsscreen'].ids["running_session_label"].opacity = 0
             self.app.root.ids['workoutsscreen'].ids["running_session"].opacity = 0
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = True
         else:
             self.app.root.ids['workoutsscreen'].ids["running_session"].opacity = 1
+            self.app.root.ids['workoutsscreen'].ids["running_session_label"].opacity = 1
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
             self.app.root.ids['workoutsscreen'].ids["running_session"].text_color = (1, 1, 1, 1)

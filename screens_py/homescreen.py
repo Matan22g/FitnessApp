@@ -14,6 +14,7 @@ class HomeScreen(Screen):
     def on_pre_enter(self, *args):
 
         try:
+            self.app.root.ids['bottom_nav'].on_resize()
 
             self.app.change_title("Dashboard")
             self.app.sort_weights()

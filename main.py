@@ -60,8 +60,6 @@ from kivy.utils import platform
 
 if platform != 'android':
     Window.size = (330, 650)
-
-
     def run_on_ui_thread(*args):
         return
 else:  # For managing android JAVA classes
@@ -183,6 +181,7 @@ class MainApp(MDApp):
         else:
             weight = round(weight, 2)
             return weight, "Kg"
+
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -306,7 +305,7 @@ class MainApp(MDApp):
         if self.root.ids.firebase_login_screen.login_success == False:
             return
         if not self.sign_up:
-            self.change_screen("main_app_screen")
+            self.change_screen("main_app_screen", "left", 1)
             Snackbar(text="Logged in!").show()
 
             self.root.ids['bottom_nav'].on_resize()
@@ -352,7 +351,7 @@ class MainApp(MDApp):
             self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
         else:
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
-        # self.change_screen1("exercisescreen")
+        # self.change_screen1("workoutsscreen")
 
     def set_initial_weight(self, *args):
         print(args)
@@ -982,9 +981,15 @@ class MainApp(MDApp):
             print("self.exc_sessions", self.exc_sessions)
 
         for exc in exc_list:
-
+            exc_session = 0
+            if exc in self.exc_sessions:
+                if date in self.exc_sessions[exc]:
+                    exc_session = self.exc_sessions[exc].pop(date)
+            if not exc_session:
+                if self.debug:
+                    print("skipped on ", exc)
+                return
             if self.is_in_past_month(date):
-                exc_session = self.exc_sessions[exc].pop(date)
                 exc_session_len = len(exc_session[1])
                 self.exc_pie_dic[exc] -= exc_session_len
                 self.total_exc_sets -= exc_session_len
@@ -1017,10 +1022,13 @@ class MainApp(MDApp):
     # Session deletion Methods
     def del_session(self, session_date_key):
         # self.display_loading_screen()
-        session = self.sessions.pop(session_date_key)
         if self.debug:
             print("deleting session")
             print("session_date_key", session_date_key)
+            print("session_before_del", self.sessions)
+        session = self.sessions.pop(session_date_key)
+        print("session_after_del", self.sessions)
+
         session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
             self.local_id, session.session_key, self.id_token)
         del_req = UrlRequest(session_link, on_success=self.success_del_session, on_error=self.error_del_session,
@@ -1039,7 +1047,7 @@ class MainApp(MDApp):
 
         self.del_session_from_exc_dict(session_date_key, session.exercises)
         ########################### delete data from exc_sessions!!!
-
+        # TODO delete session from sessions dict
     def success_del_session(self, req, result):
         pass
         # self.hide_loading_screen()
@@ -1300,7 +1308,7 @@ class MainApp(MDApp):
             self.dismiss_dialog()
             self.change_user_name(new_user_name)
         else:
-            error_label.text = new_user_name + " Already taken"
+            error_label.text = new_user_name + " already taken"
 
     def start_workout(self, *args):
         # start new session of workout

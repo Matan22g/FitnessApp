@@ -146,6 +146,9 @@ class Month_Plot(RelativeLayout):
         # if DEVICE_TYPE != 'mobile': print(f'intXmax={intXmax}')
 
         intYmax = (int(max(y1) / 25) + 1) * 25
+        if intYmax == 25:
+            if int(max(y1)) < 15:
+                intYmax = 15
 
         intYmin = 0
 

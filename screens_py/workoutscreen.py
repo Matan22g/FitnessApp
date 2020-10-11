@@ -1,5 +1,6 @@
 import json
 
+from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.screenmanager import Screen
@@ -56,7 +57,8 @@ class WorkoutScreen(Screen):
     def on_enter(self, *args):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
         if self.create_mode:
-            self.start_add_split_animation()
+            # self.start_add_split_animation()
+            Clock.schedule_once(self.start_add_split_animation, .1)
 
     # def on_pre_leave(self, *args):
     #     self.app.clear_canvas()
@@ -76,7 +78,7 @@ class WorkoutScreen(Screen):
             return False
         return True
 
-    def start_add_split_animation(self):
+    def start_add_split_animation(self, *args):
         self.app.root.ids['workoutscreen'].tap_target_view.start()
 
     def on_pre_enter(self, *args):
@@ -353,8 +355,7 @@ class WorkoutScreen(Screen):
             size_hint=(0.95, 0.8),
             padding=[20, 0, 0, 20],  # [padding_left, padding_top,padding_right, padding_bottom].
             pos_hint={"center_y": 0.5, "center_x": 0.5},
-            background="resources/card_back.png",
-
+            background="resources/card_back.png"
         )
 
         help_layout = MDGridLayout(rows=1, cols=2, size_hint_y=0.4)

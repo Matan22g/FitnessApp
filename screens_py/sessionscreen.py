@@ -164,7 +164,9 @@ class SessionScreen(Screen):
                 print(" self.app.sessions[self.session_key]", self.app.sessions[self.session_key])
 
             self.ids["timer_view"].text = session_duration
-            self.ids["date_view"].text = str(session_date)[0:10]
+
+            # self.ids["date_view"].text = str(session_date)[0:10]
+            self.ids["date_view"].text = session_date.strftime("%d/%m/%Y")
             self.load_session()
             self.hide_edit_buttons(True)
             # self.app.change_title(session.workout_name)

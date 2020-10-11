@@ -29,7 +29,8 @@ class ExerciseSessionsScreen(Screen):
 
         self.dates = {}
         self.sessions = []
-        self.app.change_title(self.exercise + " History")
+        # self.app.change_title(self.exercise + " History")
+        self.app.change_title("Exercise History")
         self.app.root.ids['exercise_sessions_screen'].ids["exc_name"].text = self.exercise
         if self.app.debug:
             print("entering history", self.exercise)
@@ -176,6 +177,7 @@ class ExerciseSessionsScreen(Screen):
 
         best_weight = 0
         best_set = 0
+        print
         for i, session_key in enumerate(sessions_keys):
             session_exc = self.sessions[session_key][1]
             session_workout_name = self.sessions[session_key][0]
