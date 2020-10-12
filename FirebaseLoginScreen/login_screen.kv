@@ -109,9 +109,9 @@
             id: md_tabs
             pos_hint: {"center_x": 0.72, "top": 1.025}
             background_color: 0, 0, 0, 0
-            text_color_normal: 1, 1, 1, 0.5
-            text_color_active: 1, 1, 1, 1
-            color_indicator: 1, 1, 1, 1
+            text_color_normal: app.tabs_text_color_normal
+            text_color_active: app.tabs_text_color_active
+            color_indicator: app.tabs_color_indicator
             allow_stretch: False
             spacing:100
             tab_indicator_anim: True
@@ -225,19 +225,19 @@
             circles_size: dp(15)
             circles_color: utils.get_color_from_hex("#8EADFF")
             MyAKOnboardingItem:
-                source: "resources/welcome1.png"
-                text: "Workout Diary, Remember Your workout, helps you get Stronger"
+                source: "resources/welcome3.png"
+                text: "All your workouts in one place"
                 title:'Fitness App'
 
             MyAKOnboardingItem:
-                source: "resources/welcome2.png"
-                text: "Train Harder"
-                title:'Work Together'
+                source: "resources/welcome1.png"
+                text: "Instant view of previous exercise performance"
+                title:'Train Smarter'
 
             MyAKOnboardingItem:
-                source: "resources/welcome3.png"
-                text: "Get Better Results."
-                title:'Trace Workouts'
+                source: "resources/welcome2.png"
+                text: "Fast loading similar sessions into on going one"
+                title:'Stay Focus'
 
 
 <LoginScreen>:

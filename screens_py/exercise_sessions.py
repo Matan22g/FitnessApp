@@ -160,8 +160,8 @@ class ExerciseSessionsScreen(Screen):
         # month = sessions_keys[0].ctime()[4:7]
 
         window_height = Window.size[1]
-        row_height = window_height / 7
-        row_enlarger_inc = window_height / 17.6
+        row_height = window_height / 6
+        row_enlarger_inc = window_height / 16.6
 
         for i, session_key in enumerate(sessions_keys):
             session = self.sessions[session_key][1]

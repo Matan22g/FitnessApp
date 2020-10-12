@@ -52,9 +52,10 @@ class LoginScreen(Screen):
         self.ids['frontlayer'].ids['md_tabs'].disabled = False
 
     def on_tab_switch(self, *args):
-        method = args[3][9:16]
+        method = args[3].split()
+        method = method[1][:2]
         button = self.ids['frontlayer'].ids['sign_in_button']
-        if method == "Sign up":
+        if method == "up":
             self.sign_in_to_sign_up()
         else:
             self.sign_up_to_sign_in()

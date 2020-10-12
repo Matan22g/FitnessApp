@@ -24,9 +24,9 @@
             id: split_tabs
             on_tab_switch: root.on_tab_switch(*args)
             background_color: 0, 0, 0, 0
-            text_color_normal: 1, 1, 1, 0.5
-            text_color_active: 1, 1, 1, 1
-            color_indicator: 1, 1, 1, 1
+            text_color_normal: app.tabs_text_color_normal
+            text_color_active: app.tabs_text_color_active
+            color_indicator: app.tabs_color_indicator
             elevation: 0
             tab_indicator_anim: True
             lock_swiping: True
@@ -45,9 +45,9 @@
 
         ScrollView:
             id: scroll
-            pos_hint: {"top": .875}
+            pos_hint: {"top": .8725}
             size: self.size
-            size_hint: 1., .75 + app.bottom_buttons_inc
+            size_hint: 1., .745 + app.bottom_buttons_inc
             GridLayout:
                 # Banner grid
                 id: exc_cards

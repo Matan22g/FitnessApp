@@ -1,27 +1,23 @@
 from kivy.config import Config
-from kivy.metrics import dp
-
 Config.set('graphics', 'resizable', 1)
 
+from kivy.metrics import dp
 import ast
 import calendar
 import os
 import smtplib
 from datetime import datetime, date, timedelta
-
 import certifi
 from kivy.graphics.vertex_instructions import Rectangle, RoundedRectangle
 from kivy.network.urlrequest import UrlRequest
 from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
-from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition, FadeTransition, SwapTransition, \
-    FallOutTransition
+from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
 from kivy.core.window import Window
 from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
-from kivymd.uix.list import MDList, OneLineListItem, OneLineIconListItem
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.picker import MDDatePicker
 from kivymd.uix.snackbar import Snackbar
@@ -29,10 +25,10 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.dialog import MDDialog
 from customKv.toolbar import CustomMDToolbar
 from kivymd.uix.card import MDCard, MDSeparator
-
-# from customKv.card import MDCard
-
-from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
+from kivy.factory import Factory
+import copy
+import math
+from kivy.utils import platform
 import kivy.utils as utils
 import requests
 import json
@@ -41,6 +37,7 @@ import time
 
 """ Screens classes import """
 
+from FirebaseLoginScreen.firebaseloginscreen import FirebaseLoginScreen
 from screens_py.homescreen import HomeScreen
 from screens_py.settingsscreen import SettingsScreen
 from screens_py.workoutsscreen import WorkoutsScreen
@@ -48,24 +45,27 @@ from screens_py.workoutscreen import WorkoutScreen
 from screens_py.exercise_sessions import ExerciseSessionsScreen
 from screens_py.previous_workouts import PreviousWorkoutsScreen
 from screens_py.welcome_screen import WelcomeScreen
-
 from screens_py.exercise_stats_screen import ExerciseStatsScreen
-
-from kivy.factory import Factory
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
-import copy
-import math
 
-from kivy.utils import platform
+
 
 if platform != 'android':
     Window.size = (330, 650)
+
+
     def run_on_ui_thread(*args):
         return
 else:  # For managing android JAVA classes
     from jnius import autoclass, cast
     from android import mActivity
     from android.runnable import run_on_ui_thread
+    import sentry_sdk
+
+    sentry_sdk.init(
+        "https://2a7928d9ecc4464286cc2def110e4d7d@o460345.ingest.sentry.io/5460360",
+        traces_sample_rate=1.0
+    )
 
 
 ## msg for new workout name
@@ -169,19 +169,11 @@ class MainApp(MDApp):
     exercises_bank = ["Bench Press", "Squats", "Push Ups", "Pull Ups", "Leg Press", "Bent Over Row", "Flies",
                       "Bicep Curl", "Military Press"]
     resize_event = 0
+    tabs_text_color_normal = (1, 1, 1, 0.5)
+    tabs_text_color_active = (1, 1, 1, 1)
+    tabs_color_indicator = (1, 1, 1, 1)
 
-    def fix_weight_by_unit(self, weight):
-        weight = float(weight)
-        if self.units != 'metric':
-            weight = round(weight * self.kg_to_pounds, 2)
-            if weight / round(weight) >= 0.99:
-                weight = float(round(weight))
-            print("weight", weight)
-            return weight, "Lbs"
-        else:
-            weight = round(weight, 2)
-            return weight, "Kg"
-
+    """ App Main Functions """
 
     def __init__(self, **kwargs):
         self.title = "FitnessApp"
@@ -193,79 +185,6 @@ class MainApp(MDApp):
             width_mult=4,
         )
         self.menu.bind(on_release=self.menu_callback)
-
-    def menu_callback(self, instance_menu, instance_menu_item):
-        instance_menu.parent.children[1].children[0].children[2].children[0].children[0].text = instance_menu_item.text
-        instance_menu.dismiss()
-
-    def open_exercise_bank_menu(self, *args):
-        button = args[0]
-        self.menu.caller = button
-        self.menu.open()
-
-    """ Refresh Auth token if expired """
-
-    def refresh_auth_token(self):
-        self.root.ids.firebase_login_screen.load_saved_account()
-
-    # update exercise pie chart stats on homescreen.
-    def update_chart(self):
-        piechart = self.root.ids['homescreen'].ids[
-            'piechart']  # getting the id of where the widgets are coming in
-
-        items = [self.calc_exc_pie()]
-        print(items)
-
-        self.root.ids['homescreen'].ids[
-            'piechart']._clear_canvas()
-
-        self.root.ids['homescreen'].ids[
-            'piechart']._make_chart(items)
-
-        self.root.ids['homescreen'].ids[
-            'piechart'].items = items
-        print(self.root.ids['homescreen'].ids[
-                  'piechart'].items)
-
-    # bind back button of android to back function.
-    def hook_keyboard(self, window, key, *largs):
-
-        if key == 27:
-            try:
-                if self.root.ids['screen_manager1'].current == "homescreen":
-                    from jnius import autoclass
-                    activity = autoclass('org.kivy.android.PythonActivity')
-                    activity.moveTaskToBack(True)
-                    return True
-            except:
-                pass
-            self.back_to_last_screen()
-        return True
-
-    # App Main Functions
-
-    @run_on_ui_thread
-    def clear_statusbar(self):
-        LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
-        window = mActivity.getWindow()
-        window.setFlags(
-            LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-    @run_on_ui_thread
-    def set_Full_Screen_Flags(self):
-        LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
-        window = mActivity.getWindow()
-        window.clearFlags(LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-        window.addFlags(LayoutParams.FLAG_FULLSCREEN)
-
-    def on_resume(self):
-        self.clear_statusbar()
-        self.set_Full_Screen_Flags()
-
-    def on_pause(self):
-        self.clear_statusbar()
-        return True
 
     def on_start(self):
         if platform == 'android':
@@ -292,6 +211,14 @@ class MainApp(MDApp):
         except:
             print("couldnt load mail and pass")
 
+    def on_pause(self):
+        self.clear_statusbar()
+        return True
+
+    def on_resume(self):
+        self.clear_statusbar()
+        self.set_Full_Screen_Flags()
+
     def on_stop(self):
         if self.running_session:
             self.upload_temp_session()
@@ -300,12 +227,11 @@ class MainApp(MDApp):
 
     def on_login(self):
         self.text_color = utils.get_color_from_hex("#283592")
-
         # loads data
         if self.root.ids.firebase_login_screen.login_success == False:
             return
         if not self.sign_up:
-            self.change_screen("main_app_screen", "left", 1)
+            self.change_screen("main_app_screen", "left")
             Snackbar(text="Logged in!").show()
 
             self.root.ids['bottom_nav'].on_resize()
@@ -353,152 +279,6 @@ class MainApp(MDApp):
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
         # self.change_screen1("workoutsscreen")
 
-    def set_initial_weight(self, *args):
-        print(args)
-
-    def show_content_msg(self, *args):
-        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 content - 1 means SendMailContent 2 - UpdateWeight
-        """
-        try:
-            ok_action = args[0]
-            cancel_action = args[1]
-            title = args[2]
-            content = args[3]
-            ok_title = args[4]
-        except:
-            pass
-        if content == 1:
-            dialog_content = SendMailContent()
-        if content == 2:
-            dialog_content = UpdateWeightContent()
-        if content == 3:
-            dialog_content = AddWorkoutContent()
-
-        self.dialog = MDDialog(
-            radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.2),
-            title=title,
-            type="custom",
-            content_cls=dialog_content,
-            buttons=[
-
-                MDFlatButton(
-                    text="CANCEL",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=cancel_action
-                ),
-                MDFlatButton(
-                    text=ok_title,
-                    text_color=self.theme_cls.primary_color,
-                    on_release=ok_action
-                ),
-            ],
-        )
-        self.dialog.open()
-        if content == 2:
-            self.dialog.content_cls.remove_widget(self.dialog.content_cls.children[1])
-            self.dialog.content_cls.height = dp(80)
-
-    def send_email(self, *args):
-        self.dismiss_dialog()
-        self.display_loading_screen()
-        print(self.dialog.content_cls.children[0].text)
-        print(self.dialog.title)
-        subject = self.dialog.title.split()
-        try:
-            subject = subject[2]
-        except:
-            subject = subject[1]
-
-        msg = self.dialog.content_cls.children[0].text
-
-        fromaddr = self.app_mail
-        toaddrs = self.app_mail
-
-        user_email = self.user_data["email"]
-
-        TEXT = "From " + user_email + "\n" + msg
-        SUBJECT = subject
-        msg = 'Subject: {}\n\n{}'.format(SUBJECT, TEXT)
-
-        username = self.app_mail
-
-        password = self.app_mail_pass
-        try:
-            server = smtplib.SMTP('smtp.gmail.com:587')
-
-            server.starttls()
-
-            server.login(username, password)
-
-            server.sendmail(fromaddr, toaddrs, msg)
-
-            server.quit()
-            self.hide_loading_screen()
-
-            Snackbar(text="Message Sent! Thanks for the report").show()
-
-        except:
-            self.hide_loading_screen()
-            print("couldnt send msg")
-            Snackbar(text="Something went wrong, try again later").show()
-
-    def show_ok_cancel_msg(self, *args):
-        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 for msg
-        """
-        try:
-            ok_action = args[0]
-            cancel_action = args[1]
-            title = args[2]
-            msg = args[3]
-        except:
-            pass
-
-        self.dialog = MDDialog(
-            radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.2),
-            title=title,
-            text=msg,
-            buttons=[
-                MDFlatButton(
-                    text="CANCEL",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=cancel_action
-                ),
-                MDFlatButton(
-                    text="OK",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=ok_action
-                )
-            ],
-        )
-        self.dialog.open()
-
-    def show_ok_msg(self, *args):
-        """ Args can be: 0 for OK action. 1 for title, 2 for msg
-        """
-        try:
-            ok_action = args[0]
-            title = args[1]
-            msg = args[2]
-        except:
-            pass
-
-        self.dialog = MDDialog(
-            radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.2),
-            title=title,
-            text=msg,
-            buttons=[
-                MDFlatButton(
-                    text="OK",
-                    text_color=self.theme_cls.primary_color,
-                    on_release=ok_action
-                )
-            ],
-        )
-        self.dialog.open()
-
     def on_logout(self):
         self.clear_user_app_data()
 
@@ -506,7 +286,27 @@ class MainApp(MDApp):
         self.root.ids.firebase_login_screen.save_refresh_token("")
 
         Snackbar(text="Logged out!").show()
+
         self.change_screen("loginscreen", 'right')
+        self.change_screen1("homescreen")
+
+    def get_user_data(self):
+        try:
+            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
+            data = json.loads(result.content.decode())
+            self.user_data = data
+            if self.debug:
+                print(data)
+                print("user email:", self.user_data["email"])
+                print("user friends:", self.user_data["friends"])
+                print("user real_user_name:", self.user_data["real_user_name"])
+                print("user user_name:", self.user_data["user_name"])
+                print("user sessions:", self.user_data["sessions"])
+                print("user workouts:", self.user_data["workouts"])
+                print("user streak:", self.user_data["streak"])
+
+        except Exception:
+            print("no data")
 
     def clear_user_app_data(self):
         self.root.ids['previous_workouts_screen'].curr_month = 0
@@ -551,41 +351,61 @@ class MainApp(MDApp):
     def change_title(self, text):
         self.root.ids['toolbar'].title = text
 
-    # top and bottom background for the app methods
-    def add_top_canvas(self):
-        with self.root.ids.main_layout.canvas.before:
-            Rectangle(source='resources/canvas.png', pos=(0, self.window_size[1] / 1.23), size=(
-                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))
+    """ Refresh Auth token if expired """
 
-    def clear_canvas(self):
-        self.root.ids.main_layout.canvas.before.clear()
+    def refresh_auth_token(self):
+        self.root.ids.firebase_login_screen.load_saved_account()
 
-    def add_bottom_canvas(self):
-        with self.root.ids.main_layout.canvas.before:
-            Rectangle(source='resources/canvas.png', pos=(0, 0), size=(
-                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 10))
+    """ Bind back button of android to back function. """
 
-    #
+    def hook_keyboard(self, window, key, *largs):
 
-    # Handling user data
+        if key == 27:
+            try:
+                if self.root.ids['screen_manager1'].current == "homescreen":
+                    from jnius import autoclass
+                    activity = autoclass('org.kivy.android.PythonActivity')
+                    activity.moveTaskToBack(True)
+                    return True
+            except:
+                pass
+            self.back_to_last_screen()
+        return True
 
-    def get_user_data(self):
-        try:
-            result = requests.get("https://gymbuddy2.firebaseio.com/" + self.local_id + ".json?auth=" + self.id_token)
-            data = json.loads(result.content.decode())
-            self.user_data = data
-            if self.debug:
-                print(data)
-                print("user email:", self.user_data["email"])
-                print("user friends:", self.user_data["friends"])
-                print("user real_user_name:", self.user_data["real_user_name"])
-                print("user user_name:", self.user_data["user_name"])
-                print("user sessions:", self.user_data["sessions"])
-                print("user workouts:", self.user_data["workouts"])
-                print("user streak:", self.user_data["streak"])
+    """ Fixing on resume bug where screen resize """
 
-        except Exception:
-            print("no data")
+    @run_on_ui_thread
+    def clear_statusbar(self):
+        LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
+        window = mActivity.getWindow()
+        window.setFlags(
+            LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+    @run_on_ui_thread
+    def set_Full_Screen_Flags(self):
+        LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
+        window = mActivity.getWindow()
+        window.clearFlags(LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+        window.addFlags(LayoutParams.FLAG_FULLSCREEN)
+
+    """ Home screen methods  """
+    """ Update exercise pie chart stats on homescreen. """
+
+    def update_chart(self):
+        piechart = self.root.ids['homescreen'].ids[
+            'piechart']  # getting the id of where the widgets are coming in
+
+        items = [self.calc_exc_pie()]
+
+        self.root.ids['homescreen'].ids[
+            'piechart']._clear_canvas()
+
+        self.root.ids['homescreen'].ids[
+            'piechart']._make_chart(items)
+
+        self.root.ids['homescreen'].ids[
+            'piechart'].items = items
 
     def calc_exc_pie(self):
         temp_tot = 0
@@ -616,156 +436,18 @@ class MainApp(MDApp):
                         items[exc] += to_sub
                         break
         return items
-        print("self.exc_pie_dic", self.exc_pie_dic)
 
-    # Find for Exercise the best Set for all sessions
-
-    def find_new_record(self, exc):
-        # in case of deleteing sessions with record, finding a new record
-        # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
-        record = ""
-        record_weight = 0
-        maybe_record = ""
-        maybe_record_weight = 0
-        record_date = ""
-        for date in self.exc_sessions[exc]:
-            if date != "record":
-
-                session_list = self.exc_sessions[exc][date][1]
-
-                maybe_record = self.find_best_set(session_list)
-                maybe_record_weight = maybe_record.split()
-                maybe_record_weight = float(maybe_record_weight[2])
-
-                if maybe_record_weight > record_weight:
-                    record_weight = maybe_record_weight
-                    record = maybe_record
-                    record_date = date
-
-        return record, record_date
-
-    # Returns the index of the best set in a given Session
-    def find_best_set(self, exc_session):
-        # by weight:
-        best_weight = 0
-        best_weight_ind = 0
-        for i, set in enumerate(exc_session):
-            if not set:
-                continue
-            set = set.split()
-            weight = float(set[2])
-            maybe_best_reps = int(set[0])
-            if weight > best_weight:
-                best_weight = weight
-                best_weight_ind = i
-            elif weight == best_weight:
-                if maybe_best_reps > int(exc_session[best_weight_ind].split()[0]):
-                    best_weight = weight
-                    best_weight_ind = i
-
-        return exc_session[best_weight_ind]
-
-    # Session Methods:
-    def load_session_data(self):
-        # Creates a sessions obj list sorted by dates
-        try:
-            session_dic = self.user_data["sessions"]
-        except KeyError:
-            session_dic = {}
-
-        if self.debug:
-            print("session dic: ", session_dic)
-        temp_session_list = []
-
-        self.total_exc_sets = 0
-        self.exc_pie_dic = {}
-
-        self.monthly_session_amount = 0
-        self.weekly_session_amount = 0
-        self.workouts_trained_amount = {}
-        self.sessions = {}
-        today_date = datetime.today()
-        curr_month = today_date.month
-        curr_year = today_date.year
-        curr_week = today_date.isocalendar()[1]
-        tommorow = today_date + timedelta(days=1)
-        if tommorow.year > curr_year:
-            curr_week == 0
-        else:
-            curr_week += 1
-
-        session_counter = 0
-        for session_key in session_dic:
-            session_counter += 1
-
-            session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
-            date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
-
-            if date.month == curr_month and date.year == curr_year:
-                self.monthly_session_amount += 1
-                print("self.monthly_session_amount", self.monthly_session_amount)
-                print("date", date)
-
-                date_plus_one_day = date + timedelta(days=1)
-
-                if date_plus_one_day.isocalendar()[1] == curr_week:
-                    self.weekly_session_amount += 1
-            if date in self.sessions:
-                date = date + timedelta(seconds=60)
-            duration = session[1]
-            workout_key = session[2]
-            workout_name = session[3]
-            workout_split = session[4]
-            exercises = session[5]
-
-            self.add_session_to_excs_stats(exercises, date, workout_name)
-            new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
-                                          exercises, session_counter)
-            self.sessions[date] = new_session
-
-            if workout_name in self.workouts_trained_amount:
-                self.workouts_trained_amount[workout_name] += 1
-            else:
-                self.workouts_trained_amount[workout_name] = 1
-
-        self.sort_workouts_sessions()
-        self.update_dashboard_stats()
-
-        if self.debug:
-            print("sessions: ", self.sessions)
-
-    def sort_workouts_sessions(self):
-        session_dates = [session_date for session_date in self.sessions]
-        session_dates.sort(reverse=True)
-
-        if session_dates:
-            last_session_date = session_dates[0]
-            self.last_session_date = session_dates[0]
-            try:
-                prev_last_session_date = session_dates[1]
-                self.recent_sessions = [last_session_date, prev_last_session_date]
-            except:
-                print("only one recent workout")
-                self.recent_sessions = [last_session_date]
-                # only one session
-        else:
-            self.recent_sessions = []
-        self.update_last_date_card()
-
-        self.sessions_by_month_year = {}
-        for date in session_dates:
-            year = int(date.year)
-            month = int(date.month)
-            if year not in self.sessions_by_month_year:
-                self.sessions_by_month_year[year] = {}
-
-            if month not in self.sessions_by_month_year[year]:
-                self.sessions_by_month_year[year][month] = [date]
-            else:
-                self.sessions_by_month_year[year][month].append(date)
-
-        if self.debug:
-            print("sessions_by_month_year: ", self.sessions_by_month_year)
+    def open_pie_dialog(self):
+        text = ""
+        for exc in self.exc_pie_dic:
+            text += exc + ": " + str(self.exc_pie_dic[exc]) + "\n"
+        if text:
+            text = text[:-1]
+        if text.find("None") != -1:
+            text = "Here will be your exercises set list"
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
+                               title="Exercise Statistics - Set Amount", text=text)
+        self.dialog.open()
 
     def update_last_date_card(self):
         if self.recent_sessions:
@@ -825,6 +507,7 @@ class MainApp(MDApp):
 
     def show_two_recent_msg(self):
         self.root.ids['homescreen'].ids["no_workout_label"].opacity = 0
+        self.root.ids['homescreen'].ids["one_workout_label"].opacity = 0
         self.root.ids['homescreen'].ids["last_session_card"].opacity = 1
         self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 1
 
@@ -832,16 +515,318 @@ class MainApp(MDApp):
         self.root.ids['homescreen'].ids["no_workout_label"].opacity = 1
         self.root.ids['homescreen'].ids["last_session_card"].opacity = 0
         self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 0
+        self.root.ids['homescreen'].ids["one_workout_label"].opacity = 0
 
     def show_one_recent(self):
         self.root.ids['homescreen'].ids["no_workout_label"].opacity = 0
         self.root.ids['homescreen'].ids["last_session_card"].opacity = 1
         self.root.ids['homescreen'].ids["prev_last_session_card"].opacity = 0
+        self.root.ids['homescreen'].ids["one_workout_label"].opacity = 1
 
     def update_dashboard_stats(self):
 
         self.root.ids['homescreen'].ids['monthly_sessions'].text = str(self.monthly_session_amount)
         self.root.ids['homescreen'].ids['weekly_sessions'].text = str(self.weekly_session_amount)
+
+    """ Method for displaying dialog with custom content """
+
+    def show_content_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 content - 1 means SendMailContent 2 - UpdateWeight
+        """
+        try:
+            ok_action = args[0]
+            cancel_action = args[1]
+            title = args[2]
+            content = args[3]
+            ok_title = args[4]
+        except:
+            pass
+        if content == 1:
+            dialog_content = SendMailContent()
+        if content == 2:
+            dialog_content = UpdateWeightContent()
+        if content == 3:
+            dialog_content = AddWorkoutContent()
+
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title=title,
+            type="custom",
+            content_cls=dialog_content,
+            buttons=[
+
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=cancel_action
+                ),
+                MDFlatButton(
+                    text=ok_title,
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                ),
+            ],
+        )
+        self.dialog.open()
+        if content == 2:
+            self.dialog.content_cls.remove_widget(self.dialog.content_cls.children[1])
+            self.dialog.content_cls.height = dp(80)
+
+    def show_ok_cancel_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for Cancel action, 2 for title, 3 for msg
+        """
+        try:
+            ok_action = args[0]
+            cancel_action = args[1]
+            title = args[2]
+            msg = args[3]
+        except:
+            pass
+
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title=title,
+            text=msg,
+            buttons=[
+                MDFlatButton(
+                    text="CANCEL",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=cancel_action
+                ),
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                )
+            ],
+        )
+        self.dialog.open()
+
+    def show_ok_msg(self, *args):
+        """ Args can be: 0 for OK action. 1 for title, 2 for msg
+        """
+        try:
+            ok_action = args[0]
+            title = args[1]
+            msg = args[2]
+        except:
+            pass
+
+        self.dialog = MDDialog(
+            radius=[10, 7, 10, 7],
+            size_hint=(0.9, 0.2),
+            title=title,
+            text=msg,
+            buttons=[
+                MDFlatButton(
+                    text="OK",
+                    text_color=self.theme_cls.primary_color,
+                    on_release=ok_action
+                )
+            ],
+        )
+        self.dialog.open()
+
+    """ Feedback or bug reporting method"""
+
+    def send_email(self, *args):
+        self.dismiss_dialog()
+        self.display_loading_screen()
+
+        if self.debug:
+            print("trying to send feedback")
+            print("subject:", self.dialog.title)
+            print("content:", self.dialog.content_cls.children[0].text)
+
+        subject = self.dialog.title.split()
+        try:
+            subject = subject[2]
+        except:
+            subject = subject[1]
+
+        msg = self.dialog.content_cls.children[0].text
+
+        fromaddr = self.app_mail
+        toaddrs = self.app_mail
+
+        user_email = self.user_data["email"]
+
+        TEXT = "From " + user_email + "\n" + msg
+        SUBJECT = subject
+        msg = 'Subject: {}\n\n{}'.format(SUBJECT, TEXT)
+
+        username = self.app_mail
+
+        password = self.app_mail_pass
+        try:
+            server = smtplib.SMTP('smtp.gmail.com:587')
+
+            server.starttls()
+
+            server.login(username, password)
+
+            server.sendmail(fromaddr, toaddrs, msg)
+
+            server.quit()
+            self.hide_loading_screen()
+
+            Snackbar(text="Message Sent! Thanks for the report").show()
+
+        except:
+            self.hide_loading_screen()
+            print("couldnt send msg")
+            Snackbar(text="Something went wrong, try again later").show()
+
+    """ Find for given Exercise the best Set of all sessions"""
+
+    def find_new_record(self, exc):
+        # in case of deleteing sessions with record, finding a new record
+        # self.exc_sessions[exc] = {date: [workout_name, exercises_list], "record": ["", 0]}
+        record = ""
+        record_weight = 0
+        maybe_record = ""
+        maybe_record_weight = 0
+        record_date = ""
+        for date in self.exc_sessions[exc]:
+            if date != "record":
+
+                session_list = self.exc_sessions[exc][date][1]
+
+                maybe_record = self.find_best_set(session_list)
+                maybe_record_weight = maybe_record.split()
+                maybe_record_weight = float(maybe_record_weight[2])
+
+                if maybe_record_weight > record_weight:
+                    record_weight = maybe_record_weight
+                    record = maybe_record
+                    record_date = date
+
+        return record, record_date
+
+    """ Find the best set of a given Session - weight wise"""
+
+    def find_best_set(self, exc_session):
+        # by weight:
+        best_weight = 0
+        best_weight_ind = 0
+        for i, set in enumerate(exc_session):
+            if not set:
+                continue
+            set = set.split()
+            weight = float(set[2])
+            maybe_best_reps = int(set[0])
+            if weight > best_weight:
+                best_weight = weight
+                best_weight_ind = i
+            elif weight == best_weight:
+                if maybe_best_reps > int(exc_session[best_weight_ind].split()[0]):
+                    best_weight = weight
+                    best_weight_ind = i
+
+        return exc_session[best_weight_ind]
+
+    """ Session Methods"""
+
+    def load_session_data(self):
+        # Creates a sessions obj list sorted by dates
+        try:
+            session_dic = self.user_data["sessions"]
+        except KeyError:
+            session_dic = {}
+
+        if self.debug:
+            print("session dic: ", session_dic)
+        temp_session_list = []
+
+        self.total_exc_sets = 0
+        self.exc_pie_dic = {}
+
+        self.monthly_session_amount = 0
+        self.weekly_session_amount = 0
+        self.workouts_trained_amount = {}
+        self.sessions = {}
+        today_date = datetime.today()
+        curr_month = today_date.month
+        curr_year = today_date.year
+
+        # TODO seperate monday as the first day of the week
+
+        curr_week = today_date.strftime("%U")
+
+        session_counter = 0
+        for session_key in session_dic:
+            session_counter += 1
+
+            session = ast.literal_eval(session_dic[session_key][1:-1])  # turning the str to list
+
+            date = datetime.strptime(session[0], "%d/%m/%Y %H:%M:%S")
+
+            if date.month == curr_month and date.year == curr_year:
+                self.monthly_session_amount += 1
+                session_week = date.strftime("%U")
+
+                # date_plus_one_day = date + timedelta(days=1)
+
+                if session_week == curr_week:
+                    self.weekly_session_amount += 1
+            if date in self.sessions:
+                date = date + timedelta(seconds=60)
+            duration = session[1]
+            workout_key = session[2]
+            workout_name = session[3]
+            workout_split = session[4]
+            exercises = session[5]
+
+            self.add_session_to_excs_stats(exercises, date, workout_name)
+            new_session = Workout_Session(session_key, date, duration, workout_key, workout_name, workout_split,
+                                          exercises, session_counter)
+            self.sessions[date] = new_session
+
+            if workout_name in self.workouts_trained_amount:
+                self.workouts_trained_amount[workout_name] += 1
+            else:
+                self.workouts_trained_amount[workout_name] = 1
+
+        self.sort_workouts_sessions()
+        self.update_dashboard_stats()
+
+        if self.debug:
+            print("sessions: ", self.sessions)
+
+    def sort_workouts_sessions(self):
+        session_dates = [session_date for session_date in self.sessions]
+        session_dates.sort(reverse=True)
+
+        if session_dates:
+            last_session_date = session_dates[0]
+            self.last_session_date = session_dates[0]
+            try:
+                prev_last_session_date = session_dates[1]
+                self.recent_sessions = [last_session_date, prev_last_session_date]
+            except:
+                print("only one recent workout")
+                self.recent_sessions = [last_session_date]
+                # only one session
+        else:
+            self.recent_sessions = []
+        self.update_last_date_card()
+
+        self.sessions_by_month_year = {}
+        for date in session_dates:
+            year = int(date.year)
+            month = int(date.month)
+            if year not in self.sessions_by_month_year:
+                self.sessions_by_month_year[year] = {}
+
+            if month not in self.sessions_by_month_year[year]:
+                self.sessions_by_month_year[year][month] = [date]
+            else:
+                self.sessions_by_month_year[year][month].append(date)
+
+        if self.debug:
+            print("sessions_by_month_year: ", self.sessions_by_month_year)
 
     def view_session(self, session_key):
         if session_key:
@@ -1019,7 +1004,6 @@ class MainApp(MDApp):
                 self.weekly_session_amount -= 1
             self.update_dashboard_stats()
 
-    # Session deletion Methods
     def del_session(self, session_date_key):
         # self.display_loading_screen()
         if self.debug:
@@ -1027,7 +1011,6 @@ class MainApp(MDApp):
             print("session_date_key", session_date_key)
             print("session_before_del", self.sessions)
         session = self.sessions.pop(session_date_key)
-        print("session_after_del", self.sessions)
 
         session_link = "https://gymbuddy2.firebaseio.com/%s/sessions/%s.json?auth=%s" % (
             self.local_id, session.session_key, self.id_token)
@@ -1048,6 +1031,7 @@ class MainApp(MDApp):
         self.del_session_from_exc_dict(session_date_key, session.exercises)
         ########################### delete data from exc_sessions!!!
         # TODO delete session from sessions dict
+
     def success_del_session(self, req, result):
         pass
         # self.hide_loading_screen()
@@ -1060,9 +1044,6 @@ class MainApp(MDApp):
         # show proper msg
         print('failed')
 
-    ###
-
-    # Timer methods.
     def start_session_timer(self, *args):
         self.timer = time.time()
 
@@ -1089,8 +1070,8 @@ class MainApp(MDApp):
     def stop_timer(self):
         Clock.unschedule(self.increment_time)
 
-    # Workout Methods:
-    # Initial workouts dicts, and workouts screen
+    """ Workout Methods. """
+
     def load_workout_data(self):
         try:
             workoutdic = self.user_data["workouts"]  # gets workout data
@@ -1364,7 +1345,6 @@ class MainApp(MDApp):
         self.workout_key_to_view = workout_key
         self.change_screen1("workoutscreen")
 
-    # Workout deletion Methods
     def delete_workout_msg(self, *args):
         self.workout_to_delete = args[0]  # saving the object we want to delete
         workoutkey = args[0]
@@ -1427,11 +1407,32 @@ class MainApp(MDApp):
             for child in workoutgrid.children[:]:
                 workoutgrid.remove_widget(child)
 
-    # Back button
+    """ Switching Screens Methods """
+
+    def direction_to_switch(self, new_screen):
+        screen_manager = self.root.ids['screen_manager1']
+        current_screen = screen_manager.current
+
+        if current_screen in self.mainscreens:
+            ind_of_current = self.mainscreens.index(current_screen)
+            if new_screen in self.mainscreens:
+                ind_of_new = self.mainscreens.index(new_screen)
+                dif = ind_of_current - ind_of_new
+                if dif > 0:
+                    return "right"
+                else:
+                    return "left"
+            else:
+                return "up"
+        elif new_screen in self.mainscreens:
+            return "down"
+        return "left"
+
     def back_to_last_screen(self, *args):
-        print("back func")
-        print("current_screen", self.root.ids['screen_manager1'].current)
-        print("self.lastscreens", self.lastscreens)
+        if self.debug:
+            print("back func")
+            print("current_screen", self.root.ids['screen_manager1'].current)
+            print("self.lastscreens", self.lastscreens)
 
         if self.root.ids['screen_manager1'].current == "homescreen":
             return
@@ -1477,7 +1478,8 @@ class MainApp(MDApp):
             else:
                 self.change_screen1("homescreen", "right")
 
-    # For login screens
+    """ Login Screens Manager """
+
     def change_screen(self, screen_name, *args):
         # Get the screen manager from the kv file
         screen_manager = self.root.ids['screen_manager']
@@ -1494,30 +1496,18 @@ class MainApp(MDApp):
         screen_manager.current = screen_name
         screen_manager = self.root.ids
 
-    # For app screens
-    def remove_bottom_nav(self):
-        try:
-            self.bottom_nav = self.root.ids['bottom_nav']
-            self.root.ids['main_layout'].remove_widget(self.bottom_nav)
-        except:
-            pass
-
-    def add_bottom_nav(self):
-        try:
-            self.root.ids['main_layout'].add_widget(self.bottom_nav)
-        except:
-            pass
+    """ Main App Screens Manager """
 
     def change_screen1(self, screen_name, *args):
         # Get the screen manager from the kv file
         # args is an optional input of which direction the change will occur
-        print(self.root.ids['bottom_nav'].current)
 
         if screen_name != "sessionscreen" and screen_name != "workoutscreen":
             self.clear_canvas()
             self.add_top_canvas()
         if screen_name in self.mainscreens:
-            print("self.reload_for_running_session", self.reload_for_running_session)
+            if self.debug:
+                print("self.reload_for_running_session", self.reload_for_running_session)
             if self.reload_for_running_session and screen_name == "previous_workouts_screen":
                 pass
             else:
@@ -1548,12 +1538,10 @@ class MainApp(MDApp):
                     if screen_name in self.mainscreens:
                         try:
                             ind = self.mainscreens.index(screen_name)
-                            print(self.lastscreens)
                             temp = copy.deepcopy(self.lastscreens)
                             self.root.ids['bottom_nav'].switch_tab(str(ind + 1))
                             self.lastscreens = temp
 
-                            print(self.lastscreens)
 
                         except:
                             print("wasnt able to switch tabs")
@@ -1591,61 +1579,38 @@ class MainApp(MDApp):
             print("self.lastscreens", self.lastscreens, )
             print("currscreen = ", screen_name)
 
-    def direction_to_switch(self, new_screen):
-        screen_manager = self.root.ids['screen_manager1']
-        current_screen = screen_manager.current
+    """ Bottom Nav handler """
 
-        if current_screen in self.mainscreens:
-            ind_of_current = self.mainscreens.index(current_screen)
-            if new_screen in self.mainscreens:
-                ind_of_new = self.mainscreens.index(new_screen)
-                dif = ind_of_current - ind_of_new
-                if dif > 0:
-                    return "right"
-                else:
-                    return "left"
-            else:
-                return "up"
-        elif new_screen in self.mainscreens:
-            return "down"
-        return "left"
+    def remove_bottom_nav(self):
+        try:
+            self.bottom_nav = self.root.ids['bottom_nav']
+            self.root.ids['main_layout'].remove_widget(self.bottom_nav)
+        except:
+            pass
 
-    # test username methods
-    #######################
+    def add_bottom_nav(self):
+        try:
+            self.root.ids['main_layout'].add_widget(self.bottom_nav)
+        except:
+            pass
 
-    def get_user_name_data(self, user_name):
-        # Query database and make sure friend_id exists
-        user_name = '"' + user_name + '"'
-        link = 'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name
-        check_req = requests.get(link)
-        req = UrlRequest(link, on_success=self.get_user_name_data_success, on_error=self.on_request_error,
-                         on_failure=self.on_request_error,
-                         ca_file=certifi.where(), verify=True)
-        data = check_req.json()
-        # if data:
-        #     print(True)
-        # else:
-        #     print(False)
-        # print(user_name[1:-1] + " data is: ", data)
+    """ Top and bottom background for main app screens"""
 
-    def on_request_error(self, *args):
-        print('failed')
+    def add_top_canvas(self):
+        with self.root.ids.main_layout.canvas.before:
+            Rectangle(source='resources/canvas.png', pos=(0, self.window_size[1] / 1.23), size=(
+                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))
 
-    def get_user_name_data_success(self, req, result):
-        pass
+    def add_bottom_canvas(self):
+        with self.root.ids.main_layout.canvas.before:
+            Rectangle(source='resources/canvas.png', pos=(0, 0), size=(
+                self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 10))
 
-    def is_user_exist(self, user_name):
-        user_name = '"' + user_name + '"'
-        check_req = requests.get(
-            'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
-        print(check_req)
-        data = check_req.json()
-        if data:
-            return True
-        else:
-            return False
+    def clear_canvas(self):
+        self.root.ids.main_layout.canvas.before.clear()
 
-    # filter for names input, allows numbers and english letters only
+    """ Input Filters """
+
     def proper_input_filter(self, input_to_check, indicator):
 
         if self.debug:
@@ -1664,25 +1629,6 @@ class MainApp(MDApp):
         else:
             return ""
 
-    # allow for 6 digits top as input
-    # def proper_number_filter(self, input_to_check, indicator):
-    #     self.temp_num_filter = self.dialog.content_cls.children[1].text
-    #     if len(self.temp_num_filter) < 6:
-    #         if input_to_check.isnumeric() or input_to_check== '.':
-    #             if input_to_check== '.':
-    #                 if self.temp_num_filter and '.' not in self.temp_num_filter:
-    #                     self.temp_num_filter += '.'
-    #                     if self.temp_num_filter[0] =='.':
-    #                         return ''
-    #                     else:
-    #                         self.dialog.content_cls.children[1].text = self.temp_num_filter
-    #                         return ''
-    #                 else:
-    #                     return ''
-    #             self.temp_num_filter += input_to_check
-    #             return input_to_check
-    #     return ''
-
     def proper_email_filter(self, input_to_check, indicator):
 
         if self.debug:
@@ -1697,7 +1643,8 @@ class MainApp(MDApp):
         if len(text) > leng:
             widget.text = text[:leng]
 
-    # additional filter for number inputs, checking length and if negative, and decimal precision
+    """ Filter for number inputs, checking length and if negative, and decimal precision """
+
     def input_number_check(self, widget, text):
         new_text = text
         if new_text and new_text != '.' and new_text != '-':
@@ -1709,24 +1656,28 @@ class MainApp(MDApp):
 
             if number < 0:
                 new_text = str(number * -1)
-                print("isnegative now is:", new_text)
+                if self.debug:
+                    print("isnegative now is:", new_text)
 
             if len(new_text) > 6:
                 new_text = new_text[:6]
                 widget.text = new_text[:6]
-                print("longer than 6 now:", new_text)
+                if self.debug:
+                    print("longer than 6 now:", new_text)
 
                 return
 
             if '.' in new_text:
                 new_text = self.check_after_float_point(new_text)
-                print("was . now :", new_text)
+                if self.debug:
+                    print("was . now :", new_text)
 
         if new_text == '.' or new_text == '-':
             new_text = ''
         widget.text = new_text
 
-    # help method for input_number_check
+    """ Help method for input_number_check, allows only 2 numbers after float point """
+
     def check_after_float_point(self, text):
         text_len = len(text)
         dot_ind = text.find('.')
@@ -1734,7 +1685,8 @@ class MainApp(MDApp):
             return text[:dot_ind + 3]
         return text
 
-    # Uploads all kind of Data Methods - Session / Workout
+    """ Uploading to Firebase methods """
+
     def upload_data(self, *args):
         """  target can be: 1 - upload new workout ,
              2 - update an existing workout, 3 - upload new session, 4 - upload settings, 5 - delete account
@@ -1824,7 +1776,8 @@ class MainApp(MDApp):
             if not session_rec[exc]:  # if exc is empty (after deletion)
                 session_rec.pop(exc, None)
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
-        print("timer to upload", self.timer)
+        if self.debug:
+            print("timer to upload", self.timer)
         session_data = [date, self.timer, self.root.ids['sessionscreen'].workout_key,
                         self.root.ids['sessionscreen'].workout_name, self.root.ids['sessionscreen'].num_of_split,
                         session_rec]
@@ -1840,30 +1793,16 @@ class MainApp(MDApp):
         link = "https://gymbuddy2.firebaseio.com/%s/temp_session.json?auth=%s" % (self.local_id, self.id_token)
         requests.put(link, data=data)
 
-    # Loading Spinner Methods
+    """ Spinner for loading """
+
     def display_loading_screen(self, *args):
         self.popup.open()
 
     def hide_loading_screen(self, *args):
         self.popup.dismiss()
 
-    def change_user_name(self, user_name):
-        self.user_name = user_name
+    """ Settings Methods """
 
-        self.root.ids['settingsscreen'].ids.user_name_label.text = user_name
-
-        user_name_lower = user_name.lower()
-
-        link_lower = "https://gymbuddy2.firebaseio.com/%s/user_name.json?auth=%s" % (self.local_id, self.id_token)
-        link = "https://gymbuddy2.firebaseio.com/%s/real_user_name.json?auth=%s" % (self.local_id, self.id_token)
-
-        data = json.dumps(user_name)
-        data_lower = json.dumps(user_name_lower)
-
-        self.upload_data(data_lower, link_lower, 4)
-        self.upload_data(data, link, 4)
-
-    # Settings Methods
     def upload_settings(self):
         units = self.units
         link = "https://gymbuddy2.firebaseio.com/%s/settings.json?auth=%s" % (self.local_id, self.id_token)
@@ -1881,7 +1820,55 @@ class MainApp(MDApp):
             # else:
             #     self.root.ids['settingsscreen'].ids.imperial.active = True
 
-    # Personal weight methods
+    def change_user_name(self, user_name):
+        self.user_name = user_name
+
+        self.root.ids['settingsscreen'].ids.user_name_label.text = user_name
+
+        user_name_lower = user_name.lower()
+
+        link_lower = "https://gymbuddy2.firebaseio.com/%s/user_name.json?auth=%s" % (self.local_id, self.id_token)
+        link = "https://gymbuddy2.firebaseio.com/%s/real_user_name.json?auth=%s" % (self.local_id, self.id_token)
+
+        data = json.dumps(user_name)
+        data_lower = json.dumps(user_name_lower)
+
+        self.upload_data(data_lower, link_lower, 4)
+        self.upload_data(data, link, 4)
+
+    def success_del_account_data(self, *args):
+        delete_account_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key=" + self.root.ids.firebase_login_screen.web_api_key
+        delete_account_payload = json.dumps({"localId": self.local_id, "idToken": self.id_token})
+        UrlRequest(delete_account_url, req_body=delete_account_payload,
+                   on_success=self.successful_delete_account,
+                   on_failure=self.delete_account_failure,
+                   on_error=self.delete_account_failure, ca_file=certifi.where())
+
+    def error_del_account_data(self, *args):
+        print(args)
+        print("error deleting account data")
+        self.dismiss_dialog()
+        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Please try again later")
+
+    def delete_account(self, *args):
+        try:
+            account_data_link = "https://gymbuddy2.firebaseio.com/%s.json?auth=%s" % (
+                self.local_id, self.id_token)
+            del_req = UrlRequest(account_data_link, on_success=self.success_del_account_data,
+                                 on_error=self.error_del_account_data,
+                                 on_failure=self.error_del_account_data,
+                                 ca_file=certifi.where(), method='DELETE', verify=True)
+        except:
+            print("error requesting to delete account data")
+
+    def successful_delete_account(self, *args):
+        self.dismiss_dialog()
+        self.on_logout()
+
+    def delete_account_failure(self, *args):
+        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Try login again and than delete your account")
+
+    """ Personal weight methods """
 
     def upload_weight_data(self):
         link = "https://gymbuddy2.firebaseio.com/%s/weights.json?auth=%s" % (self.local_id, self.id_token)
@@ -1902,26 +1889,24 @@ class MainApp(MDApp):
 
     def del_weight_by_key(self, weight_key):
         weight = self.weights.pop(weight_key)
-        print("weight_key to del", weight_key)
         weight_history_ref = self.weight_history_by_month_year[weight_key.year][weight_key.month]
         ind_to_pop = weight_history_ref.index(weight_key)
         weight_history_ref.pop(ind_to_pop)
         self.upload_weight_data()
 
     def load_weight_data(self):
-        print("trying to load weight")
+        if self.debug:
+            print("trying to load weight")
         if 'weights' in self.user_data:
             weights = self.user_data['weights']
-            print(weights)
-            print(type(json.loads(weights)))
             weights = json.loads(weights)
-            print(weights)
             for key in weights:
                 date_key = datetime.strptime(key, '%d/%m/%Y').date()
                 self.weights[date_key] = weights[key]
             self.sort_weights()
 
-            print(self.weights)
+            if self.debug:
+                print("self.weights", self.weights)
 
     def show_update_weight_dialog(self):
         self.weight_date = self.today_date[:10]
@@ -1976,7 +1961,6 @@ class MainApp(MDApp):
             date_to_save = datetime.strptime(date_to_save, '%d/%m/%Y').date()
         except IndexError:
             date_to_save = datetime.strptime((self.weight_date), '%d/%m/%Y').date()
-            print("new_date", date_to_save)
 
         try:
             weight_to_save = self.dialog.content_cls.children[0].text
@@ -1997,21 +1981,7 @@ class MainApp(MDApp):
         if self.root.ids['previous_workouts_screen'].weight_history:
             self.root.ids['previous_workouts_screen'].on_pre_enter()
 
-    # input floating number and returns 6 digits only 2 decimal point accuracy
-    # def length_filter(self, number_input):
-    #
-    #     number_input = round(number_input, 2)
-    #     number_input = str(number_input)
-    #
-    #     if len(number_input) > 5:
-    #         number_input = number_input[:6]
-    #         if number_input[-1] == '.':
-    #             number_input = number_input[:-1]
-    #
-    #     return float(number_input)
-
     def set_current_weight(self, weight, date):
-        print("Setting current weight", weight, date)
 
         if weight:
             self.root.ids['exercise_stats_screen'].ids["record"].text = "Current Weight"
@@ -2043,16 +2013,6 @@ class MainApp(MDApp):
             self.root.ids['homescreen'].ids["personal_weight"].text = "0"
             self.root.ids['exercise_stats_screen'].ids["current_weight"].text = "0"
             self.root.ids['exercise_stats_screen'].ids["current_weight_date"].text = ""
-
-    def open_pie_dialog(self):
-        text = ""
-        for exc in self.exc_pie_dic:
-            text += exc + ": " + str(self.exc_pie_dic[exc]) + "\n"
-        if text:
-            text = text[:-1]
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
-                               title="Sets done", text=text)
-        self.dialog.open()
 
     def show_weight_stats(self, *args):
         self.dialog.dismiss()
@@ -2106,41 +2066,100 @@ class MainApp(MDApp):
 
         self.root.ids['exercise_stats_screen'].exericse_mode = 1
 
-    def success_del_account_data(self, *args):
-        delete_account_url = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/deleteAccount?key=" + self.root.ids.firebase_login_screen.web_api_key
-        delete_account_payload = json.dumps({"localId": self.local_id, "idToken": self.id_token})
-        UrlRequest(delete_account_url, req_body=delete_account_payload,
-                   on_success=self.successful_delete_account,
-                   on_failure=self.delete_account_failure,
-                   on_error=self.delete_account_failure, ca_file=certifi.where())
+    """ Converts given str weight to right unit, and returns float """
 
-    def error_del_account_data(self, *args):
-        print(args)
-        print("error deleting account data")
-        self.dismiss_dialog()
-        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Please try again later")
+    def fix_weight_by_unit(self, weight):
+        weight = float(weight)
+        if self.units != 'metric':
+            weight = round(weight * self.kg_to_pounds, 2)
+            if weight / round(weight) >= 0.99:
+                weight = float(round(weight))
+            return weight, "Lbs"
+        else:
+            weight = round(weight, 2)
+            return weight, "Kg"
 
-    def delete_account(self, *args):
-        try:
-            account_data_link = "https://gymbuddy2.firebaseio.com/%s.json?auth=%s" % (
-                self.local_id, self.id_token)
-            del_req = UrlRequest(account_data_link, on_success=self.success_del_account_data,
-                                 on_error=self.error_del_account_data,
-                                 on_failure=self.error_del_account_data,
-                                 ca_file=certifi.where(), method='DELETE', verify=True)
-        except:
-            print("error requesting to delete account data")
+    """ Exercise Bank Menu handle functions """
 
-    def successful_delete_account(self, *args):
-        print(args)
-        self.dismiss_dialog()
-        self.on_logout()
+    def menu_callback(self, instance_menu, instance_menu_item):
+        instance_menu.parent.children[1].children[0].children[2].children[0].children[0].text = instance_menu_item.text
+        instance_menu.dismiss()
 
-    def delete_account_failure(self, *args):
-        # TODO add error msg need to login again.
-        print(args)
+    def open_exercise_bank_menu(self, *args):
+        button = args[0]
+        self.menu.caller = button
+        self.menu.open()
 
-        self.show_ok_msg(self.dismiss_dialog, "Error Deleting Account", "Try login again and than delete your account")
+    # test username methods
+    #######################
+
+    def get_user_name_data(self, user_name):
+        # Query database and make sure friend_id exists
+        user_name = '"' + user_name + '"'
+        link = 'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name
+        check_req = requests.get(link)
+        req = UrlRequest(link, on_success=self.get_user_name_data_success, on_error=self.on_request_error,
+                         on_failure=self.on_request_error,
+                         ca_file=certifi.where(), verify=True)
+        data = check_req.json()
+        # if data:
+        #     print(True)
+        # else:
+        #     print(False)
+        # print(user_name[1:-1] + " data is: ", data)
+
+    def on_request_error(self, *args):
+        print('failed')
+
+    def get_user_name_data_success(self, req, result):
+        pass
+
+    # def is_user_exist(self, user_name):
+    #     user_name = '"' + user_name + '"'
+    #     check_req = requests.get(
+    #         'https://gymbuddy2.firebaseio.com/.json?orderBy="user_name"&equalTo=' + user_name)
+    #     print(check_req)
+    #     data = check_req.json()
+    #     if data:
+    #         return True
+    #     else:
+    #         return False
+
+    # filter for names input, allows numbers and english letters only
+
+    # allow for 6 digits top as input
+    # def proper_number_filter(self, input_to_check, indicator):
+    #     self.temp_num_filter = self.dialog.content_cls.children[1].text
+    #     if len(self.temp_num_filter) < 6:
+    #         if input_to_check.isnumeric() or input_to_check== '.':
+    #             if input_to_check== '.':
+    #                 if self.temp_num_filter and '.' not in self.temp_num_filter:
+    #                     self.temp_num_filter += '.'
+    #                     if self.temp_num_filter[0] =='.':
+    #                         return ''
+    #                     else:
+    #                         self.dialog.content_cls.children[1].text = self.temp_num_filter
+    #                         return ''
+    #                 else:
+    #                     return ''
+    #             self.temp_num_filter += input_to_check
+    #             return input_to_check
+    #     return ''
+
+    # Uploads all kind of Data Methods - Session / Workout
+
+    # input floating number and returns 6 digits only 2 decimal point accuracy
+    # def length_filter(self, number_input):
+    #
+    #     number_input = round(number_input, 2)
+    #     number_input = str(number_input)
+    #
+    #     if len(number_input) > 5:
+    #         number_input = number_input[:6]
+    #         if number_input[-1] == '.':
+    #             number_input = number_input[:-1]
+    #
+    #     return float(number_input)
 
 
 MainApp().run()

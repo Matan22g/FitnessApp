@@ -93,7 +93,8 @@
                 custom_color: 0, 0, 1, 1
                 font_style: 'caption'
                 on_release:
-                    app.root.ids['bottom_nav'].switch_tab('2')
+#                    app.display_loading_screen()
+                    app.root.ids['bottom_nav'].switch_tab('3')
 
 
         MDLabel:
@@ -103,6 +104,19 @@
             theme_text_color: "Secondary"
             halign: "center"
             pos_hint: {"center_y": 5, "center_y": 0.7}
+        MDCard:
+            orientation:'vertical'
+            pos_hint: {"center_x": 0.7, "center_y": 0.64}
+            radius: [80]
+            size_hint: 0.34,0.315
+            padding: 10
+            elevation: 0
+            MDLabel:
+                id: one_workout_label
+                text: "Here will\nbe your\n next workout "
+                font_style: "H6"
+                theme_text_color: "Secondary"
+                halign: "center"
 
         ScrollView:
             id: last_sessions
@@ -111,10 +125,11 @@
             size_hint_x: None
             size_hint: 1, .48
             do_scroll_y: False
-            do_scroll_x: True
+            do_scroll_x: False
             scroll_type:['content']
             bar_color: [0,0,0,0]
             bar_inactive_color:[0,0,0,0]
+
             GridLayout:
                 # sets_grid
                 id: records_grid
@@ -283,10 +298,10 @@
             orientation:'horizontal'
             pos_hint: {"x": .032, "center_y": 0.45}
             size_hint_y:0.2
-            size_hint_x: 0.7
+            size_hint_x: 0.9
 
             MDLabel:
-                text: "Exercises Statistics"
+                text: " Exercises Statistics"
                 font_style: "H6"
                 theme_text_color: "Custom"
                 text_color: 0, 0, 0, 1
@@ -298,11 +313,12 @@
 #                text_color: 0, 0, 1, 1
                 font_style:"Caption"
                 size_hint_y: 0.9
-                size_hint_x: 0.5
                 theme_text_color: "Secondary"
-
+                halign: 'left'
         ScrollView:
             pos_hint: {"center_x": .5, "center_y": -0.080}
+            do_scroll_y: False
+
             MDBoxLayout:
                 id: chart_box
                 adaptive_height: True

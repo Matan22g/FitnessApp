@@ -199,7 +199,7 @@ class SessionScreen(Screen):
 
             self.ids["timer"].opacity = 1
             self.ids["timer_view"].opacity = 0
-            self.ids["scroll"].size_hint_y = 0.75 + self.app.bottom_buttons_inc
+            self.ids["scroll"].size_hint_y = 0.745 + self.app.bottom_buttons_inc
 
             self.ids["date_view"].opacity = 0
             self.ids["date_icon"].opacity = 0
@@ -219,8 +219,8 @@ class SessionScreen(Screen):
         print("Window.size", Window.size)
         window_height = Window.size[1]
         row_height = Window.size[1] / 4
-        row_height_view = Window.size[1] / 6.25
-        row_enlarger_inc = Window.size[1] / 17.6
+        row_height_view = Window.size[1] / 7
+        row_enlarger_inc = Window.size[1] / 15
         for i, exc in enumerate(self.workout):
             if not self.view_mode:
                 dict_of_row_height[i] = row_height
@@ -341,8 +341,7 @@ class SessionScreen(Screen):
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            theme_text_color="Custom",
-            text_color=self.app.text_color,
+            theme_text_color="Secondary",
             pos_hint={"center_y": 0.85, "center_x": 0.2}
         )
         deleteBox = MDCheckbox(
@@ -410,10 +409,15 @@ class SessionScreen(Screen):
             theme_text_color="Custom",
             text_color=self.app.text_color,
         )
+        curr_screen = self.app.root.ids['screen_manager1'].current
+        if curr_screen == "sessionscreen":
+            units_space = 1.1
+        else:
+            units_space = 1.3
         reps_label = MDLabel(
             text="  Reps                        " + unit,
             font_style="Caption",
-            size_hint=(1, None),
+            size_hint=(1, units_space),
             theme_text_color="Custom",
             text_color=self.app.text_color,
         )

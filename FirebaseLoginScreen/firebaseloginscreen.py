@@ -92,7 +92,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             print("Attempting to create a new account: ", email, password)
 
         if not user_name:
-            self.app.dialog = MDDialog(title="Error", text="user name cant be empty", radius=[10, 7, 10, 7],
+            self.app.dialog = MDDialog(title="Error", text="Username missing", radius=[10, 7, 10, 7],
                                        size_hint=(0.9, None))
             self.app.dialog.open()
             self.hide_loading_screen()

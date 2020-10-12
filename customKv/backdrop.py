@@ -157,6 +157,7 @@ Builder.load_string(
         id: toolbar
         title: root.title
         elevation: 0
+        opacity:0
         height: 0
         md_bg_color:
             root.theme_cls.primary_color if not root.background_color \

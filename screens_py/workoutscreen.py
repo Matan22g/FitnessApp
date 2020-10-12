@@ -298,9 +298,11 @@ class WorkoutScreen(Screen):
         self.reload_page()
 
     def on_tab_switch(self, *args):
+        """  args 3 = ['[size=100]Split', '1[/size]'] """
 
         split_chosen = args[3]
-        split_chosen = int(split_chosen[15])
+        split_chosen = split_chosen.split()
+        split_chosen = int(split_chosen[1][0])
         self.load_exc(split_chosen)
         self.split_active = split_chosen
         # self.app.root.ids['workoutscreen'].ids["del_split"].text = "Split " + str(split_chosen)
@@ -363,8 +365,7 @@ class WorkoutScreen(Screen):
         exc_num = MDLabel(
             text=excnum,
             font_style="Caption",
-            theme_text_color="Custom",
-            text_color=self.app.text_color,
+            theme_text_color="Secondary",
         )
         del_Button = MDIconButton(
             icon="trash-can-outline",
