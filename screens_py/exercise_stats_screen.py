@@ -437,7 +437,12 @@ class ExerciseStatsScreen(Screen):
         return "1  X  " + str(avg)
 
     def on_tab_switch(self, *args):
-        period = args[3][9:14]
+        # period = args[3][9:14]
+        period = args[3]
+        if period.find("Year") != -1:
+            period = "Year"
+        else:
+            period = "Month"
         self.curr_mode = period
         try:
             self.ids.stats_layout.remove_widget(self.curr_graph)
@@ -467,7 +472,6 @@ class ExerciseStatsScreen(Screen):
                 self.set_avg_weight(self.curr_year_best, new_label)
 
     def switch_date(self, *args):
-        print(args[0].icon[8:])
 
         direction = args[0].icon[8:]
         curr_mode = self.curr_mode
