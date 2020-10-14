@@ -48,11 +48,12 @@ class WorkoutScreen(Screen):
     tabs_by_split = {}
     create_mode = 0  # used when creating new workout
     tap_target_view = 0
+    exc_limit = 15
+    split_limit = 7
 
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
-
 
     def on_enter(self, *args):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
@@ -283,12 +284,16 @@ class WorkoutScreen(Screen):
                 self.add_split()
 
     def add_split(self):
-
+        split_limit = self.split_limit
+        if self.num_of_splits > split_limit - 1:
+            self.app.show_ok_msg(self.app.dismiss_dialog, "Limit Reached",
+                                 "Cant have more than " + str(self.split_limit) + " splits")
+            return
         self.num_of_splits = len(self.app.root.ids['workoutscreen'].ids["split_tabs"].get_tab_list()) + 1
         if self.app.debug:
             print("trying to add split")
             print("num of split to add:", self.num_of_splits)
-        tab = Tab(text=f"[size=70]Split {self.num_of_splits}[/size]")
+        # tab = Tab(text=f"[size=70]Split {self.num_of_splits}[/size]")
         tab = Tab(text="[size=" + str(self.app.headline_text_size) + f"]Split {self.num_of_splits}[/size]")
 
         self.app.root.ids['workoutscreen'].ids["split_tabs"].add_widget(tab)
@@ -381,7 +386,8 @@ class WorkoutScreen(Screen):
         help_layout.add_widget(del_Button)
         excCard.add_widget(help_layout)
 
-        name_layout = MDGridLayout(rows=1, cols=2)
+        name_layout = MDGridLayout(rows=1, cols=2,
+                                   padding=[0, 10, 0, 25])  # [padding_left, padding_top,padding_right, padding_bottom])
         exc_name = MDLabel(
             text=exc,
             font_style="H5",
@@ -432,6 +438,14 @@ class WorkoutScreen(Screen):
                 stats_button_id.disabled = True
 
     def show_add_exercise_dialog(self):
+        split_to_add = self.split_active
+        exc_limit = self.exc_limit
+        num_of_exc_in_split = len(self.temp_workout[split_to_add - 1])
+        if num_of_exc_in_split > exc_limit - 1:
+            self.app.show_ok_msg(self.app.dismiss_dialog, "Limit Reached",
+                                 "Cant have more than " + str(exc_limit) + " exercises in one split")
+            return
+
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
             size_hint=(0.9, 0.2),

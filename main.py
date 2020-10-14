@@ -189,6 +189,7 @@ class MainApp(MDApp):
     def on_start(self):
         if platform == 'android':
             self.clear_statusbar()
+            mActivity.removeLoadingScreen()
 
         self.weight_date = self.today_date[:10]
         # Window.on_resize = self.show_size
@@ -213,12 +214,11 @@ class MainApp(MDApp):
 
     def on_pause(self):
         self.clear_statusbar()
+        self.set_Full_Screen_Flags()
         return True
 
     def on_resume(self):
-        self.clear_statusbar()
-        self.set_Full_Screen_Flags()
-
+        pass
     def on_stop(self):
         if self.running_session:
             self.upload_temp_session()
@@ -277,7 +277,7 @@ class MainApp(MDApp):
             self.root.ids['homescreen'].ids["weight_units"].text = "Kg"
         else:
             self.root.ids['homescreen'].ids["weight_units"].text = "Lbs"
-        # self.change_screen1("workoutsscreen")
+        # self.change_screen1("exercise_sessions_screen")
 
     def on_logout(self):
         self.clear_user_app_data()
@@ -330,7 +330,6 @@ class MainApp(MDApp):
         self.recent_sessions = []
         self.reload_for_running_session = ""
         self.delete_mode = 0
-        self.upload_backup = 0
         self.last_session_date = 0
         self.sign_up = 0
         self.workout_edit_mode = 0
@@ -361,6 +360,11 @@ class MainApp(MDApp):
     def hook_keyboard(self, window, key, *largs):
 
         if key == 27:
+            try:
+                self.root.ids.firebase_login_screen.hide_loading_screen()
+                self.hide_loading_screen()
+            except:
+                print("couldnt hide loading screen")
             try:
                 if self.root.ids['screen_manager1'].current == "homescreen":
                     from jnius import autoclass
@@ -445,7 +449,7 @@ class MainApp(MDApp):
             text = text[:-1]
         if text.find("None") != -1:
             text = "Here will be your exercises set list"
-        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.1),
                                title="Exercise Statistics - Set Amount", text=text)
         self.dialog.open()
 
@@ -1279,7 +1283,9 @@ class MainApp(MDApp):
         text_field = args[0].parent.parent.parent.children[2].children[0].children[1]
         error_label = args[0].parent.parent.parent.children[2].children[0].children[0]
         new_user_name = text_field.text
-
+        if not new_user_name or new_user_name.find(" ") != -1:
+            error_label.text = "English letters and numbers, without spaces"
+            return
         check_is_exist = self.root.ids.firebase_login_screen.is_user_exist(new_user_name)
         if check_is_exist == 2:  # no internet
             self.dismiss_dialog()
@@ -1893,17 +1899,19 @@ class MainApp(MDApp):
         ind_to_pop = weight_history_ref.index(weight_key)
         weight_history_ref.pop(ind_to_pop)
         self.upload_weight_data()
+        self.sort_weights()
 
     def load_weight_data(self):
         if self.debug:
             print("trying to load weight")
         if 'weights' in self.user_data:
             weights = self.user_data['weights']
-            weights = json.loads(weights)
-            for key in weights:
-                date_key = datetime.strptime(key, '%d/%m/%Y').date()
-                self.weights[date_key] = weights[key]
-            self.sort_weights()
+            if weights != '}':
+                weights = json.loads(weights)
+                for key in weights:
+                    date_key = datetime.strptime(key, '%d/%m/%Y').date()
+                    self.weights[date_key] = weights[key]
+                self.sort_weights()
 
             if self.debug:
                 print("self.weights", self.weights)
@@ -2029,7 +2037,8 @@ class MainApp(MDApp):
         dates.sort(reverse=True)
         if dates:
             self.set_current_weight(self.weights[dates[0]], dates[0])
-
+        else:
+            self.set_current_weight(0, 0)
         dates_dict = {}
         for date in dates:
             year = int(date.year)

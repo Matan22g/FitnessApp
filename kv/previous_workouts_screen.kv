@@ -9,43 +9,43 @@
 
 
 
-        MDIconButton:
-            id: date_button
-            pos_hint: {"center_x": .93, "top": 0.975}
-            icon: "tune"
-            user_font_size: "25sp"
-            theme_text_color: "Custom"
-            text_color: 1,1,1,1
-            on_release: root.choose_date()
 
         MDLabel:
             id: month_to_view
-            pos_hint: {"center_x": 0.57, "top":1.02}
+            pos_hint: {"center_x": 0.57, "top":1.0}
             size_hint: (1, .2)
             font_style: "H4"
             text: "Jul"
             theme_text_color: "Custom"
             text_color: 1,1,1,1
 
-        MDLabel:
-            id: num_to_delete
-            pos_hint: {"center_x": 1.08, "top":0.99}
-            size_hint: (.47, .15)
-            font_size: "16sp"
-            halign: "left"
-            text: "5"
-            theme_text_color: "Custom"
-            text_color: 1,1,1,1
+        MDGridLayout:
+            id: icon_grid
+            cols:2
+            rows:1
+            pos_hint: {"center_x": 0.78, "center_y":0.895}
+            size_hint_x:0.4
+            size_hint_y:0.08
+            spacing:0
+            MDLabel:
+                id: num_to_delete
+                font_style: "Subtitle1"
+                text: "5"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                halign:'right'
+                valign:'center'
 
-        MDIconButton:
-            id: delete_sessions
-            pos_hint: {"center_x": 0.93, "top":0.985}
-            icon: "trash-can-outline"
-            user_font_size: "32sp"
-            theme_text_color: "Custom"
-            text_color: 1,1,1,1
-            on_release: root.show_del_exercise_dialog()
-
+            MDIconButton:
+                id: help_button
+                icon: "trash-can-outline"
+                user_font_size: "30dp"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                on_release: root.help_button(self.icon)
+                halign:'left'
+                valign:'center'
+                size_hint:0.4,0.1
         ScrollView:
             id: sessions_scroll
             pos_hint: {"top": .86}

@@ -9,6 +9,7 @@
 #: include kv/previous_workouts_screen.kv
 #: include kv/exercise_stats_screen.kv
 #: include kv/welcome_screen.kv
+#:import utils kivy.utils
 
 #: include FirebaseLoginScreen/firebaseloginscreen.kv
 #:import Snackbar kivymd.uix.snackbar.Snackbar
@@ -56,7 +57,7 @@
             font_size: "15dp"
             halign: "right"
             text: app.weight_date
-            custom_color: 0, 0, 1, 1
+            custom_color: utils.get_color_from_hex("#283592")
             on_release:
                 app.show_date_picker_for_weight()
             pos_hint: {"center_x": .5}
@@ -81,14 +82,11 @@
 
 <ChangeUserNameContent>
     orientation: "vertical"
-    spacing: "10dp"
+    spacing: 0
     size_hint_y: None
-    height: "53dp"
+    height: "48dp"
     MDTextField:
         hint_text: "User name"
-        required: True
-        helper_text_mode: "on_error"
-        helper_text: "English letters and numbers only"
         input_filter: app.proper_input_filter
 
     MDLabel:
@@ -196,6 +194,7 @@ FloatLayout:
                     id: bottom_nav
                     pos_hint: {"center_x": .5}
                     size_hint_y:0.07
+                    size_hint_x:0.95
                     panel_color: .5, .5, 1, 0
                     text_color_active: 0,0,1,1
                     MDBottomNavigationItem:

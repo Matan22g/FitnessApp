@@ -91,8 +91,10 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         if self.debug:
             print("Attempting to create a new account: ", email, password)
 
-        if not user_name:
-            self.app.dialog = MDDialog(title="Error", text="Username missing", radius=[10, 7, 10, 7],
+        if not user_name or user_name.find(" ") != -1:
+            self.app.dialog = MDDialog(title="Error",
+                                       text="Username invalid or missing - Use english letters and numbers, also spaces aren't allowed",
+                                       radius=[10, 7, 10, 7],
                                        size_hint=(0.9, None))
             self.app.dialog.open()
             self.hide_loading_screen()
@@ -234,7 +236,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             print("Sign up Error: ", args)
 
     def get_user_name_email_success(self, req, result):
-        #save email and call to sign with email method
+        # save email and call to sign with email method
         for user_key in result:
             user_data = result[user_key]
             email = user_data["email"]
@@ -244,7 +246,8 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
                 print("get_user_name_email_success:", user_data)
 
     def on_email_request_error(self, *args):
-        print('failed')
+        print('failed to get user name')
+        print(args)
 
     def get_user_name_email(self, user_name):
         # Query database and gets username email
@@ -271,7 +274,6 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
                 try:
                     self.get_user_name_email(email)
                 except:
-
                     self.show_no_internet_msg()
                     self.hide_loading_screen()
                     return

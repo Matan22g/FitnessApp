@@ -170,6 +170,8 @@ class ExerciseSessionsScreen(Screen):
             row_enlarger = row_enlarger_inc * (len(session) - 1)
             if len(session_workout_name) > 9:
                 row_enlarger = row_enlarger * 1.125
+            else:
+                dict_of_row_height[i] = window_height / 7.5
             dict_of_row_height[i] += row_enlarger
 
         self.ids.sets_grid.rows_minimum = dict_of_row_height
@@ -177,7 +179,6 @@ class ExerciseSessionsScreen(Screen):
 
         best_weight = 0
         best_set = 0
-        print
         for i, session_key in enumerate(sessions_keys):
             session_exc = self.sessions[session_key][1]
             session_workout_name = self.sessions[session_key][0]

@@ -114,9 +114,9 @@
 
         MDLabel:
             id: workout_name
-            pos_hint: {"center_x": 0.28, "top": .96+root.inc}
+            pos_hint: {"center_x": 0.28, "top": .945+root.inc}
             size_hint: (.5, .15)
-            font_size: "45sp"
+            font_size: "35sp"
             halign: "left"
             text: ""
             opacity:1
@@ -169,24 +169,32 @@
             text_color: 1,1,1,1
             user_font_size: "50sp"
 
-        MDIconButton:
-            id: show_checkbox
-            pos_hint: {"center_x": .92, "top": .975+root.inc}
-            icon: "trash-can-outline"
-            user_font_size: "32sp"
-            theme_text_color: "Custom"
-            text_color: 1,1,1,1
-            on_release: root.delete_selected()
+        MDGridLayout:
+            cols:2
+            rows:1
+            pos_hint: {"center_x": 0.71, "center_y":0.95}
+            size_hint_x:0.4
+            size_hint_y:0.08
+            spacing:0
 
-        MDLabel:
-            id: num_to_delete
-            pos_hint: {"center_x": 1.075, "top": .98+root.inc}
-            size_hint: (.47, .15)
-            font_size: "16sp"
-            halign: "left"
-            text: ""
-            theme_text_color: "Custom"
-            text_color: 1,1,1,1
+            MDLabel:
+                id: num_to_delete
+                font_style: "Subtitle1"
+                halign: "right"
+                text: ""
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+
+            MDIconButton:
+                id: show_checkbox
+                icon: "trash-can-outline"
+                user_font_size: "32sp"
+                theme_text_color: "Custom"
+                text_color: 1,1,1,1
+                on_release: root.delete_selected()
+                size_hint:0.4,0.1
+
+
 #        MDIconButton:
 #            id: start_exc
 #            user_font_size: "45sp"

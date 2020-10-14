@@ -76,9 +76,9 @@
 
         BoxLayout:
             orientation:'horizontal'
-            pos_hint: {"x": -.335, "center_y": 0.83}
+            pos_hint: {"x": -.34, "center_y": 0.83}
             size_hint_y:0.03
-            size_hint_x: 1.25
+            size_hint_x: 1.3
 
             MDLabel:
                 text: "Recent Workouts"
@@ -88,15 +88,19 @@
                 halign: "center"
                 size_hint_x: 1.2
 
-            MDTextButton:
-                text: "See All"
-                custom_color: 0, 0, 1, 1
-                font_style: 'caption'
-                on_release:
-#                    app.display_loading_screen()
-                    app.root.ids['bottom_nav'].switch_tab('3')
+#            MDTextButton:
+#                text: "See All"
+#                custom_color: 0, 0, 1, 1
+#                font_style: 'caption'
+#                on_release:
+##                    app.display_loading_screen()
+#                    app.root.ids['bottom_nav'].switch_tab('3')
 
-
+            MDFillRoundFlatButton:
+                text:"See All"
+                text_color:(1, 1, 1, 1)
+                on_release: app.root.ids['bottom_nav'].switch_tab('3')
+                size_hint: 0.18,1
         MDLabel:
             id: no_workout_label
             text: "You have not done any workout yet\nGo to the Gym! "
@@ -105,14 +109,15 @@
             halign: "center"
             pos_hint: {"center_y": 5, "center_y": 0.7}
         MDCard:
+            id: one_workout_label
             orientation:'vertical'
-            pos_hint: {"center_x": 0.7, "center_y": 0.64}
+            pos_hint: {"center_x": 0.72, "center_y": 0.64}
             radius: [80]
             size_hint: 0.34,0.315
             padding: 10
             elevation: 0
             MDLabel:
-                id: one_workout_label
+                id: next_workout_label
                 text: "Here will\nbe your\n next workout "
                 font_style: "H6"
                 theme_text_color: "Secondary"
@@ -135,7 +140,7 @@
                 id: records_grid
                 cols: 2
                 rows: 1
-                padding: 30,0
+                padding: 42,0
                 spacing: 60,20
                 size_hint_y: None
                 size_hint_x: None
@@ -207,14 +212,16 @@
                         pos_hint: {"center_x": .5}
                         size_hint_x: 1.25
 
-                    MDIconButton:
-                        icon: "play"
-                        user_font_size: "30sp"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        size_hint_y:2.5
-
-                        on_release:root.start_recent_session(1)
+                    FloatLayout:
+                        size_hint_y: 2.5
+                        MDIconButton:
+                            pos_hint: {"center_x": .5, "center_y": 0.5}
+                            icon: "play"
+                            user_font_size: "35sp"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            size_hint_y:2.5
+                            on_release:root.start_recent_session(1)
 
 
                 MDCard:
@@ -281,31 +288,39 @@
                         color: 1,1,1,1
                         pos_hint: {"center_x": .5}
                         size_hint_x: 1.25
+                    FloatLayout:
+                        size_hint_y: 2.5
+                        MDIconButton:
+                            pos_hint: {"center_x": .5, "center_y": 0.5}
+                            icon: "play"
+                            user_font_size: "35sp"
+                            theme_text_color: "Custom"
+                            text_color: 1,1,1,1
+                            size_hint_y:2.5
+                            on_release:root.start_recent_session(2)
 
-                    MDIconButton:
-                        icon: "play"
-                        user_font_size: "30sp"
-                        theme_text_color: "Custom"
-                        text_color: 1,1,1,1
-                        size_hint_y:2.5
-                        on_release:root.start_recent_session(2)
 
 
 
-
+        MDSeparator:
+            height: "1dp"
+            color: 0,0,0,1
+            pos_hint: {"center_x": .5, "center_y": 0.463}
+            size_hint_x: 0.9
 
         BoxLayout:
             orientation:'horizontal'
-            pos_hint: {"x": .032, "center_y": 0.45}
+            pos_hint: {"center_x": .685, "center_y": 0.44}
             size_hint_y:0.2
-            size_hint_x: 0.9
+            size_hint_x: 1.6
 
             MDLabel:
-                text: " Exercises Statistics"
+                text: "       Exercises Statistics"
                 font_style: "H6"
                 theme_text_color: "Custom"
                 text_color: 0, 0, 0, 1
                 halign: "center"
+                size_hint_x: 0.7
 
             MDLabel:
                 text: "(Past 30 Days)"
@@ -316,7 +331,7 @@
                 theme_text_color: "Secondary"
                 halign: 'left'
         ScrollView:
-            pos_hint: {"center_x": .5, "center_y": -0.080}
+            pos_hint: {"center_x": .5, "center_y": -0.090}
             do_scroll_y: False
 
             MDBoxLayout:
@@ -331,7 +346,7 @@
                     items: [{"None": 100}]
                     pos_hint: {'center_x': 0.5, 'center_y': .5}
                     size_hint:[None,None]
-                    size:(dp(300),dp(300))
+                    size:(dp(280),dp(280))
                     on_touch_down:
                         caller = args[0]
                         touch = args[1]

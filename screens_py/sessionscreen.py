@@ -84,6 +84,7 @@ class SessionScreen(Screen):
     # long_press = 0
     session_key = 0
     check_box_by_card = {}
+    exc_limit = 15
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -133,9 +134,12 @@ class SessionScreen(Screen):
                 self.ids["date_picker_label"].text = now[0:10]
                 self.ids["date_picker_label"].line_color = [0, 0, 0, 0]
                 self.ids["workout_name"].text = self.workout_name
-                inc = (len(self.workout_name.split()) - 1) * 0.02
-                self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .95 + self.inc + inc}
-
+                inc = (len(self.workout_name.split()) - 1) * 0.025
+                self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .935 + self.inc + inc}
+                if len(self.workout_name) < 5:
+                    self.ids["workout_name"].font_size = "40sp"
+                else:
+                    self.ids["workout_name"].font_size = "35sp"
                 self.session_date = now
                 self.session_rec = {}
             # for exc_id in self.ex_reference_by_id:
@@ -172,8 +176,12 @@ class SessionScreen(Screen):
             # self.app.change_title(session.workout_name)
             self.app.change_title("Recent Workout")
             self.ids["workout_name"].text = session.workout_name
-            inc = (len(session.workout_name.split()) - 1) * 0.02
-            self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .95 + self.inc + inc}
+            inc = (len(session.workout_name.split()) - 1) * 0.025
+            self.ids["workout_name"].pos_hint = {"center_x": 0.3, "top": .935 + self.inc + inc}
+            if len(session.workout_name) < 5:
+                self.ids["workout_name"].font_size = "40sp"
+            else:
+                self.ids["workout_name"].font_size = "35sp"
 
             self.show_checkbox(False)
             if self.app.reload_for_running_session:
@@ -241,10 +249,13 @@ class SessionScreen(Screen):
         self.show_checkbox(False)
 
     def active_card_check_box(self, *args):
+        try:
+            check_box = self.check_box_by_card[args[0]]
+            check_box_state = check_box.active
+            check_box.active = not check_box_state
+        except KeyError:
+            check_box = args[0]
 
-        check_box = self.check_box_by_card[args[0]]
-        check_box_state = check_box.active
-        check_box.active = not check_box_state
         self.update_delete_num('sessionscreen', self.ex_reference_by_checkBox)
 
     def create_card(self, num_of_exc, exc, num_of_exc_total):
@@ -345,7 +356,8 @@ class SessionScreen(Screen):
             pos_hint={"center_y": 0.85, "center_x": 0.2}
         )
         deleteBox = MDCheckbox(
-            pos_hint={"center_y": 0.85, "center_x": 0.9275}
+            pos_hint={"center_y": 0.85, "center_x": 0.9275},
+            on_release=self.active_card_check_box
         )
         self.ex_reference_by_checkBox[deleteBox] = exc
         help_layout.add_widget(exc_num)
@@ -681,6 +693,13 @@ class SessionScreen(Screen):
         self.dialog.dismiss()
 
     def show_add_exercise_dialog(self):
+        exc_limit = self.exc_limit
+        num_of_exc_in_split = len(self.workout)
+        if num_of_exc_in_split > exc_limit - 1:
+            self.app.show_ok_msg(self.app.dismiss_dialog, "Limit Reached",
+                                 "Cant have more than " + str(exc_limit) + " exercises in one split")
+            return
+
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
             size_hint=(0.9, 0.2),
@@ -772,6 +791,7 @@ class ExerciseScreen(Screen):
     sets = []
     dialog = 0
     barbell = 0
+    sets_limit = 15
 
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -864,6 +884,14 @@ class ExerciseScreen(Screen):
         self.clear_screen()
 
     def add_set(self):
+
+        sets_limit = self.sets_limit
+        num_of_exc_in_split = len(self.sets)
+        if num_of_exc_in_split > sets_limit - 1:
+            self.app.show_ok_msg(self.app.dismiss_dialog, "Limit Reached",
+                                 "Cant have more than " + str(sets_limit) + " sets")
+            return
+
         weight = self.ids["weight"].text
         currWeight = float(weight)
 

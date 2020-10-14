@@ -85,6 +85,12 @@ class PreviousWorkoutsScreen(Screen):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
 
+    def help_button(self, method):
+        if method == "tune":
+            self.choose_date()
+        else:
+            self.show_del_exercise_dialog()
+
     def on_pre_enter(self, *args):
         self.app.change_title("Recent Workouts")
 
@@ -120,7 +126,20 @@ class PreviousWorkoutsScreen(Screen):
             else:
                 return
             self.load_sessions(self.curr_year, self.curr_month)
+
+        self.fix_headline_pos()
         # self.fix_grid_heights()
+
+    def fix_headline_pos(self):
+        if self.app.root.ids['previous_workouts_screen'].weight_history or self.app.reload_for_running_session:
+            self.app.root.ids['previous_workouts_screen'].ids["month_to_view"].pos_hint = {"center_x": 0.57,
+                                                                                           "top": 1.015}
+            self.app.root.ids['previous_workouts_screen'].ids["icon_grid"].pos_hint = {"center_x": 0.775,
+                                                                                       "center_y": 0.915}
+        else:
+            self.app.root.ids['previous_workouts_screen'].ids["month_to_view"].pos_hint = {"center_x": 0.57, "top": 1.0}
+            self.app.root.ids['previous_workouts_screen'].ids["icon_grid"].pos_hint = {"center_x": 0.775,
+                                                                                       "center_y": 0.895}
 
     def find_closest_date(self):
         today = datetime.today()
@@ -350,7 +369,8 @@ class PreviousWorkoutsScreen(Screen):
         excCard.add_widget(date_label)
         main_layout = MDGridLayout(rows=2, cols=2, spacing=20)
         deleteBox = MDCheckbox(
-            size_hint=(0.5, 0.75)
+            size_hint=(0.5, 0.75),
+            on_release=self.update_del_num
         )
         deleteBox.opacity = 0
         self.session_card_by_checkBox[deleteBox] = excCard
@@ -408,6 +428,10 @@ class PreviousWorkoutsScreen(Screen):
         sessions_date_key = self.session_key_by_card[workout_card]
         self.app.view_session(sessions_date_key)
 
+    def update_del_num(self, *args):
+        self.app.root.ids['previous_workouts_screen'].update_delete_num('previous_workouts_screen',
+                                                                        self.session_card_by_checkBox)
+
     def show_checkbox(self, to_show):
 
         self.app.root.ids['previous_workouts_screen'].ids["num_to_delete"].text = ""
@@ -418,17 +442,11 @@ class PreviousWorkoutsScreen(Screen):
 
         if to_show:
             self.app.root.ids['previous_workouts_screen'].delete_mode = 1
-            self.ids["date_button"].opacity = 0
-            self.ids["date_button"].disabled = True
-            self.ids["delete_sessions"].opacity = 1
-            self.ids["delete_sessions"].disabled = False
+            self.ids["help_button"].icon = 'trash-can-outline'
 
         else:
             self.app.root.ids['previous_workouts_screen'].delete_mode = 0
-            self.ids["date_button"].opacity = 1
-            self.ids["date_button"].disabled = False
-            self.ids["delete_sessions"].opacity = 0
-            self.ids["delete_sessions"].disabled = True
+            self.ids["help_button"].icon = 'tune'
 
         for checkbox_id in self.session_card_by_checkBox:
             checkbox_id.active = 0
@@ -597,7 +615,8 @@ class PreviousWorkoutsScreen(Screen):
 
         main_layout = MDGridLayout(rows=1, cols=2, spacing=20)
         deleteBox = MDCheckbox(
-            size_hint=(0.5, 0.75)
+            size_hint=(0.5, 0.75),
+            on_release=self.update_del_num
         )
         deleteBox.opacity = 0
         self.session_card_by_checkBox[deleteBox] = excCard
@@ -625,67 +644,3 @@ class PreviousWorkoutsScreen(Screen):
         self.session_key_by_card[excCard] = weight_date
         return new_card_layout
 
-    # def create_weight_card1(self, num_of_session, total_session_num, weight, weight_date):
-    #     help_layout = MDGridLayout(size_hint_y=0.05, rows=1, cols=3)
-    #
-    #     new_card_layout = MDFloatLayout()  # for centering
-    #     excCard = LongPressCard(
-    #         spacing=8,
-    #         radius=[80],
-    #         orientation="vertical",
-    #         size_hint=(0.87, 0.97),
-    #         padding=[40, 40, 0, 40],  # [padding_left, padding_top,padding_right, padding_bottom].
-    #         pos_hint={"center_y": 0.5, "center_x": 0.5},
-    #         background="resources/card_back.png",
-    #         elevation=1,
-    #         long_press_time=0.5,
-    #         on_long_press=lambda w: setattr(w, 'text', 'long press!')
-    #     )
-    #     excCard.card_id = excCard
-    #     # help_layout = self.create_top_card_layout(num_of_exc, num_of_exc_total, exc)
-    #     # excCard.add_widget(help_layout)
-    #
-    #     excnum = str(num_of_session) + " of " + str(total_session_num)
-    #     # workout_date = "Mon, 15 Jul"
-    #     # workout_name = "ABC"
-    #     # workout_duration = "44 mins"
-    #     exc_num = MDLabel(
-    #         text=excnum,
-    #         font_style="Caption",
-    #         size_hint=(0.3, 0.1),
-    #         theme_text_color="Custom",
-    #         text_color=self.app.text_color
-    #     )
-    #     deleteBox = MDCheckbox(
-    #         size_hint=(0.5, 0.75)
-    #     )
-    #     deleteBox.opacity = 0
-    #     self.session_card_by_checkBox[deleteBox] = excCard
-    #     label_weight_date = weight_date.ctime()[0:10]
-    #     label_weight_date = label_weight_date[0:3] + "," + label_weight_date[3:]
-    #     date_label = MDLabel(
-    #         text=label_weight_date,
-    #         font_style="Subtitle2",
-    #         size_hint=(0.97, 0.1),
-    #         theme_text_color="Custom",
-    #         text_color=self.app.text_color
-    #     )
-    #     weight,unit= self.app.fix_weight_by_unit(weight)
-    #     workout_name_label = MDLabel(
-    #         text=str(weight) + " " + unit,
-    #         font_style="H5",
-    #         theme_text_color="Custom",
-    #         text_color=self.app.text_color
-    #     )
-    #
-    #     help_layout.add_widget(date_label)
-    #     help_layout.add_widget(deleteBox)
-    #     help_layout.add_widget(exc_num)
-    #
-    #     excCard.add_widget(help_layout)
-    #
-    #     excCard.add_widget(workout_name_label)
-    #
-    #     new_card_layout.add_widget(excCard)
-    #     self.session_key_by_card[excCard] = weight_date
-    #     return new_card_layout
