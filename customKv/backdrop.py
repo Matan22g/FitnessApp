@@ -181,7 +181,7 @@ Builder.load_string(
 
         canvas:
             Color:
-                rgba: utils.get_color_from_hex("#90AEFF")
+                rgba: 1,1,1,1
             RoundedRectangle:
                 pos: self.pos
                 size: self.size
@@ -192,7 +192,7 @@ Builder.load_string(
                     (0, 0),
                     (0, 0)
                     ]
-                source: "resources/loginback1.png"
+                source: "resources/sign_in_back.png"
         OneLineListItem:
             id: header_button
             text: root.header_text
