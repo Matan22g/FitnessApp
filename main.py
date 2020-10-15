@@ -14,7 +14,6 @@ from kivy.properties import NumericProperty
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import Screen, NoTransition, SlideTransition
-from kivy.core.window import Window
 from kivymd.uix.button import MDRaisedButton, MDFlatButton, MDIconButton
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.label import MDLabel
@@ -48,6 +47,10 @@ from screens_py.welcome_screen import WelcomeScreen
 from screens_py.exercise_stats_screen import ExerciseStatsScreen
 from screens_py.sessionscreen import SessionScreen, ExerciseScreen
 
+from kivy.core.window import Window
+
+# Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
+# Window.softinput_mode = "below_target"
 
 
 if platform != 'android':
@@ -547,14 +550,18 @@ class MainApp(MDApp):
             pass
         if content == 1:
             dialog_content = SendMailContent()
+            size_y = 0.4
         if content == 2:
             dialog_content = UpdateWeightContent()
+            size_y = 0.2
+
         if content == 3:
             dialog_content = AddWorkoutContent()
+            size_y = 0.2
 
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
-            size_hint=(0.9, 0.2),
+            size_hint=(0.9, size_y),
             title=title,
             type="custom",
             content_cls=dialog_content,
@@ -651,7 +658,10 @@ class MainApp(MDApp):
             subject = subject[1]
 
         msg = self.dialog.content_cls.children[0].text
-
+        if not msg:
+            self.hide_loading_screen()
+            self.show_ok_msg(self.dismiss_dialog, "Try Again", "Can't send empty message")
+            return
         fromaddr = self.app_mail
         toaddrs = self.app_mail
 
