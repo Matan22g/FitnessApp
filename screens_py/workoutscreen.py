@@ -112,6 +112,7 @@ class WorkoutScreen(Screen):
             self.reset_tabs()
             self.reload_page()
             self.app.change_title("Building: " + self.workout_name)
+            self.app.root.ids['toolbar'].right_action_items = [['help', lambda x: self.app.show_workout_help()]]
 
         else:
             self.switch_mode("view")
@@ -231,7 +232,6 @@ class WorkoutScreen(Screen):
             # self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (1, .65)
             # self.app.root.ids['toolbar'].right_action_items = [
             #     ['content-save', lambda x: self.show_save_workout_dialog()]]
-            self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
             self.show_exc_del_buttons(True)
             self.show_exc_stats_buttons(False)

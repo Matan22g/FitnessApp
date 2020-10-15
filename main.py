@@ -1076,6 +1076,18 @@ class MainApp(MDApp):
 
     """ Workout Methods. """
 
+    def show_workout_help(self):
+        self.dialog = MDDialog(radius=[10, 7, 10, 7], size_hint=(0.9, 0.2),
+                               title="Create Workout - Help",
+                               padding=10,
+                               text="[size=" + str(
+                                   int(
+                                       self.headline_text_size * 0.75)) + "][color=0,0,0,1]Add Splits[/color][/size]\nSplit system training is a program of weight training that divides training sessions by body regions - usually upper and lower body training.\nYou can add up to 7 different splits.\n\n[size=" + str(
+                                   int(
+                                       self.headline_text_size * 0.75)) + "][color=0,0,0,1]Add Exercise[/color][/size]\nPress the plus icon located at the bottom of the screen to add a new exercise.\nYou can type the name of the exercise or choose from list of exercises with the bank button."
+                               )
+        self.dialog.open()
+
     def load_workout_data(self):
         try:
             workoutdic = self.user_data["workouts"]  # gets workout data
