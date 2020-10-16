@@ -22,5 +22,6 @@ class WorkoutsScreen(Screen):
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
             self.app.root.ids['workoutsscreen'].ids["running_session"].disabled = False
             self.app.root.ids['workoutsscreen'].ids["running_session"].text_color = (1, 1, 1, 1)
+        self.app.root.ids['toolbar'].right_action_items = [['', lambda x: None]]
 
         self.app.title = "Workouts"

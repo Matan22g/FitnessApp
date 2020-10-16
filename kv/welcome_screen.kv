@@ -99,7 +99,7 @@
             text_color:1, 1, 2, 1
             size_hint_x: 0.9
             md_bg_color: utils.get_color_from_hex("#90AEFF")
-            font_size: "10dp"
+            font_size: int(app.headline_text_size*0.41)
             on_release:
                 app.show_content_msg(app.first_new_workout, app.dismiss_dialog, "Enter workout name", 3, "NEXT")
 

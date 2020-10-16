@@ -4,6 +4,7 @@
     size_hint_y: None
     height: "33dp"
 
+#:import utils kivy.utils
 
 
 
@@ -43,6 +44,34 @@
             on_release:
                 root.add_split()
 
+        MDLabel:
+            id: add_exc_label
+            text: "To add exercises press\nthe plus icon below"
+            font_style: "H4"
+            theme_text_color: "Secondary"
+            halign: "center"
+            pos_hint: {"center_x": 0.5, "center_y": 0.6}
+
+        MDIcon:
+            id: down_arrow_icon
+            icon: "arrow-down"
+            pos_hint: {"center_x": 0.88, "center_y": 0.4}
+            theme_text_color: "Secondary"
+            font_size: "100sp"
+
+        MDFillRoundFlatButton:
+            text:"Start Workout"
+            size_hint: (.75, .075)
+            font_size: int(app.headline_text_size*0.41)
+            id: start_session
+            text_color:1, 1, 2, 1
+            pos_hint: {"center_x": 0.5, "top": .09}
+
+            md_bg_color: utils.get_color_from_hex("#00C227")
+
+            on_release:
+                root.start_session() if not app.running_session else root.show_start_workout_dialog()
+
         ScrollView:
             id: scroll
             pos_hint: {"top": .8725}
@@ -59,43 +88,43 @@
                 row_default_height: '125dp'
 
 
-        GridLayout:
-            id: buttons_layout
-            cols: 3
-            pos_hint: {"center_x": 0.5, "top": .125 - app.bottom_buttons_inc}
-            size_hint_y:0.1
+#        GridLayout:
+#            id: buttons_layout
+#            cols: 1
+#            pos_hint: {"center_x": 0.5, "top": .1 - app.bottom_buttons_inc}
+#            size_hint_y:0.1
 #            spacing: 15
-            MDIconButton:
-                id: delete_workout
-                icon: "trash-can-outline"
-                user_font_size: "44sp"
-                theme_text_color: "Custom"
-                text_color: 1,1,1,1
-                on_release:
-                    app.delete_workout_msg(root.workout_key)
-                size_hint: (0.12,0.075)
+#            MDIconButton:
+#                id: delete_workout
+#                icon: "trash-can-outline"
+#                user_font_size: "44sp"
+#                theme_text_color: "Custom"
+#                text_color: 1,1,1,1
+#                on_release:
+#                    app.delete_workout_msg(root.workout_key)
+#                size_hint: (0.12,0.075)
+#
+#            MDIconButton:
+#                id: edit_workout
+#                icon: "pencil"
+#                user_font_size: "44sp"
+#                theme_text_color: "Custom"
+#                text_color: 1,1,1,1
+#                on_release:
+#                    root.show_view_buttons(False)
+#                    root.show_edit_buttons(True)
+#                    root.edit_mode = 1
+#                size_hint: (0.12,0.075)
 
-            MDIconButton:
-                id: edit_workout
-                icon: "pencil"
-                user_font_size: "44sp"
-                theme_text_color: "Custom"
-                text_color: 1,1,1,1
-                on_release:
-                    root.show_view_buttons(False)
-                    root.show_edit_buttons(True)
-                    root.edit_mode = 1
-                size_hint: (0.12,0.075)
-
-            MDIconButton:
-                id: start_session
-                icon: "play"
-                user_font_size: "47sp"
-                theme_text_color: "Custom"
-                text_color: 1,1,1,1
-                on_release:
-                    root.start_session() if not app.running_session else root.show_start_workout_dialog()
-                size_hint: (0.12,0.075)
+#            MDIconButton:
+#                id: start_session
+#                icon: "play"
+#                user_font_size: "47sp"
+#                theme_text_color: "Custom"
+#                text_color: 1,1,1,1
+#                on_release:
+#                    root.start_session() if not app.running_session else root.show_start_workout_dialog()
+#                size_hint: (0.12,0.075)
 
 #        MDRoundFlatIconButton:
 #            pos_hint: {"center_x": 0.7, "top": .1}

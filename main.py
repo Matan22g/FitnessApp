@@ -128,7 +128,7 @@ class MainApp(MDApp):
     toTrainWorkout = 0  # saving workout key to train.
     lastscreens = []  # saving pages for back button.
     new_session = 0  # indicator for starting a new session.
-    debug = 1
+    debug = 0
     running_session = 0  # indicator for running session - shows a button that helps the user return to the session
     timer = NumericProperty()  # timer that increment in seconds
     timer_format = ""  # for storing seconds in %H:%M:%S format
@@ -188,6 +188,25 @@ class MainApp(MDApp):
             width_mult=4,
         )
         self.menu.bind(on_release=self.menu_callback)
+
+        # workout_menu_items = [{"text": f"{option}"} for option in ["Edit","Delete"]]
+        workout_menu_items = [{"icon": "pencil", "text": "Edit"}, {"icon": "trash-can-outline", "text": "Delete"}]
+        self.workout_menu = MDDropdownMenu(
+            items=workout_menu_items,
+            width_mult=3.2,
+        )
+        self.workout_menu.bind(on_release=self.workout_menu_callback)
+
+    def workout_menu_callback(self, instance_menu, instance_menu_item):
+        method = instance_menu_item.text
+        if method == "Edit":
+            self.root.ids['workoutscreen'].show_view_buttons(False)
+            self.root.ids['workoutscreen'].show_edit_buttons(True)
+            self.root.ids['workoutscreen'].edit_mode = 1
+        else:
+            self.delete_workout_msg(self.root.ids['workoutscreen'].workout_key)
+
+        instance_menu.dismiss()
 
     def on_start(self):
         if platform == 'android':
@@ -1243,7 +1262,7 @@ class MainApp(MDApp):
     def create_new_workout(self, *args):
         new_workout = args[0].parent.parent.parent.children[2].children[0].children[0].text
         # If the user hasnt written any name, do nothing.
-        if new_workout:
+        if new_workout and not new_workout.isspace():
             self.dialog.dismiss()
             self.root.ids['workoutscreen'].workout = []
             self.root.ids['workoutscreen'].temp_workout = []
@@ -1649,11 +1668,10 @@ class MainApp(MDApp):
             return input_to_check
         if asci_val > 96 and asci_val < 123:
             return input_to_check
-        if asci_val > 47 and asci_val < 57:
+        if asci_val > 47 and asci_val < 58:
             return input_to_check
         if input_to_check == ' ':
             return input_to_check
-
         else:
             return ""
 
@@ -2120,6 +2138,14 @@ class MainApp(MDApp):
         button = args[0]
         self.menu.caller = button
         self.menu.open()
+
+    def open_workout_menu(self, *args):
+        print(self.root.ids['toolbar'].children[0].children)
+        print(self.root.ids['toolbar'].children[0].children[0].children[0])
+
+        button = self.root.ids['toolbar'].children[0].children[0].children[0]
+        self.workout_menu.caller = button
+        self.workout_menu.open()
 
     # test username methods
     #######################

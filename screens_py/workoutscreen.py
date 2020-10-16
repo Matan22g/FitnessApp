@@ -11,7 +11,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.label import MDLabel
+from kivymd.uix.label import MDLabel, MDIcon
 from kivymd.uix.taptargetview import MDTapTargetView
 
 from customKv.tab import MDTabsBase, MDTabs
@@ -59,7 +59,8 @@ class WorkoutScreen(Screen):
         self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
         if self.create_mode:
             # self.start_add_split_animation()
-            Clock.schedule_once(self.start_add_split_animation, .1)
+            if not self.app.workoutsParsed:
+                Clock.schedule_once(self.start_add_split_animation, .1)
 
     # def on_pre_leave(self, *args):
     #     self.app.clear_canvas()
@@ -116,7 +117,8 @@ class WorkoutScreen(Screen):
 
         else:
             self.switch_mode("view")
-
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['dots-vertical', lambda x: self.app.open_workout_menu()]]
             workout_key_to_view = self.app.workout_key_to_view
             workout_to_view = list(self.app.workoutsParsed[workout_key_to_view][0].values())
             workout_name = list(self.app.workoutsParsed[workout_key_to_view][0].keys())[0]
@@ -142,6 +144,14 @@ class WorkoutScreen(Screen):
             self.reload_page()
             self.app.root.ids['workoutscreen'].workout_key = self.app.workout_key_to_view
             self.app.root.ids['workoutscreen'].ids["split_tabs"].switch_tab("Split 1")
+
+    def show_no_exc(self, to_show):
+        if to_show:
+            self.app.root.ids['workoutscreen'].ids["down_arrow_icon"].opacity = 1
+            self.app.root.ids['workoutscreen'].ids["add_exc_label"].opacity = 1
+        else:
+            self.app.root.ids['workoutscreen'].ids["down_arrow_icon"].opacity = 0
+            self.app.root.ids['workoutscreen'].ids["add_exc_label"].opacity = 0
 
     def reset_tabs(self):
         # reseting to one tab in case of create workout, or to original workout, in case of exit edit.
@@ -172,7 +182,6 @@ class WorkoutScreen(Screen):
             self.show_edit_buttons(False)
         else:
             self.edit_mode = 1
-
             self.show_view_buttons(False)
             self.show_edit_buttons(True)
 
@@ -199,6 +208,9 @@ class WorkoutScreen(Screen):
     def show_view_buttons(self, to_show):
 
         if to_show:
+            self.app.root.ids['toolbar'].right_action_items = [
+                ['dots-vertical', lambda x: self.app.open_workout_menu()]]
+
             screen_manager = self.app.root.ids['screen_manager1']
             # if screen_manager.current == "workoutscreen":
             #     self.app.root.ids['toolbar'].right_action_items = [
@@ -206,32 +218,26 @@ class WorkoutScreen(Screen):
             self.show_exc_del_buttons(False)
             self.show_exc_stats_buttons(True)
             self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (0.9, .65)
-            self.app.root.ids['workoutscreen'].ids["edit_workout"].opacity = 1
-            self.app.root.ids['workoutscreen'].ids["edit_workout"].disabled = False
             self.app.root.ids['workoutscreen'].ids["start_session"].opacity = 1
+            self.app.root.ids['workoutscreen'].ids["start_session"].text_color = (1, 1, 2, 1)
             self.app.root.ids['workoutscreen'].ids["start_session"].disabled = False
-            self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 1
-            self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = False
 
-            self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 1
-            self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = False
+            # self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 1
+            # self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = False
 
         else:
-            self.app.root.ids['workoutscreen'].ids["edit_workout"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["edit_workout"].disabled = True
             self.app.root.ids['workoutscreen'].ids["start_session"].opacity = 0
             self.app.root.ids['workoutscreen'].ids["start_session"].disabled = True
-            self.app.root.ids['workoutscreen'].ids["delete_workout"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["delete_workout"].disabled = True
 
-            self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 0
-            self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = True
+            # self.app.root.ids['workoutscreen'].ids["buttons_layout"].opacity = 0
+            # self.app.root.ids['workoutscreen'].ids["buttons_layout"].disabled = True
 
     def show_edit_buttons(self, to_show):
         if to_show:
             # self.app.root.ids['workoutscreen'].ids["split_tabs"].size_hint = (1, .65)
             # self.app.root.ids['toolbar'].right_action_items = [
             #     ['content-save', lambda x: self.show_save_workout_dialog()]]
+            self.app.root.ids['toolbar'].right_action_items = [['help', lambda x: self.app.show_workout_help()]]
 
             self.show_exc_del_buttons(True)
             self.show_exc_stats_buttons(False)
@@ -339,6 +345,12 @@ class WorkoutScreen(Screen):
         if len(workout) > split - 1:
             workout = workout[split - 1]
             num_of_exc_total = len(workout)
+
+            if not num_of_exc_total:
+                self.show_no_exc(True)
+            else:
+                self.show_no_exc(False)
+
             exercises_layout = self.ids.exc_cards
             exercises_layout.clear_widgets()
             # self.calc_exc_row_height(split)
