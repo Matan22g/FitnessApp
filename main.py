@@ -1,4 +1,6 @@
 from kivy.config import Config
+from kivymd.color_definitions import colors
+
 Config.set('graphics', 'resizable', 1)
 
 from kivy.metrics import dp
@@ -209,9 +211,10 @@ class MainApp(MDApp):
         instance_menu.dismiss()
 
     def on_start(self):
-        if platform == 'android':
-            self.clear_statusbar()
-            mActivity.removeLoadingScreen()
+        if platform == "android":
+            color_s = '#' + colors[self.theme_cls.primary_palette]['700']
+            color_n = '#' + colors[self.theme_cls.primary_palette]['500']
+            self.statusbar(color_s, color_n)
 
         self.weight_date = self.today_date[:10]
         # Window.on_resize = self.show_size
@@ -407,6 +410,17 @@ class MainApp(MDApp):
         window.setFlags(
             LayoutParams.FLAG_LAYOUT_NO_LIMITS,
             LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+    @run_on_ui_thread
+    def statusbar(self, color_s, color_n):
+        LayoutParams = autoclass('android.view.WindowManager$LayoutParams')
+        window = mActivity.getWindow()
+        window.clearFlags(LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        window.clearFlags(LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        window.addFlags(LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window.setStatusBarColor(Color.parseColor(color_s))
+        window.setNavigationBarColor(Color.parseColor(color_n))
+        window.getDecorView().setSystemUiVisibility(0)
 
     @run_on_ui_thread
     def set_Full_Screen_Flags(self):

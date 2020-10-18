@@ -208,6 +208,10 @@ class WorkoutScreen(Screen):
     def show_view_buttons(self, to_show):
 
         if to_show:
+            screen_manager = self.app.root.ids['screen_manager1']
+
+            # if screen_manager.current == "workoutscreen" urrent != "exercise_sessions_screen":
+
             self.app.root.ids['toolbar'].right_action_items = [
                 ['dots-vertical', lambda x: self.app.open_workout_menu()]]
 

@@ -126,8 +126,6 @@
         ScrollView:
             id: last_sessions
             pos_hint: {"y": .33, "center_x": .6}
-            size_hint_y: None
-            size_hint_x: None
             size_hint: 1, .48
             do_scroll_y: False
             do_scroll_x: False
@@ -140,25 +138,22 @@
                 id: records_grid
                 cols: 2
                 rows: 1
-                padding: 42,0
+                padding: 0,0
                 spacing: 60,20
                 size_hint_y: None
-                size_hint_x: None
+                size_hint_x: 0.8
                 height: self.minimum_height
-                width: self.minimum_width
                 row_force_default: True
-                row_default_height: '240dp'
-
+                row_default_height: app.window_size[1]/3.4
 
                 MDCard:
                     id: last_session_card
+                    size_hint_x: 0.1
                     elevation: 0
                     radius:[80]
                     orientation: "vertical"
                     padding: [50, 0, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
                     spacing: 1
-                    size_hint: None, None
-                    size: "140dp", "230dp"
                     background : "resources/welcome1.png"
                     GridLayout:
                         cols: 2
@@ -231,8 +226,7 @@
                     orientation: "vertical"
                     padding: [50, 0, 50, 0]  # [padding_left, padding_top,padding_right, padding_bottom].
                     spacing: 1
-                    size_hint: None, None
-                    size: "140dp", "230dp"
+                    size_hint_x: 0.1
                     background : "resources/welcome3.png"
 
 
@@ -332,7 +326,7 @@
                 halign: 'left'
         ScrollView:
             pos_hint: {"center_x": .5, "center_y": -0.090}
-            do_scroll_y: False
+            do_scroll_y: True
 
             MDBoxLayout:
                 id: chart_box
