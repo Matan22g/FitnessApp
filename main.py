@@ -215,7 +215,8 @@ class MainApp(MDApp):
             color_s = '#' + colors[self.theme_cls.primary_palette]['700']
             color_n = '#' + colors[self.theme_cls.primary_palette]['500']
             self.statusbar(color_s, color_n)
-
+            self.clear_statusbar()
+            self.set_Full_Screen_Flags()
         self.weight_date = self.today_date[:10]
         # Window.on_resize = self.show_size
         # Window.size = self.window_size
