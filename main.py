@@ -1361,7 +1361,12 @@ class MainApp(MDApp):
 
         # workout_split = self.split_Choice_dict[workoutkey]
         workout_split = args[1]
-        workout_list = list(self.workoutsParsed[workoutkey][0].values())
+        try:
+            workout_list = list(self.workoutsParsed[workoutkey][0].values())
+        except KeyError:
+            print("no such workout key", workoutkey)
+            self.show_ok_msg(self.dismiss_dialog, "Error", "This workout is no longer available")
+            return
         workout_name = list(self.workoutsParsed[workoutkey][0].keys())[0]
         num_splits = len(workout_list[0])
         chosen_workout = workout_list[0]  # List of exercise to train
