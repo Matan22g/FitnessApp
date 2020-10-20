@@ -193,7 +193,7 @@ FloatLayout:
                 MDBottomNavigation:
                     id: bottom_nav
                     pos_hint: {"center_x": .5}
-                    size_hint_y:0.07
+                    size_hint_y:0.09 if app.window_size[1]<1335 else 0.07
                     size_hint_x:0.95
                     panel_color: .5, .5, 1, 0
                     text_color_active: 0,0,1,1

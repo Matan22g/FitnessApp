@@ -1316,7 +1316,7 @@ class MainApp(MDApp):
         self.dialog = MDDialog(
             radius=[10, 7, 10, 7],
             size_hint=(0.9, 0.3),
-            title="Enter new user name",
+            title="Enter new username",
             type="custom",
             content_cls=ChangeUserNameContent(),
             buttons=[
@@ -1792,13 +1792,19 @@ class MainApp(MDApp):
             return
         else:
             self.running_session = 0
-            self.root.ids['bottom_nav'].switch_tab('1')
-            self.change_screen1("homescreen")
             self.get_user_data()
             self.load_session_data()
             self.load_workout_data()
             self.root.ids['previous_workouts_screen'].curr_month = 0
             self.root.ids['previous_workouts_screen'].curr_year = 0
+            if target == 1 or target == 2:
+                self.root.ids['bottom_nav'].switch_tab('2')
+                self.lastscreens = ["homescreen"]
+                self.change_screen1("workoutsscreen", -1, "down")
+
+            else:
+                self.root.ids['bottom_nav'].switch_tab('1')
+                self.change_screen1("homescreen")
 
             # self.root.ids['toolbar'].right_action_items = [
             #     ['menu', lambda x: self.root.ids['nav_drawer'].set_state()]]

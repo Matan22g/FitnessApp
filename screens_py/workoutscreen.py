@@ -117,8 +117,11 @@ class WorkoutScreen(Screen):
 
         else:
             self.switch_mode("view")
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['dots-vertical', lambda x: self.app.open_workout_menu()]]
+            screen_manager = self.app.root.ids['screen_manager1']
+
+            if screen_manager.current == "workoutscreen":
+                self.app.root.ids['toolbar'].right_action_items = [
+                    ['dots-vertical', lambda x: self.app.open_workout_menu()]]
             workout_key_to_view = self.app.workout_key_to_view
             workout_to_view = list(self.app.workoutsParsed[workout_key_to_view][0].values())
             workout_name = list(self.app.workoutsParsed[workout_key_to_view][0].keys())[0]
@@ -210,10 +213,9 @@ class WorkoutScreen(Screen):
         if to_show:
             screen_manager = self.app.root.ids['screen_manager1']
 
-            # if screen_manager.current == "workoutscreen" urrent != "exercise_sessions_screen":
-
-            self.app.root.ids['toolbar'].right_action_items = [
-                ['dots-vertical', lambda x: self.app.open_workout_menu()]]
+            if screen_manager.current == "workoutscreen":
+                self.app.root.ids['toolbar'].right_action_items = [
+                    ['dots-vertical', lambda x: self.app.open_workout_menu()]]
 
             screen_manager = self.app.root.ids['screen_manager1']
             # if screen_manager.current == "workoutscreen":

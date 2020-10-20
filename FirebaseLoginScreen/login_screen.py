@@ -26,9 +26,17 @@ class ClickableTextFieldRound(MDRelativeLayout):
     # [...]
 
 class LoginScreen(Screen):
+    pos_y_inc = 0
+    txt_diff = 0
+
     def __init__(self, **kw):
         super().__init__(**kw)
         self.app = MDApp.get_running_app()
+
+    def on_pre_enter(self, *args):
+        if self.app.window_size[1] < 1335:
+            self.txt_diff = -0.04
+            self.pos_y_inc = -0.01
 
     def on_open(self):
 
@@ -62,7 +70,8 @@ class LoginScreen(Screen):
 
     def sign_in_to_sign_up(self):
         # anim_sign_in = Animation(pos_hint ={"center_x": .5, "center_y": .2},duration=0.2)
-        anim_pass = Animation(pos_hint={"center_x": .5, "center_y": .5}, duration=0.2)
+        anim_pass = Animation(pos_hint={"center_x": .5, "center_y": .5 + self.pos_y_inc + self.txt_diff * 2},
+                              duration=0.2)
         anim_username = Animation(opacity=1, duration=0.4)
         anim_forget_pass = Animation(opacity=0, duration=0.15)
 
@@ -80,7 +89,8 @@ class LoginScreen(Screen):
         self.ids['frontlayer'].ids['forget_pass'].disabled = False
 
         # anim_sign_in = Animation(pos_hint ={"center_x": .5, "center_y": .3},duration=0.2)
-        anim_pass = Animation(pos_hint={"center_x": .5, "center_y": .65}, duration=0.2)
+        anim_pass = Animation(pos_hint={"center_x": .5, "center_y": .65 + self.pos_y_inc + self.txt_diff * 2},
+                              duration=0.2)
         anim_username = Animation(opacity=0, duration=0.3)
         anim_forget_pass = Animation(opacity=1, duration=0.2)
 
@@ -89,7 +99,7 @@ class LoginScreen(Screen):
         anim_pass.start(self.ids['frontlayer'].ids['password'])
         anim_username.start(self.ids['frontlayer'].ids['username'])
         self.ids['frontlayer'].ids['sign_in_button'].text = "Sign in"
-        self.ids['frontlayer'].ids['email'].hint_text = " Email or User name"
+        self.ids['frontlayer'].ids['email'].hint_text = " Email or Username"
 
     def sign_in(self, *args):
         method = args[0]

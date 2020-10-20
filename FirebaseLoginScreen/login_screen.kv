@@ -127,7 +127,7 @@
 
         MDTextField:
             id: email
-            pos_hint: {"center_x": .5, "center_y": .8}
+            pos_hint: {"center_x": .5, "center_y": .8 + root.parent.parent.parent.parent.parent.pos_y_inc}
             hint_text: "  Username or email"
             mode: "fill"
             color_mode: 'custom'
@@ -153,7 +153,7 @@
 #            input_filter: app.proper_email_filter
         MDTextField:
             id: username
-            pos_hint: {"center_x": .5, "center_y": .652}
+            pos_hint: {"center_x": .5, "center_y": .652 + + root.parent.parent.parent.parent.parent.pos_y_inc + root.parent.parent.parent.parent.parent.txt_diff}
             hint_text: "  Username"
             mode: "fill"
             color_mode: 'custom'
@@ -183,7 +183,7 @@
             size_hint_x: 0.9
             id: password
             hint_text: "  Password"
-            pos_hint: {"center_x": .5, "center_y": .65}
+            pos_hint: {"center_x": .5, "center_y": .65 + root.parent.parent.parent.parent.parent.pos_y_inc + root.parent.parent.parent.parent.parent.txt_diff*2}
             normal_color: 1,1,1,1
             color_active: 1,1,1,1
             elevation: 10
@@ -193,7 +193,7 @@
             id: sign_in_button
             text: "Sign in"
             text_color: 1, 1, 1, 1
-            pos_hint: {"center_x": .5, "center_y": .3}
+            pos_hint: {"center_x": .5, "center_y": .25 + root.parent.parent.parent.parent.parent.pos_y_inc + root.parent.parent.parent.parent.parent.txt_diff}
             size_hint: (.75, .1)
             font_size: 20
             md_bg_color: 1, 1, 1, 0.9
@@ -208,7 +208,7 @@
             custom_color: 1, 1, 1, 1
             font_style: 'caption'
             underline: True
-            pos_hint: {"center_x": .5, "center_y": .15}
+            pos_hint: {"center_x": .5, "center_y": .15 + root.parent.parent.parent.parent.parent.pos_y_inc + root.parent.parent.parent.parent.parent.txt_diff}
             on_release:
                 root.parent.parent.parent.parent.parent.parent.parent.display_loading_screen()
                 root.parent.parent.parent.parent.parent.parent.parent.reset_password(email.text)
