@@ -1664,6 +1664,7 @@ class MainApp(MDApp):
     """ Top and bottom background for main app screens"""
 
     def add_top_canvas(self):
+        self.window_size = Window.size
         with self.root.ids.main_layout.canvas.before:
             Rectangle(source='resources/canvas.png', pos=(0, self.window_size[1] / 1.23), size=(
                 self.root.ids.main_layout.parent.parent.size[0], self.root.ids.main_layout.parent.parent.size[1] / 5))

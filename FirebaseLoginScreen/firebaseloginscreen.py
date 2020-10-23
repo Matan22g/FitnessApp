@@ -1,3 +1,4 @@
+from kivy import platform
 from kivy.uix.screenmanager import Screen
 from kivy.properties import BooleanProperty, StringProperty
 from kivy.event import EventDispatcher
@@ -31,12 +32,10 @@ Builder.load_file(folder + "/loadingpopup.kv")
 from FirebaseLoginScreen.login_screen import LoginScreen
 
 
+# from FirebaseLoginScreen.login_google import initialize_google, login_google, logout_google
+
 
 class FirebaseLoginScreen(Screen, EventDispatcher):
-    def __init__(self, **kw):
-        super().__init__(**kw)
-        self.app = MDApp.get_running_app()
-
     dialog = None
     web_api_key = StringProperty()  # From Settings tab in Firebase project
 
@@ -58,19 +57,24 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
     popup = Factory.LoadingPopup()
     popup.background = folder + "/transparent_image.png"
 
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        self.app = MDApp.get_running_app()
+
+    # def on_enter(self, *args):
+    #     if platform == 'android':
+    #         initialize_google(self.after_login, self.error_listener)
+
     # def build(self):
     #     initialize_google(self.after_login, self.error_listener)
     #
 
-    # def login_with_google(self):
-    #     login_google()
-    #     print("here")
-    #
-    # def after_login(self):
-    #     pass
-    #
-    # def error_listener(self):
-    #     pass
+    def after_login(self):
+        pass
+
+    def error_listener(self):
+        pass
+
     def on_login_success(self, *args):
         pass
 
@@ -149,11 +153,11 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
         self.hide_loading_screen()
 
         self.email_exists = False  # Triggers hiding the sign in button
-        msg = "User name: " + user_name + comment
+        msg = "Username: " + user_name + comment
         # Check if the error msg is the same as the last one
         if msg == self.sign_up_msg:
             msg = " " + msg + " "
-        self.app.dialog = MDDialog(title="Choose another user name", text=msg, radius=[10, 7, 10, 7],
+        self.app.dialog = MDDialog(title="Choose another username", text=msg, radius=[10, 7, 10, 7],
                                    size_hint=(0.9, None))
         self.app.dialog.open()
         if self.debug:
@@ -178,7 +182,7 @@ class FirebaseLoginScreen(Screen, EventDispatcher):
             req_body=my_data, method='PATCH')
         print(post_request)
         self.successful_login(urlrequest, log_in_data)
-        
+
     # def on_friend_get_req_ok(self, *args):
     #     my_friend_id = self.friend_get_req.result
     #     self.app.set_friend_id(my_friend_id)
